@@ -62,14 +62,8 @@ public sealed class TrainingService(FlashcardsDbContext Ctx) : ITrainingService
 
     private bool IsCardSelected(Card card)
     {
-        float koeff = card.KnowCounter / (card.NotKnowCounter + 1f);
+        int koef = card.KnowCounter / (card.NotKnowCounter + 1);
 
-        if (koeff > 2.3f)
-        {
-            int level = (card.KnowCounter / (card.NotKnowCounter + 1)) + 1;
-            return Random.Shared.Next(level) == 0;
-        }
-
-        return true;
+        return Random.Shared.Next(koef) == 0;
     }
 }

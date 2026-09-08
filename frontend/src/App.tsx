@@ -1,14 +1,16 @@
 import { Box } from "@mui/material"
 import { useEffect } from "react"
 import { AuthDialogs } from "./features/auth/AuthDialogs"
-import { restoreSession } from "./features/auth/authSlice"
-//import { fetchSettings } from "./features/settings/settingsSlice"
 import { Header } from "./components/Header"
 import { AppRoutes } from "./routes/AppRoutes"
 import { useAppDispatch, useAppSelector } from "./store/hooks"
 import { restoreState } from "./features/training/trainingSlice"
 import { readTrainingProgress } from "./features/training/trainingStorage"
 import { useNavigate } from "react-router-dom"
+import { initState } from "./features/sets/setsSlice"
+import { appApi } from "./api/appApi"
+import { setSettings } from "./features/settings/settingsSlice"
+import { restoreSession } from "./features/auth/authSlice"
 
 export default function App() {
   const dispatch = useAppDispatch()
@@ -16,14 +18,20 @@ export default function App() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    dispatch(restoreSession())
+    if (!isAuthenticated) {
+      dispatch(restoreSession())
+    }
   }, [dispatch])
 
   // Settings live on the account, so they are only loaded once a session exists.
   useEffect(() => {
     if (!isAuthenticated) return
-    //dispatch(fetchSettings())
     debugger;
+    appApi.getState().then((data) => {
+      dispatch(initState(data.sets))
+      dispatch(setSettings(data.settings))
+    })
+    
     const trainingProgress = readTrainingProgress()
     if (trainingProgress) {
       dispatch(restoreState(trainingProgress))
@@ -41,3 +49,4 @@ export default function App() {
     </Box>
   )
 }
+

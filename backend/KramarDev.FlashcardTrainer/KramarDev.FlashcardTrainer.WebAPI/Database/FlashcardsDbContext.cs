@@ -1,5 +1,4 @@
-﻿using KramarDev.FlashcardTrainer.WebAPI.Database.Tables;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,6 +25,10 @@ public class FlashcardsDbContext : IdentityDbContext<IdentityUser>
             .HasPrincipalKey(e => e.Id)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.Entity<Settings>()
+            .HasIndex(e => e.UserName)
+            .IsUnique();
+
         builder.Entity<IdentityRole>()
             .HasData(
                 new IdentityRole
@@ -50,4 +53,6 @@ public class FlashcardsDbContext : IdentityDbContext<IdentityUser>
     public DbSet<Set> Sets { get; set; }
 
     public DbSet<Card> Cards { get; set; }
+
+    public DbSet<Settings> Settings { get; set; }
 }

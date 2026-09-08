@@ -1,5 +1,4 @@
-﻿using KramarDev.FlashcardTrainer.WebAPI.Database.Tables;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace KramarDev.FlashcardTrainer.WebAPI.Database;
@@ -14,7 +13,7 @@ public static class DbInitializer
         var dbCtx = scope.ServiceProvider
             .GetRequiredService<FlashcardsDbContext>();
 
-        await dbCtx.Database.MigrateAsync();
+        await dbCtx.Database.MigrateAsync(cancellationToken);
 
         var userManager = scope.ServiceProvider
        .GetRequiredService<UserManager<IdentityUser>>();
@@ -37,6 +36,14 @@ public static class DbInitializer
             if (result.Succeeded)
             {
                 await userManager.AddToRoleAsync(user1, Constants.UserRole);
+
+                Settings newSettings = new Settings();
+                newSettings.UserName = user1.UserName;
+                newSettings.ColorScheme = "Forest";
+                newSettings.HideKnownCards = true;
+
+                dbCtx.Settings.Add(newSettings);
+                await dbCtx.SaveChangesAsync(cancellationToken);
             }
         }
 
@@ -58,6 +65,14 @@ public static class DbInitializer
             if (result.Succeeded)
             {
                 await userManager.AddToRoleAsync(user2, Constants.PowerUserRole);
+
+                Settings newSettings = new Settings();
+                newSettings.UserName = user2.UserName;
+                newSettings.ColorScheme = "Porcelain";
+                newSettings.HideKnownCards = true;
+
+                dbCtx.Settings.Add(newSettings);
+                await dbCtx.SaveChangesAsync(cancellationToken);
             }
         }
 

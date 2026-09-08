@@ -1,6 +1,6 @@
 import AddIcon from "@mui/icons-material/Add"
 import { Box, Button, Snackbar, Alert } from "@mui/material"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { ConfirmDialog } from "../components/ConfirmDialog"
 import { PageContainer } from "../components/PageContainer"
@@ -30,10 +30,10 @@ export default function HomePage() {
   const { isAuthenticated, sessionChecked } = useAppSelector((state) => state.auth)
   const [pendingRemoval, setPendingRemoval] = useState<SetSummary | null>(null)
 
-  useEffect(() => {
-    if (!isAuthenticated) return
-    dispatch(fetchSets())
-  }, [dispatch, isAuthenticated])
+  // useEffect(() => {
+  //   if (!isAuthenticated) return
+  //   dispatch(fetchSets())
+  // }, [dispatch, isAuthenticated])
 
   if (!isAuthenticated) {
     return (
@@ -111,7 +111,7 @@ export default function HomePage() {
   return (
     <PageContainer
       title="Your sets"
-      description="Pick a set to start training, or create a new one. The counter on each tile shows how many cards you have already learnt."
+      description="Start training with a set, or create one."
       actions={items.length > 0 ? newSetButton : undefined}
     >
       {status === "loading" && items.length === 0 && <LoadingState label="Loading your sets..." />}

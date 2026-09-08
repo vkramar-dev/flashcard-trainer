@@ -113,7 +113,18 @@ export interface SetStatistics {
   hardestCards: HardestCard[]
 }
 
-export type ColorSchemeName = "default" | "blue" | "green" | "purple" | "dark"
+export interface SettingsModel {
+  colorScheme: string
+  hideKnownCards: boolean
+}
+
+export interface AppStateModel {
+  sets: SetSummary[]
+  userName: string
+  settings: SettingsModel
+}
+
+export type ColorSchemeName = "coastal" | "porcelain" | "mist" | "slate" | "espresso" | "graphite" | "indigo" | "midnight" | "forest"
 
 export interface UserSettings {
   colorScheme: ColorSchemeName

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
 {
     [DbContext(typeof(FlashcardsDbContext))]
-    [Migration("20260812180935_InitialCreate")]
+    [Migration("20260907151253_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -83,6 +83,32 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
                     b.HasIndex("UserName");
 
                     b.ToTable("Sets");
+                });
+
+            modelBuilder.Entity("KramarDev.FlashcardTrainer.WebAPI.Database.Tables.Settings", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ColorScheme")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("HideKnownCards")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserName")
+                        .IsUnique()
+                        .HasFilter("[UserName] IS NOT NULL");
+
+                    b.ToTable("Settings");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

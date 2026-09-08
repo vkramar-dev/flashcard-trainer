@@ -82,6 +82,32 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
                     b.ToTable("Sets");
                 });
 
+            modelBuilder.Entity("KramarDev.FlashcardTrainer.WebAPI.Database.Tables.Settings", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ColorScheme")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("HideKnownCards")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserName")
+                        .IsUnique()
+                        .HasFilter("[UserName] IS NOT NULL");
+
+                    b.ToTable("Settings");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")

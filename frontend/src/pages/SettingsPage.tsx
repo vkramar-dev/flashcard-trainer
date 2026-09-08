@@ -1,10 +1,9 @@
 import CheckIcon from "@mui/icons-material/Check"
 import { Alert, Box, Card, CardActionArea, Stack, Typography } from "@mui/material"
-import { useEffect } from "react"
 import { PageContainer } from "../components/PageContainer"
 import { LoadingState } from "../components/StateViews"
 import { SignedOutNotice } from "../features/auth/SignedOutNotice"
-import { clearSettingsError, fetchSettings, updateColorScheme } from "../features/settings/settingsSlice"
+import { clearSettingsError, updateColorScheme } from "../features/settings/settingsSlice"
 import { useAppDispatch, useAppSelector } from "../store/hooks"
 import { colorSchemeLabels, colorSchemes } from "../theme"
 import type { ColorSchemeName } from "../types"
@@ -13,7 +12,7 @@ function SchemeSwatch({ scheme }: { scheme: ColorSchemeName }) {
   const definition = colorSchemes[scheme]
   return (
     <Stack direction="row" gap={0.75} aria-hidden="true">
-      {[definition.background, definition.primary, definition.secondary].map((color) => (
+      {[definition.paper, definition.backdrop, definition.primary].map((color) => (
         <Box
           key={color}
           sx={{
@@ -35,10 +34,10 @@ export default function SettingsPage() {
   const { colorScheme, availableColorSchemes, error } = useAppSelector((state) => state.settings)
   const { isAuthenticated, sessionChecked } = useAppSelector((state) => state.auth)
 
-  useEffect(() => {
-    if (!isAuthenticated) return
-    dispatch(fetchSettings())
-  }, [dispatch, isAuthenticated])
+  // useEffect(() => {
+  //   if (!isAuthenticated) return
+  //   dispatch(fetchSettings())
+  // }, [dispatch, isAuthenticated])
 
   if (!isAuthenticated) {
     return (
@@ -66,8 +65,8 @@ export default function SettingsPage() {
 
   return (
     <PageContainer
-      title="Settings"
-      description="Pick a color scheme. The choice is saved to your account and applies everywhere in the app."
+      title="Color Settings"
+      description="Pick a color scheme."
       maxWidth="md"
     >
       <Stack gap={3}>

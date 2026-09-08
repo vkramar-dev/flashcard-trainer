@@ -2,11 +2,15 @@ import { createTheme, type Theme, type ThemeOptions } from "@mui/material/styles
 import type { ColorSchemeName } from "../types"
 
 export const colorSchemeLabels: Record<ColorSchemeName, string> = {
-  default: "Default",
-  blue: "Blue",
-  green: "Green",
-  purple: "Purple",
-  dark: "Dark",
+  coastal: "Coastal",
+  porcelain: "Porcelain",
+  mist: "Mist",
+  slate: "Slate",
+  espresso: "Espresso",
+  graphite: "Graphite",
+  indigo: "Indigo",
+  midnight: "Midnight",
+  forest: "Forest",
 }
 
 interface SchemeDefinition {
@@ -20,47 +24,87 @@ interface SchemeDefinition {
 }
 
 export const colorSchemes: Record<ColorSchemeName, SchemeDefinition> = {
-  default: {
+  coastal: {
     mode: "light",
-    primary: "#1f6f5c",
-    secondary: "#c2703d",
-    background: "#f6f5f2",
-    paper: "#ffffff",
-    backdrop: "#eceae4",
+    primary: "#4D76A8",
+    secondary: "#B07A58",
+    background: "#F2F1ED",
+    paper: "#FFFDF8",
+    backdrop: "#DFE5E9",
   },
-  blue: {
+
+  porcelain: {
     mode: "light",
-    primary: "#1d4ed8",
-    secondary: "#0e7490",
-    background: "#f4f7fd",
-    paper: "#ffffff",
-    backdrop: "#e5ecfa",
+    primary: "#4D76A8",
+    secondary: "#B98268",
+    background: "#F2F4F6",
+    paper: "#FFFDF9",
+    backdrop: "#E4E8EC",
   },
-  green: {
+
+  mist: {
     mode: "light",
-    primary: "#15803d",
-    secondary: "#4d7c0f",
-    background: "#f4f9f4",
-    paper: "#ffffff",
-    backdrop: "#e4f0e6",
+    primary: "#4D76A8",
+    secondary: "#C08A6D",
+    background: "#EDF2F6",
+    paper: "#FBFCFD",
+    backdrop: "#D9E2E9",
   },
-  purple: {
-    mode: "light",
-    primary: "#6d28d9",
-    secondary: "#be185d",
-    background: "#f8f5fd",
-    paper: "#ffffff",
-    backdrop: "#ece3fb",
-  },
-  dark: {
+
+  slate: {
     mode: "dark",
-    primary: "#7dd3a8",
-    secondary: "#f0a570",
-    background: "#14171c",
-    paper: "#1d2127",
-    backdrop: "#22272e",
+    primary: "#E0B66F",
+    secondary: "#7FB6C9",
+    background: "#34383D",
+    paper: "#262A2E",
+    backdrop: "#1B1E21",
   },
-}
+
+  espresso: {
+    mode: "dark",
+    primary: "#E1B57B", // caramel
+    secondary: "#82B7A5", // muted sage
+    background: "#3A302C", // warm taupe
+    paper: "#29221F", // espresso
+    backdrop: "#1B1715", // coffee black
+  },
+
+  graphite: {
+    mode: "dark",
+    primary: "#A6C6E3", // soft steel blue
+    secondary: "#D5A36F", // bronze
+    background: "#343A42", // graphite/slate
+    paper: "#24282E", // neutral charcoal
+    backdrop: "#191C20", // near-black graphite
+  },
+
+  indigo: {
+    mode: "dark",
+    primary: "#8BA8F8",
+    secondary: "#C8A3EA",
+    background: "#29354D",
+    paper: "#20283A",
+    backdrop: "#161C2A",
+  },
+
+  midnight: {
+    mode: "dark",
+    primary: "#72C7D4",
+    secondary: "#E1B36B",
+    background: "#294955", // muted teal
+    paper: "#1D3039", // blue-grey
+    backdrop: "#14242C", // deep navy
+  },
+
+  forest: {
+    mode: "dark",
+    primary: "#7BCDA7", // fresh mint
+    secondary: "#D8A36D", // warm copper
+    background: "#30483F", // muted sage / forest
+    paper: "#222F2B", // charcoal spruce
+    backdrop: "#17221E", // deep green-black
+  },
+};
 
 const headingFont = '"Space Grotesk", "Segoe UI", system-ui, sans-serif'
 const bodyFont = '"Inter", "Segoe UI", system-ui, sans-serif'
@@ -102,7 +146,7 @@ function buildOptions(scheme: SchemeDefinition): ThemeOptions {
         defaultProps: { elevation: 0, color: "inherit" },
         styleOverrides: {
           root: {
-            backgroundColor: scheme.paper,
+            backgroundColor: scheme.backdrop,
             borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.12)" : "rgba(31,41,51,0.1)"}`,
           },
         },

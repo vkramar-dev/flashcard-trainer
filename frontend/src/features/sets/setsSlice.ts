@@ -163,6 +163,15 @@ const setsSlice = createSlice({
       state.error = null
       state.saveError = null
     },
+    initState(state, action: PayloadAction<SetSummary[]>) {
+      state.items = action.payload
+      state.selectedSet = null
+      state.importSetId = null
+      state.notice = null
+      state.error = null
+      state.saveStatus = "idle"
+      state.saveError = null
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -265,6 +274,6 @@ const setsSlice = createSlice({
   },
 })
 
-export const { clearSelectedSet, openImportDialog, closeImportDialog, clearSetsNotice, clearSetsError } =
+export const { clearSelectedSet, openImportDialog, closeImportDialog, clearSetsNotice, clearSetsError, initState } =
   setsSlice.actions
 export default setsSlice.reducer

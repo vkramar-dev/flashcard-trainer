@@ -70,6 +70,21 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Settings",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserName = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    ColorScheme = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    HideKnownCards = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Settings", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
@@ -255,6 +270,13 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
                 name: "IX_Sets_UserName",
                 table: "Sets",
                 column: "UserName");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Settings_UserName",
+                table: "Settings",
+                column: "UserName",
+                unique: true,
+                filter: "[UserName] IS NOT NULL");
         }
 
         /// <inheritdoc />
@@ -277,6 +299,9 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
 
             migrationBuilder.DropTable(
                 name: "Cards");
+
+            migrationBuilder.DropTable(
+                name: "Settings");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

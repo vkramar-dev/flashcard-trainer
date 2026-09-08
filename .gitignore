@@ -1,0 +1,89 @@
+# =========================
+# Backend (.NET / Visual Studio)
+# =========================
+
+# Build results
+**/bin/
+**/obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+appsettings.Development.json
+appsettings.json
+
+# JetBrains Rider / ReSharper
+.idea/
+_ReSharper*/
+*.DotSettings.user
+
+# Test results / coverage
+TestResults/
+coverage/
+coverage.*
+*.coverage
+*.coveragexml
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+
+# Publish output
+publish/
+
+# ASP.NET Core / local settings
+appsettings.Development.local.json
+appsettings.Local.json
+
+# =========================
+# Frontend (React / Vite / Node)
+# =========================
+
+/frontend/node_modules/
+/frontend/dist/
+/frontend/.vite/
+
+# Logs
+/frontend/npm-debug.log*
+/frontend/yarn-debug.log*
+/frontend/yarn-error.log*
+/frontend/pnpm-debug.log*
+
+# Local environment files
+/frontend/.env
+/frontend/.env.local
+/frontend/.env.*.local
+
+# Frontend coverage
+/frontend/coverage/
+
+# TypeScript build info
+/frontend/*.tsbuildinfo
+/frontend/**/*.tsbuildinfo
+
+# =========================
+# OS / Editor noise
+# =========================
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+
+# VS Code local settings
+.vscode/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*.log

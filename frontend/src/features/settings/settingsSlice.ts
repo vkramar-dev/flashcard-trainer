@@ -1,10 +1,10 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit"
 import { toErrorMessage } from "../../api/client"
 import { settingsApi } from "../../api/settingsApi"
-import type { ColorSchemeName, RequestStatus, UserSettings } from "../../types"
+import type { ColorSchemeName, RequestStatus, SettingsModel, UserSettings } from "../../types"
 
 const SCHEME_STORAGE_KEY = "flashcard-trainer.colorScheme"
-const KNOWN_SCHEMES: ColorSchemeName[] = ["default", "blue", "green", "purple", "dark"]
+const KNOWN_SCHEMES: ColorSchemeName[] = ["graphite", "coastal", "porcelain", "mist", "slate", "espresso", "indigo", "midnight", "forest"]
 
 /**
  * The scheme is cached locally so the correct theme paints on first render,
@@ -13,9 +13,9 @@ const KNOWN_SCHEMES: ColorSchemeName[] = ["default", "blue", "green", "purple", 
 function readCachedScheme(): ColorSchemeName {
   try {
     const value = window.localStorage.getItem(SCHEME_STORAGE_KEY)
-    return KNOWN_SCHEMES.includes(value as ColorSchemeName) ? (value as ColorSchemeName) : "default"
+    return KNOWN_SCHEMES.includes(value as ColorSchemeName) ? (value as ColorSchemeName) : "graphite"
   } catch {
-    return "default"
+    return "graphite"
   }
 }
 
@@ -52,13 +52,12 @@ export const fetchSettings = createAsyncThunk<UserSettings, void, { rejectValue:
   },
 )
 
-export const updateColorScheme = createAsyncThunk<UserSettings, ColorSchemeName, { rejectValue: string }>(
+export const updateColorScheme = createAsyncThunk<void, ColorSchemeName, { rejectValue: string }>(
   "settings/updateColorScheme",
   async (colorScheme, { rejectWithValue }) => {
     try {
-      const settings = await settingsApi.update(colorScheme)
-      cacheScheme(settings.colorScheme)
-      return settings
+      await settingsApi.update(colorScheme)
+      cacheScheme(colorScheme)
     } catch (error) {
       return rejectWithValue(toErrorMessage(error, "Could not save your color scheme."))
     }
@@ -72,6 +71,11 @@ const settingsSlice = createSlice({
     clearSettingsError(state) {
       state.error = null
     },
+    setSettings(state, action: PayloadAction<SettingsModel>) {
+      const scheme = action.payload.colorScheme as ColorSchemeName
+      state.colorScheme = scheme
+      cacheScheme(scheme)
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -96,8 +100,8 @@ const settingsSlice = createSlice({
       })
       .addCase(updateColorScheme.fulfilled, (state, action) => {
         state.status = "succeeded"
-        state.colorScheme = action.payload.colorScheme
-        state.availableColorSchemes = action.payload.availableColorSchemes
+        state.colorScheme = action.meta.arg
+        // state.availableColorSchemes = action.payload.availableColorSchemes
       })
       .addCase(updateColorScheme.rejected, (state, action) => {
         state.error = action.payload ?? "Could not save your color scheme."
@@ -105,5 +109,5 @@ const settingsSlice = createSlice({
   },
 })
 
-export const { clearSettingsError } = settingsSlice.actions
+export const { clearSettingsError, setSettings } = settingsSlice.actions
 export default settingsSlice.reducer

@@ -42,9 +42,17 @@ export function SetTile({ set, onAction, onToggleShuffle }: SetTileProps) {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        transition: "box-shadow 180ms ease, transform 180ms ease, border-color 180ms ease",
-        "&:hover": { boxShadow: 4, transform: "translateY(-2px)", borderColor: "primary.main" },
-        "&:focus-within": { borderColor: "primary.main" },
+        transition:
+          "box-shadow 180ms ease, transform 180ms ease, border-color 180ms ease, background-color 180ms ease",
+        "&:hover": {
+          boxShadow: 4,
+          transform: "translateY(-2px)",
+          borderColor: "primary.main",
+          bgcolor: "action.hover",
+        },
+        "&:focus-within": {
+          borderColor: "primary.main",
+        },
       }}
     >
       <Box sx={{ position: "absolute", top: 6, right: 6, zIndex: 2 }}>
@@ -73,6 +81,9 @@ export function SetTile({ set, onAction, onToggleShuffle }: SetTileProps) {
           alignItems: "center",
           textAlign: "center",
           minHeight: 150,
+          "& .MuiCardActionArea-focusHighlight": {
+            display: "none",
+          },
         }}
       >
         <Typography variant="h6" component="h2" sx={{ lineHeight: 1.3, overflowWrap: "anywhere" }}>

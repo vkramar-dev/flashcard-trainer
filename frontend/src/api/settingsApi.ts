@@ -7,8 +7,7 @@ export const settingsApi = {
     return data
   },
 
-  async update(colorScheme: ColorSchemeName): Promise<UserSettings> {
-    const { data } = await apiClient.put<UserSettings>("/settings", { colorScheme })
-    return data
+  async update(colorScheme: ColorSchemeName): Promise<void> {
+    await apiClient.put("/settings/scheme", null, { params: { scheme: colorScheme } })
   },
 }

@@ -1,5 +1,4 @@
 using KramarDev.FlashcardTrainer.WebAPI;
-using KramarDev.FlashcardTrainer.WebAPI.Database;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,7 +19,8 @@ builder.Services.AddDbContext<FlashcardsDbContext>(opt =>
     {
         sqlOptions.EnableRetryOnFailure();
     });
-});
+},
+contextLifetime: ServiceLifetime.Transient);
 
 builder.Services.AddIdentityCore<IdentityUser>(opt =>
 {
@@ -48,6 +48,7 @@ builder.Services.AddScoped<ISetsService, SetsService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITrainingService, TrainingService>();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+builder.Services.AddScoped<ISettingsService, SettingsService>();
 
 var app = builder.Build();
 
