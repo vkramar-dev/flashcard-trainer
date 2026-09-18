@@ -1,6 +1,6 @@
 ﻿namespace KramarDev.FlashcardTrainer.WebAPI.Models;
 
-public sealed record SetModel
+public record FullSetModel
 {
     public int Id { get; set; }
 

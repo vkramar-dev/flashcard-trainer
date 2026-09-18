@@ -1,10 +1,7 @@
 ﻿namespace KramarDev.FlashcardTrainer.WebAPI.Models;
 
-public class CardModel
+public sealed class ExportCardModel
 {
-    public int? Id { get; set; }
-
     public string Front { get; set; }
-
     public string Back { get; set; }
 }

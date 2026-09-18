@@ -13,14 +13,19 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-builder.Services.AddDbContext<FlashcardsDbContext>(opt =>
+// Register a DbContext factory so we can create short-lived contexts inside
+// execution strategy retries. Uses the same SQL Server options as the regular DbContext.
+builder.Services.AddDbContextFactory<FlashcardsDbContext>(opt =>
 {
     opt.UseSqlServer(connectionString, sqlOptions =>
     {
         sqlOptions.EnableRetryOnFailure();
     });
-},
-contextLifetime: ServiceLifetime.Transient);
+});
+
+builder.Services.AddDbContext<FlashcardsDbContext>(
+    contextLifetime: ServiceLifetime.Transient,
+    optionsLifetime: ServiceLifetime.Singleton);
 
 builder.Services.AddIdentityCore<IdentityUser>(opt =>
 {
@@ -49,6 +54,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITrainingService, TrainingService>();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<ISettingsService, SettingsService>();
+builder.Services.AddScoped<IStatisticsService, StatisticsService>();
 
 var app = builder.Build();
 

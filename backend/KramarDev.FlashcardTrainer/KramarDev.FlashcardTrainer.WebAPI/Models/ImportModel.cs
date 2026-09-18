@@ -1,10 +1,8 @@
 ﻿namespace KramarDev.FlashcardTrainer.WebAPI.Models;
 
-public sealed class SetWithCards
+public sealed class ImportModel
 {
-    public int? Id { get; set; }
-
-    public string Name { get; set; }
+    public bool Append { get; set; }
 
     public CardModel[] Cards { get; set; }
 }

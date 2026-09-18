@@ -2,12 +2,18 @@
 
 public interface ISetsService
 {
-    Task<SetModel[]> GetSetsAsync(string userName,
-        CancellationToken cancellationToken = default);
+    Task<FullSetModel[]> GetSetsAsync(string userName, CT cancellationToken);
 
-    Task<CardModel> GetCardAsync(int cardId,
-        CancellationToken cancellationToken = default);
+    Task<CardModel> GetCardAsync(int cardId, CT cancellationToken);
 
-    Task CreateOrUpdateAsync(SetWithCards set, string userName,
-        CancellationToken cancellationToken = default);
+    Task<FullSetModel> CreateOrUpdateAsync(SetWithCardsModel set, string userName, CT cancellationToken);
+
+    Task<SetWithCardsModel> GetSetWithCardsAsync(string userName, int setId, CT cancellationToken);
+
+    Task<int> DeleteSetAsync(int setId, string userName, CT cancellationToken);
+
+    Task<ImportResultModel> ImportAsync(
+        int setId, bool append, CardModel[] cards, string userName, CT cancellationToken);
+
+    Task<ExportDataModel> ExportAsync(int setId, string userName, CT cancellationToken);
 }

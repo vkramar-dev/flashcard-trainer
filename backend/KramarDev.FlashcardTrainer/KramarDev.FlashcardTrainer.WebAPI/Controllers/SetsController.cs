@@ -9,23 +9,53 @@ public sealed class SetsController(ISetsService setsService) : BaseController
 
     [Authorize]
     [HttpGet("sets")]
-    public async Task<ActionResult<SetModel[]>> Sets(CancellationToken cancellationToken)
+    public async Task<ActionResult<FullSetModel[]>> Sets(CT cancellationToken)
     {
         return Ok(await _setsService.GetSetsAsync(UserName, cancellationToken));
     }
 
     [Authorize]
     [HttpGet("set-with-cards")]
-    public async Task<ActionResult<SetWithCards>> SetWithCards(int setId, bool shuffle, CancellationToken cancellationToken)
+    public async Task<ActionResult<SetWithCardsModel>> SetWithCards(int setId, CT cancellationToken)
     {
-        throw new NotImplementedException();
+        SetWithCardsModel set = await _setsService.GetSetWithCardsAsync(
+            UserName, setId, cancellationToken);
+
+        if (set != null)
+        {
+            return Ok(set);
+        }
+
+        return NotFound();
     }
 
     [Authorize]
     [HttpPost("create-or-update")]
-    public async Task<ActionResult> CreateOrUpdate(SetWithCards setPayload, CancellationToken cancellationToken)
+    public async Task<ActionResult<FullSetModel>> CreateOrUpdate(SetWithCardsModel set, CT cancellationToken)
     {
-        await _setsService.CreateOrUpdateAsync(setPayload, UserName, cancellationToken);
-        return Ok();
+        return Ok(await _setsService.CreateOrUpdateAsync(set, UserName, cancellationToken));
+    }
+
+    [Authorize]
+    [HttpDelete("{setId:int}")]
+    public async Task<ActionResult<int>> Delete(int setId, CT cancellationToken)
+    {
+        return Ok(await _setsService.DeleteSetAsync(setId, UserName, cancellationToken));
+    }
+
+    [Authorize]
+    [HttpPost("{setId:int}/import")]
+    public async Task<ActionResult<ImportResultModel>> Import(
+        int setId, ImportModel importModel, CT cancellationToken)
+    {
+        return Ok(await _setsService.ImportAsync(
+            setId, importModel.Append, importModel.Cards, UserName, cancellationToken));
+    }
+
+    [Authorize]
+    [HttpGet("{setId:int}/export")]
+    public async Task<ActionResult<ExportDataModel>> Export(int setId, CT cancellationToken)
+    {
+        return Ok(await _setsService.ExportAsync(setId, UserName, cancellationToken));
     }
 }

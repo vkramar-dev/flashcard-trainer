@@ -2,9 +2,9 @@
 
 public interface ISettingsService
 {
-    Task<SettingsModel> GetSettingsAsync(string userName, CancellationToken cancellationToken = default);
+    Task<SettingsModel> GetSettingsAsync(string userName, CT cancellationToken);
 
-    Task SetColorSchemeAsync(string schemeName, string userName, CancellationToken cancellationToken = default);
+    Task SetColorSchemeAsync(string schemeName, string userName, CT cancellationToken);
 
-    Task SetHideKnownWordsAsync(bool hideKnownWords, string userName, CancellationToken cancellationToken = default);
+    Task SetHideKnownCardsAsync(bool hideKnownCards, string userName, CT cancellationToken);
 }

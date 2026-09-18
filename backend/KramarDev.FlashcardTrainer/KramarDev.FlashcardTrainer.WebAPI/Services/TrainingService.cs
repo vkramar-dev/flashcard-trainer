@@ -2,23 +2,24 @@
 
 namespace KramarDev.FlashcardTrainer.WebAPI.Services;
 
-public sealed class TrainingService(FlashcardsDbContext Ctx) : ITrainingService
+public sealed class TrainingService(FlashcardsDbContext dbContext) : ITrainingService
 {
-    public async Task AnswerAsync(string userName, int cardId,
-        bool isKnown, CancellationToken cancellationToken = default)
+    readonly FlashcardsDbContext _ctx = dbContext;
+
+    public async Task AnswerAsync(string userName, int cardId, bool isKnown, CT cancellationToken)
     {
         int rowsAffected;
 
         if (isKnown)
         {
-            rowsAffected = await Ctx.Cards
+            rowsAffected = await _ctx.Cards
                 .Where(c => c.Id == cardId && c.ParentSet.UserName == userName)
                 .ExecuteUpdateAsync(setters => setters.SetProperty(c => c.KnowCounter, c => c.KnowCounter + 1),
                     cancellationToken);
         }
         else
         {
-            rowsAffected = await Ctx.Cards
+            rowsAffected = await _ctx.Cards
                 .Where(c => c.Id == cardId && c.ParentSet.UserName == userName)
                 .ExecuteUpdateAsync(setters => setters.SetProperty(c => c.NotKnowCounter, c => c.NotKnowCounter + 1),
                     cancellationToken);
@@ -30,21 +31,20 @@ public sealed class TrainingService(FlashcardsDbContext Ctx) : ITrainingService
         }
     }
 
-    public async Task<CardModel[]> StartAsync(
-        string userName, int setId, CancellationToken cancellationToken = default)
+    public async Task<CardModel[]> StartAsync(string userName, int setId, bool shouldHide, CT cancellationToken)
     {
-        Set set = await (from s in Ctx.Sets.Include(s => s.Cards)
+        Set set = await (from s in _ctx.Sets.Include(s => s.Cards)
                          where s.Id == setId && s.UserName == userName
                          select s).AsNoTracking().SingleOrDefaultAsync(cancellationToken);
 
 
-        return ShapeCards(set.Cards, set.IsShuffled);
+        return ShapeCards(set.Cards, set.IsShuffled, shouldHide);
     }
 
-    private CardModel[] ShapeCards(ICollection<Card> cards, bool shuffle)
+    private CardModel[] ShapeCards(ICollection<Card> cards, bool shuffle, bool shouldHide)
     {
         CardModel[] selectedCards = (from card in cards
-                                     where IsCardSelected(card)
+                                     where !shouldHide || IsCardSelected(card)
                                      select new CardModel
                                      {
                                          Id = card.Id,
@@ -62,6 +62,22 @@ public sealed class TrainingService(FlashcardsDbContext Ctx) : ITrainingService
 
     private bool IsCardSelected(Card card)
     {
+        byte[] arr = GC.AllocateUninitializedArray<byte>(1024, pinned: true);
+
+        byte[] buffer = new byte[1024];
+
+        System.Runtime.InteropServices.GCHandle handle =
+            System.Runtime.InteropServices.GCHandle.Alloc(buffer, System.Runtime.InteropServices.GCHandleType.Pinned);
+
+        try
+        {
+            IntPtr address = handle.AddrOfPinnedObject();
+        }
+        finally
+        {
+            handle.Free();
+        }
+
         int koef = card.KnowCounter / (card.NotKnowCounter + 1);
 
         return Random.Shared.Next(koef) == 0;

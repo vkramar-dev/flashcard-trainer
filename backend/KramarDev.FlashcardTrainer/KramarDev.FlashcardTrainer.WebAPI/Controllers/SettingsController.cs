@@ -9,17 +9,17 @@ public sealed class SettingsController(ISettingsService settingsService) : BaseC
 
     [Authorize]
     [HttpPut("scheme")]
-    public async Task<ActionResult> Scheme(string scheme, CancellationToken cancellationToken)
+    public async Task<ActionResult> Scheme(string scheme, CT cancellationToken)
     {
         await _settingsService.SetColorSchemeAsync(scheme, UserName, cancellationToken);
         return NoContent();
     }
 
     [Authorize]
-    [HttpPut("hide-known-words")]
-    public async Task<ActionResult> HideKnownWords(bool hideKnownWords, CancellationToken cancellationToken)
+    [HttpPut("hide-known-cards")]
+    public async Task<ActionResult> HideKnownCards(bool hideKnownCards, CT cancellationToken)
     {
-        await _settingsService.SetHideKnownWordsAsync(hideKnownWords, UserName, cancellationToken);
+        await _settingsService.SetHideKnownCardsAsync(hideKnownCards, UserName, cancellationToken);
         return NoContent();
     }
 }

@@ -11,11 +11,11 @@ public class AppController(ISetsService setsService, ISettingsService settingsSe
 
     [Authorize]
     [HttpGet("state")]
-    public async Task<ActionResult<AppStateModel>> State(CancellationToken cancellationToken)
+    public async Task<ActionResult<AppStateModel>> State(CT cancellationToken)
     {
         AppStateModel stateModel = new AppStateModel();
 
-        Task<SetModel[]> setsTask = _setsService.GetSetsAsync(UserName, cancellationToken);
+        Task<FullSetModel[]> setsTask = _setsService.GetSetsAsync(UserName, cancellationToken);
         Task<SettingsModel> settingsTask = _settingsService.GetSettingsAsync(UserName, cancellationToken);
         stateModel.UserName = UserName;
 

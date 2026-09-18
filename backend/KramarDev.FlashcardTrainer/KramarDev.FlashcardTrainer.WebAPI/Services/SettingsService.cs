@@ -2,14 +2,15 @@
 
 namespace KramarDev.FlashcardTrainer.WebAPI.Services;
 
-public sealed class SettingsService(FlashcardsDbContext Ctx) : ISettingsService
+public sealed class SettingsService(FlashcardsDbContext dbContext) : ISettingsService
 {
+    readonly FlashcardsDbContext _ctx = dbContext;
     const string DefaultColorScheme = "graphite";
     const bool DefaultHideKnownCards = true;
 
-    public async Task<SettingsModel> GetSettingsAsync(string userName, CancellationToken cancellationToken = default)
+    public async Task<SettingsModel> GetSettingsAsync(string userName, CT cancellationToken)
     {
-        var settings = await Ctx.Settings
+        var settings = await _ctx.Settings
             .AsNoTracking()
             .FirstOrDefaultAsync(s => s.UserName == userName, cancellationToken);
 
@@ -22,8 +23,8 @@ public sealed class SettingsService(FlashcardsDbContext Ctx) : ISettingsService
                 HideKnownCards = DefaultHideKnownCards
             };
 
-            Ctx.Settings.Add(newSettings);
-            await Ctx.SaveChangesAsync(cancellationToken);
+            _ctx.Settings.Add(newSettings);
+            await _ctx.SaveChangesAsync(cancellationToken);
 
             return new SettingsModel
             {
@@ -39,9 +40,9 @@ public sealed class SettingsService(FlashcardsDbContext Ctx) : ISettingsService
         };
     }
 
-    public async Task SetColorSchemeAsync(string schemeName, string userName, CancellationToken cancellationToken = default)
+    public async Task SetColorSchemeAsync(string schemeName, string userName, CT cancellationToken)
     {
-        int rows = await Ctx.Settings
+        int rows = await _ctx.Settings
             .Where(s => s.UserName == userName)
             .ExecuteUpdateAsync(setters => setters.SetProperty(s => s.ColorScheme, _ => schemeName),
                 cancellationToken);
@@ -55,16 +56,16 @@ public sealed class SettingsService(FlashcardsDbContext Ctx) : ISettingsService
                 HideKnownCards = DefaultHideKnownCards
             };
 
-            Ctx.Settings.Add(newSettings);
-            await Ctx.SaveChangesAsync(cancellationToken);
+            _ctx.Settings.Add(newSettings);
+            await _ctx.SaveChangesAsync(cancellationToken);
         }
     }
 
-    public async Task SetHideKnownWordsAsync(bool hideKnownWords, string userName, CancellationToken cancellationToken = default)
+    public async Task SetHideKnownCardsAsync(bool hideKnownCards, string userName, CT cancellationToken)
     {
-        int rows = await Ctx.Settings
+        int rows = await _ctx.Settings
             .Where(s => s.UserName == userName)
-            .ExecuteUpdateAsync(setters => setters.SetProperty(s => s.HideKnownCards, _ => hideKnownWords),
+            .ExecuteUpdateAsync(setters => setters.SetProperty(s => s.HideKnownCards, _ => hideKnownCards),
                 cancellationToken);
 
         if (rows == 0)
@@ -73,11 +74,11 @@ public sealed class SettingsService(FlashcardsDbContext Ctx) : ISettingsService
             {
                 UserName = userName,
                 ColorScheme = DefaultColorScheme,
-                HideKnownCards = hideKnownWords
+                HideKnownCards = hideKnownCards
             };
 
-            Ctx.Settings.Add(newSettings);
-            await Ctx.SaveChangesAsync(cancellationToken);
+            _ctx.Settings.Add(newSettings);
+            await _ctx.SaveChangesAsync(cancellationToken);
         }
     }
 }
