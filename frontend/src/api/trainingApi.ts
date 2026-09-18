@@ -1,18 +1,11 @@
 import { apiClient } from "./client"
-import type { CardData, TrainingCard, TrainingResult, TrainingSession } from "../types"
+import type { CardData, TrainingCard, TrainingResult } from "../types"
 
 export const trainingApi = {
-  async startSession(setId: number): Promise<TrainingSession> {
-    const { data } = await apiClient.post<TrainingSession>(
-      "/training/sessions",
-      { setId },
-    );
-    return data;
-  },
 
-  async start(setId: number): Promise<CardData[]> {
+  async start(setId: number, shouldHide: boolean): Promise<CardData[]> {
     const { data } = await apiClient.get<CardData[]>(
-      `/training/start?setId=${setId}`,
+      `/training/start?setId=${setId}&shouldHide=${shouldHide}`,
     );
     return data;
   },

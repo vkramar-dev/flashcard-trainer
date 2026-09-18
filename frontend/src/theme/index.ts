@@ -209,7 +209,7 @@ export function getTheme(name: ColorSchemeName): Theme {
   const cached = themeCache.get(name)
   if (cached) return cached
 
-  const scheme = colorSchemes[name] ?? colorSchemes.default
+  const scheme = colorSchemes[name] ?? colorSchemes.graphite
   const theme = createTheme(buildOptions(scheme))
   themeCache.set(name, theme)
   return theme
@@ -217,5 +217,5 @@ export function getTheme(name: ColorSchemeName): Theme {
 
 /** Exposed so pages can reuse the scheme backdrop tone without re-deriving it. */
 export function getBackdropColor(name: ColorSchemeName): string {
-  return (colorSchemes[name] ?? colorSchemes.default).backdrop
+  return (colorSchemes[name] ?? colorSchemes.graphite).backdrop
 }

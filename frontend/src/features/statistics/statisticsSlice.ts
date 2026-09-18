@@ -1,11 +1,11 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit"
 import { toErrorMessage } from "../../api/client"
 import { statisticsApi } from "../../api/statisticsApi"
-import type { RequestStatus, SetStatistics } from "../../types"
+import type { RequestStatus, SetStatisticsModel } from "../../types"
 
 interface StatisticsState {
   /** Values come straight from the backend, including the hardest-card ranking. */
-  bySet: SetStatistics[]
+  bySet: SetStatisticsModel[]
   status: RequestStatus
   error: string | null
   /** Set to scroll to and highlight when arriving from a set menu. */
@@ -19,11 +19,11 @@ const initialState: StatisticsState = {
   highlightedSetId: null,
 }
 
-export const fetchStatistics = createAsyncThunk<SetStatistics[], void, { rejectValue: string }>(
+export const fetchStatistics = createAsyncThunk<SetStatisticsModel[], void, { rejectValue: string }>(
   "statistics/fetchAll",
   async (_, { rejectWithValue }) => {
     try {
-      return await statisticsApi.fetchAll()
+      return await statisticsApi.getStatistics()
     } catch (error) {
       return rejectWithValue(toErrorMessage(error, "Could not load your statistics."))
     }

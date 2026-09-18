@@ -5,7 +5,7 @@ export interface AuthResponse {
   email: string
 }
 
-export interface Credentials {
+export interface LoginModel {
   email: string
   password: string
 }
@@ -18,31 +18,31 @@ export interface CardData {
 }
 
 /** Tile representation on the Home page. */
-export interface SetSummary {
+export interface SetModel {
   id: number
   name: string
   shuffle: boolean
   totalCards: number
   learntCards: number
+  created: string
   modified: string
-  created: string | null
 }
 
-export interface SetDetail extends SetSummary {
+export interface SetDetail extends SetModel {
   cards: CardData[]
 }
 
 /** Payload used for create/update: new cards have a null id. */
-export interface CardPayload {
+export interface CardModel {
   id: number | null
   front: string
   back: string
 }
 
-export interface SetPayload {
+export interface SetWithCardsModel {
   id: number | null
   name: string
-  cards: CardPayload[]
+  cards: CardModel[]
 }
 
 export type ImportMode = "append" | "replace"
@@ -63,14 +63,6 @@ export interface ExportData {
   cards: Array<{ front: string; back: string }>
 }
 
-export interface TrainingSession {
-  setId: number
-  setName: string
-  shuffle: boolean
-  /** Ordered by the backend. The frontend must not reorder these. */
-  cardIds: number[]
-}
-
 export interface TrainingCard {
   id: number
   setId: number
@@ -84,14 +76,12 @@ export interface TrainingResult {
   learnt: boolean
 }
 
-export interface HardestCard {
+export interface FullCardModel {
   id: number
   front: string
   back: string
   unknownCount: number
   shownCount: number
-  /** Share of views answered with "I don't know", between 0 and 1. */
-  missRate: number
 }
 
 /**
@@ -104,13 +94,13 @@ export interface StoredTrainingProgress {
   currentIndex: number
 }
 
-export interface SetStatistics {
+export interface SetStatisticsModel {
   setId: number
   setName: string
   totalCards: number
   learntCards: number
   totalCardsShown: number
-  hardestCards: HardestCard[]
+  hardestCards: FullCardModel[]
 }
 
 export interface SettingsModel {
@@ -119,7 +109,7 @@ export interface SettingsModel {
 }
 
 export interface AppStateModel {
-  sets: SetSummary[]
+  sets: SetModel[]
   userName: string
   settings: SettingsModel
 }

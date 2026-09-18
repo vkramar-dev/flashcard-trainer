@@ -7,14 +7,14 @@ import type {
   ImportResult,
   RequestStatus,
   SetDetail,
-  SetPayload,
-  SetSummary,
+  SetWithCardsModel,
+  SetModel,
 } from "../../types"
 
 interface SetsState {
-  items: SetSummary[]
+  items: SetModel[]
   /** Full detail of the set currently being edited. */
-  selectedSet: SetDetail | null
+  selectedSet: SetWithCardsModel | null
   status: RequestStatus
   error: string | null
   /** Status of create/update/delete/shuffle/import operations. */
@@ -36,7 +36,7 @@ const initialState: SetsState = {
   notice: null,
 }
 
-export const fetchSets = createAsyncThunk<SetSummary[], void, { rejectValue: string }>(
+export const fetchSets = createAsyncThunk<SetModel[], void, { rejectValue: string }>(
   "sets/fetchAll",
   async (_, { rejectWithValue }) => {
     try {
@@ -47,7 +47,7 @@ export const fetchSets = createAsyncThunk<SetSummary[], void, { rejectValue: str
   },
 )
 
-export const fetchSet = createAsyncThunk<SetDetail, number, { rejectValue: string }>(
+export const fetchSet = createAsyncThunk<SetWithCardsModel, number, { rejectValue: string }>(
   "sets/fetchOne",
   async (setId, { rejectWithValue }) => {
     try {
@@ -58,7 +58,7 @@ export const fetchSet = createAsyncThunk<SetDetail, number, { rejectValue: strin
   },
 )
 
-export const createSet = createAsyncThunk<SetDetail, SetPayload, { rejectValue: string }>(
+export const createSet = createAsyncThunk<SetModel, SetWithCardsModel, { rejectValue: string }>(
   "sets/create",
   async (payload, { rejectWithValue }) => {
     try {
@@ -69,30 +69,29 @@ export const createSet = createAsyncThunk<SetDetail, SetPayload, { rejectValue: 
   },
 )
 
-export const updateSet = createAsyncThunk<SetDetail, { setId: number; payload: SetPayload }, { rejectValue: string }>(
+export const updateSet = createAsyncThunk<SetModel, SetWithCardsModel, { rejectValue: string }>(
   "sets/update",
-  async ({ setId, payload }, { rejectWithValue }) => {
+  async (payload, { rejectWithValue }) => {
     try {
-      return await setsApi.update(setId, payload)
+      return await setsApi.create(payload)
     } catch (error) {
       return rejectWithValue(toErrorMessage(error, "Could not save the set."))
     }
   },
 )
 
-export const removeSet = createAsyncThunk<number, number, { rejectValue: string }>(
-  "sets/remove",
+export const deleteSet = createAsyncThunk<void, number, { rejectValue: string }>(
+  "sets/delete",
   async (setId, { rejectWithValue }) => {
     try {
-      await setsApi.remove(setId)
-      return setId
+      await setsApi.delete(setId)
     } catch (error) {
       return rejectWithValue(toErrorMessage(error, "Could not remove the set."))
     }
   },
 )
 
-export const toggleShuffle = createAsyncThunk<SetSummary, { setId: number; shuffle: boolean }, { rejectValue: string }>(
+export const toggleShuffle = createAsyncThunk<SetModel, { setId: number; shuffle: boolean }, { rejectValue: string }>(
   "sets/toggleShuffle",
   async ({ setId, shuffle }, { rejectWithValue }) => {
     try {
@@ -125,13 +124,13 @@ export const exportSet = createAsyncThunk<ExportData, number, { rejectValue: str
   },
 )
 
-function toSummary(detail: SetDetail): SetSummary {
+function toSummary(detail: SetDetail): SetModel {
   const { cards, ...summary } = detail
   void cards
   return summary
 }
 
-function upsertSummary(items: SetSummary[], summary: SetSummary): SetSummary[] {
+function upsertSummary(items: SetModel[], summary: SetModel): SetModel[] {
   const index = items.findIndex((item) => item.id === summary.id)
   if (index === -1) return [...items, summary]
   const next = items.slice()
@@ -163,7 +162,7 @@ const setsSlice = createSlice({
       state.error = null
       state.saveError = null
     },
-    initState(state, action: PayloadAction<SetSummary[]>) {
+    initState(state, action: PayloadAction<SetModel[]>) {
       state.items = action.payload
       state.selectedSet = null
       state.importSetId = null
@@ -208,8 +207,18 @@ const setsSlice = createSlice({
       })
       .addCase(createSet.fulfilled, (state, action) => {
         state.saveStatus = "succeeded"
-        state.selectedSet = action.payload
-        state.items = upsertSummary(state.items, toSummary(action.payload))
+        state.selectedSet = null
+        let isFound = false
+        for (let i = 0; i < state.items.length; i++) {
+          if (state.items[i].id === action.payload.id) {
+            state.items[i] = action.payload
+            isFound = true
+            break
+          }
+        }
+        if (!isFound) {
+          state.items = state.items.concat(action.payload)
+        }
         state.notice = "Set created."
       })
       .addCase(createSet.rejected, (state, action) => {
@@ -223,8 +232,19 @@ const setsSlice = createSlice({
       })
       .addCase(updateSet.fulfilled, (state, action) => {
         state.saveStatus = "succeeded"
-        state.selectedSet = action.payload
-        state.items = upsertSummary(state.items, toSummary(action.payload))
+        state.selectedSet = null
+
+        let isFound = false
+        for (let i = 0; i < state.items.length; i++) {
+          if (state.items[i].id === action.payload.id) {
+            state.items[i] = action.payload
+            isFound = true
+            break
+          }
+        }
+        if (!isFound) {
+          state.items = state.items.concat(action.payload)
+        }
         state.notice = "Changes saved."
       })
       .addCase(updateSet.rejected, (state, action) => {
@@ -232,16 +252,16 @@ const setsSlice = createSlice({
         state.saveError = action.payload ?? "Could not save the set."
       })
 
-      .addCase(removeSet.pending, (state) => {
+      .addCase(deleteSet.pending, (state) => {
         state.saveStatus = "loading"
         state.saveError = null
       })
-      .addCase(removeSet.fulfilled, (state, action) => {
+      .addCase(deleteSet.fulfilled, (state, action) => {
         state.saveStatus = "succeeded"
-        state.items = state.items.filter((item) => item.id !== action.payload)
+        state.items = state.items.filter((item) => item.id !== action.meta.arg)
         state.notice = "Set removed."
       })
-      .addCase(removeSet.rejected, (state, action) => {
+      .addCase(deleteSet.rejected, (state, action) => {
         state.saveStatus = "failed"
         state.saveError = action.payload ?? "Could not remove the set."
       })

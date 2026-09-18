@@ -15,11 +15,11 @@ import {
   fetchSets,
   importCards,
   openImportDialog,
-  removeSet,
+  deleteSet,
   toggleShuffle,
 } from "../features/sets/setsSlice"
 import { useAppDispatch, useAppSelector } from "../store/hooks"
-import type { ImportMode, SetSummary } from "../types"
+import type { ImportMode, SetModel } from "../types"
 import { downloadCsv, toCardsCsv, toCsvFileName, type CsvCard } from "../utils/csv"
 import { startTraining } from "@/features/training/trainingSlice"
 
@@ -27,13 +27,9 @@ export default function HomePage() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const { items, status, error, saveStatus, saveError, importSetId, notice } = useAppSelector((state) => state.sets)
+  const { hideKnownCards } = useAppSelector((state) => state.settings)
   const { isAuthenticated, sessionChecked } = useAppSelector((state) => state.auth)
-  const [pendingRemoval, setPendingRemoval] = useState<SetSummary | null>(null)
-
-  // useEffect(() => {
-  //   if (!isAuthenticated) return
-  //   dispatch(fetchSets())
-  // }, [dispatch, isAuthenticated])
+  const [pendingRemoval, setPendingRemoval] = useState<SetModel | null>(null)
 
   if (!isAuthenticated) {
     return (
@@ -60,17 +56,17 @@ export default function HomePage() {
 
   const importTarget = items.find((item) => item.id === importSetId) ?? null
 
-  const handleExport = async (set: SetSummary) => {
+  const handleExport = async (set: SetModel) => {
     const result = await dispatch(exportSet(set.id))
     if (exportSet.fulfilled.match(result)) {
       downloadCsv(toCsvFileName(result.payload.name), toCardsCsv(result.payload.cards))
     }
   }
 
-  const handleAction = (action: SetTileAction, set: SetSummary) => {
+  const handleAction = (action: SetTileAction, set: SetModel) => {
     switch (action) {
       case "start":
-        dispatch(startTraining(set.id)).unwrap()
+        dispatch(startTraining({ setId: set.id, shouldHide: hideKnownCards })).unwrap()
         navigate(`/set/${set.id}/train`)
         break
       case "edit":
@@ -98,8 +94,8 @@ export default function HomePage() {
 
   const confirmRemoval = async () => {
     if (!pendingRemoval) return
-    const result = await dispatch(removeSet(pendingRemoval.id))
-    if (removeSet.fulfilled.match(result)) setPendingRemoval(null)
+    const result = await dispatch(deleteSet(pendingRemoval.id))
+    if (deleteSet.fulfilled.match(result)) setPendingRemoval(null)
   }
 
   const newSetButton = (

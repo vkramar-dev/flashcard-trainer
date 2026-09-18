@@ -1,9 +1,9 @@
 import { apiClient } from "./client"
-import type { SetStatistics } from "../types"
+import type { SetStatisticsModel } from "../types"
 
 export const statisticsApi = {
-  async fetchAll(): Promise<SetStatistics[]> {
-    const { data } = await apiClient.get<SetStatistics[]>("/statistics")
+  async getStatistics(): Promise<SetStatisticsModel[]> {
+    const { data } = await apiClient.get<SetStatisticsModel[]>("/statistics/statistics")
     return data
   },
 }

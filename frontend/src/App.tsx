@@ -23,10 +23,9 @@ export default function App() {
     }
   }, [dispatch])
 
-  // Settings live on the account, so they are only loaded once a session exists.
   useEffect(() => {
     if (!isAuthenticated) return
-    debugger;
+    
     appApi.getState().then((data) => {
       dispatch(initState(data.sets))
       dispatch(setSettings(data.settings))

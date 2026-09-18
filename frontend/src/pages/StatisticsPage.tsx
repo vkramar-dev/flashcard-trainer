@@ -20,7 +20,7 @@ import { EmptyState, ErrorState, LoadingState } from "../components/StateViews"
 import { SignedOutNotice } from "../features/auth/SignedOutNotice"
 import { fetchStatistics } from "../features/statistics/statisticsSlice"
 import { useAppDispatch, useAppSelector } from "../store/hooks"
-import type { SetStatistics } from "../types"
+import type { SetStatisticsModel } from "../types"
 
 function Metric({ label, value }: { label: string; value: string | number }) {
   return (
@@ -35,7 +35,7 @@ function Metric({ label, value }: { label: string; value: string | number }) {
   )
 }
 
-function SetStatisticsCard({ stats, highlighted }: { stats: SetStatistics; highlighted: boolean }) {
+function SetStatisticsCard({ stats, highlighted }: { stats: SetStatisticsModel; highlighted: boolean }) {
   const percent = stats.totalCards > 0 ? Math.round((stats.learntCards / stats.totalCards) * 100) : 0
 
   return (
@@ -95,7 +95,7 @@ function SetStatisticsCard({ stats, highlighted }: { stats: SetStatistics; highl
                       {card.unknownCount} / {card.shownCount}
                     </TableCell>
                     <TableCell align="right" sx={{ fontVariantNumeric: "tabular-nums", fontWeight: 600 }}>
-                      {Math.round(card.missRate * 100)}%
+                      {Math.round(card.unknownCount * 100 / card.shownCount)}%
                     </TableCell>
                   </TableRow>
                 ))}

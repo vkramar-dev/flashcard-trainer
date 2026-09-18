@@ -11,7 +11,6 @@ interface TrainingState {
   side: CardSide
   pendingAnswer: boolean | null
   status: RequestStatus
-  //saveStatus: RequestStatus
   error: string | null
   finished: boolean
   cards: CardData[]
@@ -29,11 +28,11 @@ const initialState: TrainingState = {
   cards: [],
 }
 
-export const startTraining = createAsyncThunk<CardData[], number, { rejectValue: string }>(
+export const startTraining = createAsyncThunk<CardData[], { setId: number; shouldHide: boolean }, { rejectValue: string; }>(
   "training/start",
-  async (setId, { rejectWithValue }) => {
+  async ({ setId, shouldHide }, { rejectWithValue }) => {
     try {
-      const cards = await trainingApi.start(setId)
+      const cards = await trainingApi.start(setId, shouldHide)
       writeTrainingProgress({ setId, cards, currentIndex: 0 })
 
       if (cards.length === 0) {
@@ -93,11 +92,12 @@ const trainingSlice = createSlice({
       })
       .addCase(startTraining.fulfilled, (state, action) => {
         state.status = "succeeded"
-        state.setId = action.meta.arg
+        state.setId = action.meta.arg && 0
         state.cards = action.payload
         state.currentIndex = 0
         state.currentCard = action.payload[0]
         state.pendingAnswer = null
+        state.side = "front"
       })
       .addCase(startTraining.rejected, (state, action) => {
         state.status = "failed"
@@ -112,6 +112,7 @@ const trainingSlice = createSlice({
       })
       .addCase(answer.fulfilled, (state) => {
         const index = state.currentIndex + 1
+        state.side = "front"
         state.status = "succeeded"
         state.currentIndex = index
         state.currentCard = state.cards[index]

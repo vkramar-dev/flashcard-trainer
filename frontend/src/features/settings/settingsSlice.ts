@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit"
 import { toErrorMessage } from "../../api/client"
 import { settingsApi } from "../../api/settingsApi"
-import type { ColorSchemeName, RequestStatus, SettingsModel, UserSettings } from "../../types"
+import type { ColorSchemeName, RequestStatus, SettingsModel } from "../../types"
 
 const SCHEME_STORAGE_KEY = "flashcard-trainer.colorScheme"
 const KNOWN_SCHEMES: ColorSchemeName[] = ["graphite", "coastal", "porcelain", "mist", "slate", "espresso", "indigo", "midnight", "forest"]
@@ -30,6 +30,7 @@ function cacheScheme(scheme: ColorSchemeName): void {
 interface SettingsState {
   colorScheme: ColorSchemeName
   availableColorSchemes: ColorSchemeName[]
+  hideKnownCards: boolean
   status: RequestStatus
   error: string | null
 }
@@ -37,20 +38,10 @@ interface SettingsState {
 const initialState: SettingsState = {
   colorScheme: readCachedScheme(),
   availableColorSchemes: KNOWN_SCHEMES,
+  hideKnownCards: true,
   status: "idle",
   error: null,
 }
-
-export const fetchSettings = createAsyncThunk<UserSettings, void, { rejectValue: string }>(
-  "settings/fetch",
-  async (_, { rejectWithValue }) => {
-    try {
-      return await settingsApi.fetch()
-    } catch (error) {
-      return rejectWithValue(toErrorMessage(error, "Could not load your settings."))
-    }
-  },
-)
 
 export const updateColorScheme = createAsyncThunk<void, ColorSchemeName, { rejectValue: string }>(
   "settings/updateColorScheme",
@@ -58,6 +49,17 @@ export const updateColorScheme = createAsyncThunk<void, ColorSchemeName, { rejec
     try {
       await settingsApi.update(colorScheme)
       cacheScheme(colorScheme)
+    } catch (error) {
+      return rejectWithValue(toErrorMessage(error, "Could not save your color scheme."))
+    }
+  },
+)
+
+export const updateHideKnownCards = createAsyncThunk<void, boolean, { rejectValue: string }>(
+  "settings/updateHideKnownCards",
+  async (hide, { rejectWithValue }) => {
+    try {
+      await settingsApi.updateHideKnownCards(hide)
     } catch (error) {
       return rejectWithValue(toErrorMessage(error, "Could not save your color scheme."))
     }
@@ -79,20 +81,6 @@ const settingsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchSettings.pending, (state) => {
-        state.status = "loading"
-      })
-      .addCase(fetchSettings.fulfilled, (state, action) => {
-        state.status = "succeeded"
-        state.colorScheme = action.payload.colorScheme
-        state.availableColorSchemes = action.payload.availableColorSchemes
-        cacheScheme(action.payload.colorScheme)
-      })
-      .addCase(fetchSettings.rejected, (state, action) => {
-        state.status = "failed"
-        state.error = action.payload ?? "Could not load your settings."
-      })
-
       .addCase(updateColorScheme.pending, (state, action) => {
         // Applied straight away so switching schemes feels instant.
         state.colorScheme = action.meta.arg
@@ -105,6 +93,17 @@ const settingsSlice = createSlice({
       })
       .addCase(updateColorScheme.rejected, (state, action) => {
         state.error = action.payload ?? "Could not save your color scheme."
+      })
+
+      .addCase(updateHideKnownCards.pending, (state) => {
+        state.error = null
+      })
+      .addCase(updateHideKnownCards.fulfilled, (state, action) => {
+        state.status = "succeeded"
+        state.hideKnownCards = action.meta.arg
+      })
+      .addCase(updateHideKnownCards.rejected, (state, action) => {
+        state.error = action.payload ?? "Could not save your settings."
       })
   },
 })

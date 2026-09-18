@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit"
 import { authApi } from "../../api/authApi"
 import { readStoredToken, setAuthToken, toErrorMessage } from "../../api/client"
-import type { AuthResponse, Credentials, RequestStatus } from "../../types"
+import type { AuthResponse, LoginModel, RequestStatus } from "../../types"
 
 export type AuthDialogView = "signIn" | "signUp" | null
 
@@ -25,7 +25,7 @@ const initialState: AuthState = {
   sessionChecked: false,
 }
 
-export const signUp = createAsyncThunk<AuthResponse, Credentials, { rejectValue: string }>(
+export const signUp = createAsyncThunk<AuthResponse, LoginModel, { rejectValue: string }>(
   "auth/signUp",
   async (credentials, { rejectWithValue }) => {
     try {
@@ -38,7 +38,7 @@ export const signUp = createAsyncThunk<AuthResponse, Credentials, { rejectValue:
   },
 )
 
-export const signIn = createAsyncThunk<AuthResponse, Credentials, { rejectValue: string }>(
+export const signIn = createAsyncThunk<AuthResponse, LoginModel, { rejectValue: string }>(
   "auth/signIn",
   async (credentials, { rejectWithValue }) => {
     try {
@@ -64,7 +64,6 @@ export const signOut = createAsyncThunk<void, void, { rejectValue: string }>(
   },
 )
 
-/** Restores the session on application start when a token is already stored. */
 export const restoreSession = createAsyncThunk<AuthResponse | null, void>("auth/restoreSession", async () => {
   if (!readStoredToken()) return null
   try {

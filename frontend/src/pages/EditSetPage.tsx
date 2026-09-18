@@ -6,9 +6,9 @@ import { useNavigate, useParams } from "react-router-dom"
 import { ConfirmDialog } from "../components/ConfirmDialog"
 import { PageContainer } from "../components/PageContainer"
 import { ErrorState, LoadingState } from "../components/StateViews"
-import { clearSelectedSet, createSet, fetchSet, updateSet } from "../features/sets/setsSlice"
+import { clearSelectedSet, createSet, fetchSet } from "../features/sets/setsSlice"
 import { useAppDispatch, useAppSelector } from "../store/hooks"
-import type { CardPayload } from "../types"
+import type { CardModel } from "../types"
 
 /** A card row held in local component state while editing. */
 interface DraftCard {
@@ -115,7 +115,7 @@ export default function EditSetPage() {
     const payload = {
       id: setId,
       name: name.trim(),
-      cards: filledCards.map<CardPayload>((card) => ({
+      cards: filledCards.map<CardModel>((card) => ({
         id: card.id,
         front: card.front.trim(),
         back: card.back.trim(),
@@ -124,16 +124,6 @@ export default function EditSetPage() {
 
     await dispatch(createSet(payload)).unwrap()
     navigate("/")
-      // setId === null
-      //   ? await dispatch(createSet(payload))
-      //   : await dispatch(updateSet({ setId, payload }))
-
-    // if (createSet.fulfilled.match(result) || updateSet.fulfilled.match(result)) {
-    //   // Mark as saved so the navigation guard does not fire.
-    //   savedRef.current = true
-    //   baseline.current = snapshot(result.payload.name, cards)
-    //   navigate("/")
-    // }
   }
 
   const requestLeave = () => {
