@@ -22,7 +22,6 @@ const faceStyles = {
 /** A flashcard that rotates in 3D between its front and back side when activated. */
 export function FlipCard({ front, back, side, onFlip }: FlipCardProps) {
   const flipped = side === "back"
-console.log(`Flipped: ${flipped}, Side: ${side}`)
   return (
     <Box
       role="button"
@@ -57,7 +56,12 @@ console.log(`Flipped: ${flipped}, Side: ${side}`)
           aria-hidden={flipped}
           sx={{ ...faceStyles, bgcolor: "background.paper" }}
         >
-          <Typography variant="h4" component="p" align="center" sx={{ overflowWrap: "anywhere" }}>
+          <Typography
+            variant="h4"
+            component="p"
+            align="center"
+            sx={{ overflowWrap: "anywhere", whiteSpace: "pre-wrap" }}
+          >
             {front}
           </Typography>
         </Paper>
@@ -73,7 +77,12 @@ console.log(`Flipped: ${flipped}, Side: ${side}`)
             borderColor: "primary.main",
           }}
         >
-          <Typography variant="h4" component="p" align="center" sx={{ overflowWrap: "anywhere" }}>
+          <Typography
+            variant="h4"
+            component="p"
+            align="center"
+            sx={{ overflowWrap: "anywhere", whiteSpace: "pre-wrap" }}
+          >
             {back}
           </Typography>
         </Paper>
