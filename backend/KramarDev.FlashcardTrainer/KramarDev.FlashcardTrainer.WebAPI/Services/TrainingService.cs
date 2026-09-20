@@ -35,8 +35,7 @@ public sealed class TrainingService(FlashcardsDbContext dbContext) : ITrainingSe
     {
         Set set = await (from s in _ctx.Sets.Include(s => s.Cards)
                          where s.Id == setId && s.UserName == userName
-                         select s).AsNoTracking().SingleOrDefaultAsync(cancellationToken);
-
+                         select s).AsNoTracking().SingleAsync(cancellationToken);
 
         return ShapeCards(set.Cards, set.IsShuffled, shouldHide);
     }
