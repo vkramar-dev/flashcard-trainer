@@ -2,11 +2,11 @@
 
 namespace KramarDev.FlashcardTrainer.WebAPI.Models;
 
-public sealed record RegisterModel
+public sealed record AuthModel
 {
     [Required]
     [EmailAddress]
-    [StringLength(255)]
+    [StringLength(255, MinimumLength = 6)]
     public string Email { get; init; }
 
     [Required]

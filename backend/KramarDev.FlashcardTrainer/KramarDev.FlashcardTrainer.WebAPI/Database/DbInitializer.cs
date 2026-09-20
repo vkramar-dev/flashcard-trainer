@@ -16,7 +16,22 @@ public static class DbInitializer
         await dbCtx.Database.MigrateAsync(cancellationToken);
 
         var userManager = scope.ServiceProvider
-       .GetRequiredService<UserManager<IdentityUser>>();
+            .GetRequiredService<UserManager<IdentityUser>>();
+
+        var roleManager = scope.ServiceProvider
+            .GetRequiredService<RoleManager<IdentityRole>>();
+
+        if (!await roleManager.RoleExistsAsync(Constants.UserRole))
+        {
+            await roleManager.CreateAsync(
+                new IdentityRole(Constants.UserRole));
+        }
+
+        if (!await roleManager.RoleExistsAsync(Constants.PowerUserRole))
+        {
+            await roleManager.CreateAsync(
+                new IdentityRole(Constants.PowerUserRole));
+        }
 
         var user1 = await userManager.FindByNameAsync("user17");
 

@@ -62,22 +62,6 @@ public sealed class TrainingService(FlashcardsDbContext dbContext) : ITrainingSe
 
     private bool IsCardSelected(Card card)
     {
-        byte[] arr = GC.AllocateUninitializedArray<byte>(1024, pinned: true);
-
-        byte[] buffer = new byte[1024];
-
-        System.Runtime.InteropServices.GCHandle handle =
-            System.Runtime.InteropServices.GCHandle.Alloc(buffer, System.Runtime.InteropServices.GCHandleType.Pinned);
-
-        try
-        {
-            IntPtr address = handle.AddrOfPinnedObject();
-        }
-        finally
-        {
-            handle.Free();
-        }
-
         int koef = card.KnowCounter / (card.NotKnowCounter + 1);
 
         return Random.Shared.Next(koef) == 0;

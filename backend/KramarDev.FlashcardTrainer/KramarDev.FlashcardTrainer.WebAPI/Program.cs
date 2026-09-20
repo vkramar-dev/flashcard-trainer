@@ -42,7 +42,11 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder =>
     {
-        builder.WithOrigins("http://localhost:3000", "http://192.168.1.3:3000")
+        builder.WithOrigins(
+            "http://localhost:3000",
+            "http://192.168.1.3:3000",
+            "http://localhost:5173",
+            "https://askold-002-site2.ltempurl.com")
                .AllowAnyMethod()
                .AllowAnyHeader();
     });
@@ -69,12 +73,10 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseCors();
-
 app.UseHttpsRedirection();
-
+app.UseCors();
+app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 using (var scope = app.Services.CreateScope())

@@ -22,7 +22,7 @@ public sealed class AuthService(
         };
     }
 
-    public async Task<UserModel> LoginAsync(LoginModel login)
+    public async Task<UserModel> LoginAsync(AuthModel login)
     {
         var user = await _userManager.FindByNameAsync(login.Email);
 
@@ -36,7 +36,7 @@ public sealed class AuthService(
     }
 
     public async Task<ServiceResult<UserModel>> RegisterAsync(
-        RegisterModel register)
+        AuthModel register)
     {
         var user = new IdentityUser
         {

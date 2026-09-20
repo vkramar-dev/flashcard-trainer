@@ -4,7 +4,7 @@ public interface IAuthService
 {
     Task<UserModel> GetUserAsync(string userName);
 
-    Task<UserModel> LoginAsync(LoginModel login);
+    Task<UserModel> LoginAsync(AuthModel login);
 
-    Task<ServiceResult<UserModel>> RegisterAsync(RegisterModel register);
+    Task<ServiceResult<UserModel>> RegisterAsync(AuthModel register);
 }
