@@ -2,17 +2,17 @@ import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/tool
 import { setsApi } from "../../api/setsApi"
 import { toErrorMessage } from "../../api/client"
 import type {
-  ExportData,
+  ExportDataModel,
   ImportPayload,
-  ImportResult,
+  ImportResultModel,
   RequestStatus,
   SetDetail,
   SetWithCardsModel,
-  SetModel,
+  FullSetModel,
 } from "../../types"
 
 interface SetsState {
-  items: SetModel[]
+  items: FullSetModel[]
   /** Full detail of the set currently being edited. */
   selectedSet: SetWithCardsModel | null
   status: RequestStatus
@@ -36,7 +36,7 @@ const initialState: SetsState = {
   notice: null,
 }
 
-export const fetchSets = createAsyncThunk<SetModel[], void, { rejectValue: string }>(
+export const fetchSets = createAsyncThunk<FullSetModel[], void, { rejectValue: string }>(
   "sets/fetchAll",
   async (_, { rejectWithValue }) => {
     try {
@@ -58,7 +58,7 @@ export const fetchSet = createAsyncThunk<SetWithCardsModel, number, { rejectValu
   },
 )
 
-export const createSet = createAsyncThunk<SetModel, SetWithCardsModel, { rejectValue: string }>(
+export const createSet = createAsyncThunk<FullSetModel, SetWithCardsModel, { rejectValue: string }>(
   "sets/create",
   async (payload, { rejectWithValue }) => {
     try {
@@ -69,7 +69,7 @@ export const createSet = createAsyncThunk<SetModel, SetWithCardsModel, { rejectV
   },
 )
 
-export const updateSet = createAsyncThunk<SetModel, SetWithCardsModel, { rejectValue: string }>(
+export const updateSet = createAsyncThunk<FullSetModel, SetWithCardsModel, { rejectValue: string }>(
   "sets/update",
   async (payload, { rejectWithValue }) => {
     try {
@@ -91,7 +91,7 @@ export const deleteSet = createAsyncThunk<void, number, { rejectValue: string }>
   },
 )
 
-export const toggleShuffle = createAsyncThunk<SetModel, { setId: number; shuffle: boolean }, { rejectValue: string }>(
+export const toggleShuffle = createAsyncThunk<FullSetModel, { setId: number; shuffle: boolean }, { rejectValue: string }>(
   "sets/toggleShuffle",
   async ({ setId, shuffle }, { rejectWithValue }) => {
     try {
@@ -102,7 +102,7 @@ export const toggleShuffle = createAsyncThunk<SetModel, { setId: number; shuffle
   },
 )
 
-export const importCards = createAsyncThunk<ImportResult, ImportPayload, { rejectValue: string }>(
+export const importCards = createAsyncThunk<ImportResultModel, ImportPayload, { rejectValue: string }>(
   "sets/importCards",
   async (payload, { rejectWithValue }) => {
     try {
@@ -113,7 +113,7 @@ export const importCards = createAsyncThunk<ImportResult, ImportPayload, { rejec
   },
 )
 
-export const exportSet = createAsyncThunk<ExportData, number, { rejectValue: string }>(
+export const exportSet = createAsyncThunk<ExportDataModel, number, { rejectValue: string }>(
   "sets/export",
   async (setId, { rejectWithValue }) => {
     try {
@@ -124,13 +124,13 @@ export const exportSet = createAsyncThunk<ExportData, number, { rejectValue: str
   },
 )
 
-function toSummary(detail: SetDetail): SetModel {
+function toSummary(detail: SetDetail): FullSetModel {
   const { cards, ...summary } = detail
   void cards
   return summary
 }
 
-function upsertSummary(items: SetModel[], summary: SetModel): SetModel[] {
+function upsertSummary(items: FullSetModel[], summary: FullSetModel): FullSetModel[] {
   const index = items.findIndex((item) => item.id === summary.id)
   if (index === -1) return [...items, summary]
   const next = items.slice()
@@ -162,7 +162,7 @@ const setsSlice = createSlice({
       state.error = null
       state.saveError = null
     },
-    initState(state, action: PayloadAction<SetModel[]>) {
+    initState(state, action: PayloadAction<FullSetModel[]>) {
       state.items = action.payload
       state.selectedSet = null
       state.importSetId = null

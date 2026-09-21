@@ -1,12 +1,12 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit"
 import { authApi } from "../../api/authApi"
 import { readStoredToken, setAuthToken, toErrorMessage } from "../../api/client"
-import type { AuthResponse, LoginModel, RequestStatus } from "../../types"
+import type { AuthResponseModel, AuthModel, RequestStatus } from "../../types"
 
 export type AuthDialogView = "signIn" | "signUp" | null
 
 interface AuthState {
-  user: AuthResponse | null
+  user: AuthResponseModel | null
   isAuthenticated: boolean
   status: RequestStatus
   error: string | null
@@ -25,7 +25,7 @@ const initialState: AuthState = {
   sessionChecked: false,
 }
 
-export const signUp = createAsyncThunk<AuthResponse, LoginModel, { rejectValue: string }>(
+export const signUp = createAsyncThunk<AuthResponseModel, AuthModel, { rejectValue: string }>(
   "auth/signUp",
   async (credentials, { rejectWithValue }) => {
     try {
@@ -38,7 +38,7 @@ export const signUp = createAsyncThunk<AuthResponse, LoginModel, { rejectValue: 
   },
 )
 
-export const signIn = createAsyncThunk<AuthResponse, LoginModel, { rejectValue: string }>(
+export const signIn = createAsyncThunk<AuthResponseModel, AuthModel, { rejectValue: string }>(
   "auth/signIn",
   async (credentials, { rejectWithValue }) => {
     try {
@@ -55,7 +55,6 @@ export const signOut = createAsyncThunk<void, void, { rejectValue: string }>(
   "auth/signOut",
   async (_, { rejectWithValue }) => {
     try {
-      await authApi.signOut()
       setAuthToken(null)
     } catch (error) {
       setAuthToken(null)
@@ -64,7 +63,7 @@ export const signOut = createAsyncThunk<void, void, { rejectValue: string }>(
   },
 )
 
-export const restoreSession = createAsyncThunk<AuthResponse | null, void>("auth/restoreSession", async () => {
+export const restoreSession = createAsyncThunk<AuthResponseModel | null, void>("auth/restoreSession", async () => {
   if (!readStoredToken()) return null
   try {
     return await authApi.currentUser()

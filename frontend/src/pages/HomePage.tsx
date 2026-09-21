@@ -19,7 +19,7 @@ import {
   toggleShuffle,
 } from "../features/sets/setsSlice"
 import { useAppDispatch, useAppSelector } from "../store/hooks"
-import type { ImportMode, SetModel } from "../types"
+import type { ImportMode, FullSetModel } from "../types"
 import { downloadCsv, toCardsCsv, toCsvFileName, type CsvCard } from "../utils/csv"
 import { startTraining } from "@/features/training/trainingSlice"
 
@@ -29,7 +29,7 @@ export default function HomePage() {
   const { items, status, error, saveStatus, saveError, importSetId, notice } = useAppSelector((state) => state.sets)
   const { hideKnownCards } = useAppSelector((state) => state.settings)
   const { isAuthenticated, sessionChecked } = useAppSelector((state) => state.auth)
-  const [pendingRemoval, setPendingRemoval] = useState<SetModel | null>(null)
+  const [pendingRemoval, setPendingRemoval] = useState<FullSetModel | null>(null)
 
   if (!isAuthenticated) {
     return (
@@ -56,14 +56,14 @@ export default function HomePage() {
 
   const importTarget = items.find((item) => item.id === importSetId) ?? null
 
-  const handleExport = async (set: SetModel) => {
+  const handleExport = async (set: FullSetModel) => {
     const result = await dispatch(exportSet(set.id))
     if (exportSet.fulfilled.match(result)) {
       downloadCsv(toCsvFileName(result.payload.name), toCardsCsv(result.payload.cards))
     }
   }
 
-  const handleAction = (action: SetTileAction, set: SetModel) => {
+  const handleAction = (action: SetTileAction, set: FullSetModel) => {
     switch (action) {
       case "start":
         dispatch(startTraining({ setId: set.id, shouldHide: hideKnownCards })).unwrap()

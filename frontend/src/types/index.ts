@@ -1,11 +1,11 @@
 /** Types mirroring the REST API contract. */
 
-export interface AuthResponse {
+export interface AuthResponseModel {
   token: string
   email: string
 }
 
-export interface LoginModel {
+export interface AuthModel {
   email: string
   password: string
 }
@@ -18,7 +18,7 @@ export interface CardData {
 }
 
 /** Tile representation on the Home page. */
-export interface SetModel {
+export interface FullSetModel {
   id: number
   name: string
   shuffle: boolean
@@ -28,7 +28,7 @@ export interface SetModel {
   modified: string
 }
 
-export interface SetDetail extends SetModel {
+export interface SetDetail extends FullSetModel {
   cards: CardData[]
 }
 
@@ -53,27 +53,14 @@ export interface ImportPayload {
   cards: Array<{ front: string; back: string }>
 }
 
-export interface ImportResult {
+export interface ImportResultModel {
   imported: number
   set: SetDetail
 }
 
-export interface ExportData {
+export interface ExportDataModel {
   name: string
   cards: Array<{ front: string; back: string }>
-}
-
-export interface TrainingCard {
-  id: number
-  setId: number
-  front: string
-  back: string
-}
-
-export interface TrainingResult {
-  cardId: number
-  known: boolean
-  learnt: boolean
 }
 
 export interface FullCardModel {
@@ -109,7 +96,7 @@ export interface SettingsModel {
 }
 
 export interface AppStateModel {
-  sets: SetModel[]
+  sets: FullSetModel[]
   userName: string
   settings: SettingsModel
 }

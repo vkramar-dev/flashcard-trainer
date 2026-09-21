@@ -1,23 +1,19 @@
 import { apiClient } from "./client"
-import type { AuthResponse, LoginModel } from "../types"
+import type { AuthResponseModel, AuthModel } from "../types"
 
 export const authApi = {
-  async signUp(credentials: LoginModel): Promise<AuthResponse> {
-    const { data } = await apiClient.post<AuthResponse>("/auth/register", credentials)
+  async signUp(credentials: AuthModel): Promise<AuthResponseModel> {
+    const { data } = await apiClient.post<AuthResponseModel>("/auth/register", credentials)
     return data
   },
 
-  async signIn(credentials: LoginModel): Promise<AuthResponse> {
-    const { data } = await apiClient.post<AuthResponse>("/auth/login", credentials)
+  async signIn(credentials: AuthModel): Promise<AuthResponseModel> {
+    const { data } = await apiClient.post<AuthResponseModel>("/auth/login", credentials)
     return data
   },
 
-  async signOut(): Promise<void> {
-    await apiClient.post("/auth/sign-out")
-  },
-
-  async currentUser(): Promise<AuthResponse> {
-    const { data } = await apiClient.get<AuthResponse>("/auth/me")
+  async currentUser(): Promise<AuthResponseModel> {
+    const { data } = await apiClient.get<AuthResponseModel>("/auth/me")
     return data
   },
 }

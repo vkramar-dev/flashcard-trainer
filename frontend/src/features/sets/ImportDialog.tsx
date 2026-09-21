@@ -16,11 +16,11 @@ import {
   Typography,
 } from "@mui/material"
 import { useEffect, useRef, useState, type ChangeEvent } from "react"
-import type { ImportMode, SetModel } from "../../types"
+import type { ImportMode, FullSetModel } from "../../types"
 import { CsvParseError, parseCardsCsv, type CsvCard } from "../../utils/csv"
 
 interface ImportDialogProps {
-  set: SetModel | null
+  set: FullSetModel | null
   submitting: boolean
   serverError: string | null
   onClose: () => void

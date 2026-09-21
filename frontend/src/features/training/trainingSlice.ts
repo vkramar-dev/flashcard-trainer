@@ -92,7 +92,7 @@ const trainingSlice = createSlice({
       })
       .addCase(startTraining.fulfilled, (state, action) => {
         state.status = "succeeded"
-        state.setId = action.meta.arg && 0
+        state.setId = action.meta.arg.setId
         state.cards = action.payload
         state.currentIndex = 0
         state.currentCard = action.payload[0]

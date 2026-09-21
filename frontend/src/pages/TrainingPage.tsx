@@ -11,7 +11,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material"
-//import { useEffect } from "react"
+
 import { useNavigate, useParams } from "react-router-dom"
 import { PageContainer } from "../components/PageContainer"
 import { EmptyState, ErrorState, LoadingState } from "../components/StateViews"
@@ -59,6 +59,7 @@ export default function TrainingPage() {
 
   const { currentCard, currentIndex, side, pendingAnswer, status, error, finished, cards } =
     useAppSelector((state) => state.training)
+  const { hideKnownCards } = useAppSelector((state) => state.settings)
 
   const total = cards.length
   const position = currentIndex + 1
@@ -75,7 +76,7 @@ export default function TrainingPage() {
   if (status === "failed") {
     return (
       <PageContainer title="Training" maxWidth="sm">
-        <ErrorState message={error ?? "Could not start training."} onRetry={() => dispatch(startTraining(setId))} />
+        <ErrorState message={error ?? "Could not start training."} />
         <Box sx={{ mt: 3 }}>
           <Button onClick={() => navigate("/")}>Back to sets</Button>
         </Box>
@@ -91,7 +92,10 @@ export default function TrainingPage() {
           description={`All ${total} card${total === 1 ? "" : "s"} in this set have been reviewed and your answers are saved.`}
           action={
             <Stack direction={{ xs: "column", sm: "row" }} gap={1.5} justifyContent="center">
-              <Button variant="contained" onClick={() => dispatch(startTraining(setId))}>
+              <Button
+                variant="contained"
+                onClick={() => dispatch(startTraining({ setId, shouldHide: hideKnownCards }))}
+              >
                 Train again
               </Button>
               <Button onClick={() => navigate(`/statistics?setId=${setId}`)}>View statistics</Button>

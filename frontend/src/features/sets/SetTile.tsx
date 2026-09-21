@@ -1,7 +1,7 @@
 import MoreVertIcon from "@mui/icons-material/MoreVert"
 import { Box, Card, CardActionArea, Divider, IconButton, Menu, MenuItem, Stack, Typography } from "@mui/material"
 import { useState, type MouseEvent } from "react"
-import type { SetModel } from "../../types"
+import type { FullSetModel } from "../../types"
 import { formatDate } from "../../utils/date"
 import { ShufflePushpin } from "./ShufflePushpin"
 
@@ -17,9 +17,9 @@ const menuItems: Array<{ action: SetTileAction; label: string; destructive?: boo
 ]
 
 interface SetTileProps {
-  set: SetModel
-  onAction: (action: SetTileAction, set: SetModel) => void
-  onToggleShuffle: (set: SetModel) => void
+  set: FullSetModel
+  onAction: (action: SetTileAction, set: FullSetModel) => void
+  onToggleShuffle: (set: FullSetModel) => void
 }
 
 export function SetTile({ set, onAction, onToggleShuffle }: SetTileProps) {

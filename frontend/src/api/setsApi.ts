@@ -1,9 +1,9 @@
 import { apiClient } from "./client"
-import type { ExportData, ImportPayload, ImportResult, SetWithCardsModel, SetModel } from "../types"
+import type { ExportDataModel, ImportPayload, ImportResultModel, SetWithCardsModel, FullSetModel } from "../types"
 
 export const setsApi = {
-  async fetchAll(): Promise<SetModel[]> {
-    const { data } = await apiClient.get<SetModel[]>("/sets/sets")
+  async fetchAll(): Promise<FullSetModel[]> {
+    const { data } = await apiClient.get<FullSetModel[]>("/sets/sets")
     return data
   },
 
@@ -12,33 +12,28 @@ export const setsApi = {
     return data
   },
 
-  async create(set: SetWithCardsModel): Promise<SetModel> {
-    const { data } = await apiClient.post<SetModel>("/sets/create-or-update", set)
+  async create(set: SetWithCardsModel): Promise<FullSetModel> {
+    const { data } = await apiClient.post<FullSetModel>("/sets/create-or-update", set)
     return data
   },
-
-  // async update(setId: number, payload: SetWithCardsModel): Promise<SetDetail> {
-  //   const { data } = await apiClient.put<SetDetail>(`/sets/${setId}`, payload)
-  //   return data
-  // },
 
   async delete(setId: number): Promise<void> {
     await apiClient.delete(`/sets/${setId}`)
   },
 
-  async updateShuffle(setId: number, shuffle: boolean): Promise<SetModel> {
-    const { data } = await apiClient.patch<SetModel>(`/sets/${setId}/shuffle`, { shuffle })
+  async updateShuffle(setId: number, shuffle: boolean): Promise<FullSetModel> {
+    const { data } = await apiClient.patch<FullSetModel>(`/sets/${setId}/shuffle`, { shuffle })
     return data
   },
 
-  async importCards({ setId, mode, cards }: ImportPayload): Promise<ImportResult> {
-    const { data } = await apiClient.post<ImportResult>(
+  async importCards({ setId, mode, cards }: ImportPayload): Promise<ImportResultModel> {
+    const { data } = await apiClient.post<ImportResultModel>(
       `/sets/${setId}/import`, { append: mode === "append", cards })
     return data
   },
 
-  async exportSet(setId: number): Promise<ExportData> {
-    const { data } = await apiClient.get<ExportData>(`/sets/${setId}/export`)
+  async exportSet(setId: number): Promise<ExportDataModel> {
+    const { data } = await apiClient.get<ExportDataModel>(`/sets/${setId}/export`)
     return data
   },
 }
