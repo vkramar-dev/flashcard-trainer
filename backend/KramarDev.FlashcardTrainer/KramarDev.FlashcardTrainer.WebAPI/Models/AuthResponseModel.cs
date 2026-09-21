@@ -1,6 +1,6 @@
 ﻿namespace KramarDev.FlashcardTrainer.WebAPI.Models;
 
-public sealed record UserModel
+public sealed record AuthResponseModel
 {
     public string Email { get; set; }
 

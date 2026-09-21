@@ -4,7 +4,7 @@ public interface ISettingsService
 {
     Task<SettingsModel> GetSettingsAsync(string userName, CT cancellationToken);
 
-    Task SetColorSchemeAsync(string schemeName, string userName, CT cancellationToken);
+    Task SetColorSchemeAsync(string userName, string schemeName, CT cancellationToken);
 
-    Task SetHideKnownCardsAsync(bool hideKnownCards, string userName, CT cancellationToken);
+    Task SetHideKnownCardsAsync(string userName, bool hideKnownCards, CT cancellationToken);
 }

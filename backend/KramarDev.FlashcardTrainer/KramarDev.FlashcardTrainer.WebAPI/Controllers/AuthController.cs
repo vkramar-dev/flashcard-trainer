@@ -13,7 +13,7 @@ public sealed class AuthController(IAuthService authService) : BaseController
     [HttpPost("login")]
     [EnableRateLimiting(RateLimiterName)]
     [RequestSizeLimit(4 * 1024)]
-    public async Task<ActionResult<UserModel>> Login(AuthModel login)
+    public async Task<ActionResult<AuthResponseModel>> Login(AuthModel login)
     {
         var user = await _authService.LoginAsync(login);
 
@@ -26,7 +26,7 @@ public sealed class AuthController(IAuthService authService) : BaseController
     [HttpPost("register")]
     [EnableRateLimiting(RateLimiterName)]
     [RequestSizeLimit(4 * 1024)]
-    public async Task<ActionResult<UserModel>> Register(AuthModel register)
+    public async Task<ActionResult<AuthResponseModel>> Register(AuthModel register)
     {
         var result = await _authService.RegisterAsync(register);
 
@@ -46,7 +46,7 @@ public sealed class AuthController(IAuthService authService) : BaseController
 
     [Authorize]
     [HttpGet("me")]
-    public async Task<ActionResult<UserModel>> Me()
+    public async Task<ActionResult<AuthResponseModel>> Me()
         {
         var user = await _authService.GetUserAsync(UserName);
 

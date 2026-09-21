@@ -2,9 +2,9 @@
 
 public interface IAuthService
 {
-    Task<UserModel> GetUserAsync(string userName);
+    Task<AuthResponseModel> GetUserAsync(string userName);
 
-    Task<UserModel> LoginAsync(AuthModel login);
+    Task<AuthResponseModel> LoginAsync(AuthModel login);
 
-    Task<ServiceResult<UserModel>> RegisterAsync(AuthModel register);
+    Task<ServiceResult<AuthResponseModel>> RegisterAsync(AuthModel register);
 }

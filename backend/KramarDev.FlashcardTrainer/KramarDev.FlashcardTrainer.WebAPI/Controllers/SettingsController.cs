@@ -11,7 +11,7 @@ public sealed class SettingsController(ISettingsService settingsService) : BaseC
     [HttpPut("scheme")]
     public async Task<ActionResult> Scheme(string scheme, CT cancellationToken)
     {
-        await _settingsService.SetColorSchemeAsync(scheme, UserName, cancellationToken);
+        await _settingsService.SetColorSchemeAsync(UserName, scheme, cancellationToken);
         return NoContent();
     }
 
@@ -19,7 +19,7 @@ public sealed class SettingsController(ISettingsService settingsService) : BaseC
     [HttpPut("hide-known-cards")]
     public async Task<ActionResult> HideKnownCards(bool hideKnownCards, CT cancellationToken)
     {
-        await _settingsService.SetHideKnownCardsAsync(hideKnownCards, UserName, cancellationToken);
+        await _settingsService.SetHideKnownCardsAsync(UserName, hideKnownCards, cancellationToken);
         return NoContent();
     }
 }

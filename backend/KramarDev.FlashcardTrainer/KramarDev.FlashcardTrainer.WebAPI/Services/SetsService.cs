@@ -1,16 +1,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using KramarDev.FlashcardTrainer.WebAPI.Models;
 
 namespace KramarDev.FlashcardTrainer.WebAPI.Services;
 
-public sealed class SetsService(FlashcardsDbContext Ctx) : ISetsService
+public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
 {
     const int LearntThreshold = 2;
 
+    readonly FlashcardsDbContext _ctx = dbContext;
+
     public Task<FullSetModel[]> GetSetsAsync(string userName, CT cancellationToken)
     {
-        return (from s in Ctx.Sets
+        return (from s in _ctx.Sets
                 where s.UserName == userName
                 select new FullSetModel
                 {
@@ -24,9 +25,9 @@ public sealed class SetsService(FlashcardsDbContext Ctx) : ISetsService
                 }).ToArrayAsync(cancellationToken);
     }
 
-    public async Task<ExportDataModel> ExportAsync(int setId, string userName, CT cancellationToken)
+    public async Task<ExportDataModel> ExportAsync(string userName, int setId, CT cancellationToken)
     {
-        var set = await Ctx.Sets
+        var set = await _ctx.Sets
             .Include(s => s.Cards)
             .AsNoTracking()
             .FirstOrDefaultAsync(s => s.Id == setId && s.UserName == userName, cancellationToken);
@@ -40,34 +41,21 @@ public sealed class SetsService(FlashcardsDbContext Ctx) : ISetsService
         return new ExportDataModel { Name = set.Name, Cards = cards };
     }
 
-    public Task<CardModel> GetCardAsync(int cardId, CT cancellationToken)
-    {
-        return (from c in Ctx.Cards
-                where c.Id == cardId
-                select new CardModel
-                {
-                    Id = cardId,
-                    Front = c.FrontSide,
-                    Back = c.BackSide
-
-                }).FirstOrDefaultAsync(cancellationToken);
-    }
-
-    public Task<FullSetModel> CreateOrUpdateAsync(SetWithCardsModel set, string userName, CT cancellationToken)
+    public Task<FullSetModel> CreateOrUpdateAsync(string userName, SetWithCardsModel set, CT cancellationToken)
     {
         if (set.Id > 0)
         {
-            return UpdateAsync(set, userName, cancellationToken);
+            return UpdateAsync(userName, set, cancellationToken);
         }
         else
         {
-            return CreateAsync(set, userName, cancellationToken);
+            return CreateAsync(userName, set, cancellationToken);
         }
     }
 
     public async Task<SetWithCardsModel> GetSetWithCardsAsync(string userName, int setId, CT cancellationToken)
     {
-        var set = await Ctx.Sets
+        var set = await _ctx.Sets
             .Include(s => s.Cards)
             .AsNoTracking()
             .FirstOrDefaultAsync(s => s.Id == setId && s.UserName == userName, cancellationToken);
@@ -90,15 +78,15 @@ public sealed class SetsService(FlashcardsDbContext Ctx) : ISetsService
         };
     }
 
-    public Task<int> DeleteSetAsync(int setId, string userName, CT cancellationToken)
+    public Task<int> DeleteSetAsync(string userName, int setId, CT cancellationToken)
     {
-        return Ctx.Sets
+        return _ctx.Sets
             .Where(s => s.Id == setId && s.UserName == userName)
             .ExecuteDeleteAsync(cancellationToken);
     }
 
-    public async Task<ImportResultModel> ImportAsync(
-        int setId, bool append, CardModel[] cards, string userName, CT cancellationToken)
+    public async Task<ImportResultModel> ImportAsync(string userName,
+        int setId, bool append, CardModel[] cards, CT cancellationToken)
     {
         if (setId == 0)
         {
@@ -107,8 +95,8 @@ public sealed class SetsService(FlashcardsDbContext Ctx) : ISetsService
 
         cards ??= Array.Empty<CardModel>();
 
-        var factory = Ctx.GetService<IDbContextFactory<FlashcardsDbContext>>();
-        var strategy = Ctx.Database.CreateExecutionStrategy();
+        var factory = _ctx.GetService<IDbContextFactory<FlashcardsDbContext>>();
+        var strategy = _ctx.Database.CreateExecutionStrategy();
 
         return await strategy.ExecuteAsync<ImportResultModel>(async (ct) =>
         {
@@ -177,7 +165,7 @@ public sealed class SetsService(FlashcardsDbContext Ctx) : ISetsService
         }, cancellationToken);
     }
 
-    private async Task<FullSetModel> CreateAsync(SetWithCardsModel set, string userName, CT cancellationToken)
+    private async Task<FullSetModel> CreateAsync(string userName, SetWithCardsModel set, CT cancellationToken)
     {
         var newSet = new Database.Tables.Set
         {
@@ -195,17 +183,17 @@ public sealed class SetsService(FlashcardsDbContext Ctx) : ISetsService
             }).ToList()
         };
 
-        Ctx.Sets.Add(newSet);
-        await Ctx.SaveChangesAsync(cancellationToken);
-        return await GetSetAsync(newSet.Id, userName, cancellationToken);
+        _ctx.Sets.Add(newSet);
+        await _ctx.SaveChangesAsync(cancellationToken);
+        return await GetSetAsync(userName, newSet.Id, cancellationToken);
     }
 
-    private async Task<FullSetModel> UpdateAsync(SetWithCardsModel set, string userName, CT cancellationToken)
+    private async Task<FullSetModel> UpdateAsync(string userName, SetWithCardsModel set, CT cancellationToken)
     {
         // Obtain IDbContextFactory from the injected context's internal services
-        var factory = Ctx.GetService<IDbContextFactory<FlashcardsDbContext>>();
+        var factory = _ctx.GetService<IDbContextFactory<FlashcardsDbContext>>();
 
-        var strategy = Ctx.Database.CreateExecutionStrategy();
+        var strategy = _ctx.Database.CreateExecutionStrategy();
 
         return await strategy.ExecuteAsync<FullSetModel>(async (ct) =>
         {
@@ -281,9 +269,9 @@ public sealed class SetsService(FlashcardsDbContext Ctx) : ISetsService
         }, cancellationToken);
     }
 
-    private Task<FullSetModel> GetSetAsync(int setId, string userName, CT cancellationToken)
+    private Task<FullSetModel> GetSetAsync(string userName, int setId, CT cancellationToken)
     {
-        return (from s in Ctx.Sets
+        return (from s in _ctx.Sets
                 where s.Id == setId && s.UserName == userName
                 select new FullSetModel
                 {

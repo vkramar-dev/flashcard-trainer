@@ -9,20 +9,20 @@ public sealed class AuthService(
     readonly UserManager<IdentityUser> _userManager = userManager;
     readonly IJwtTokenGenerator _tokenService = tokenService;
 
-    public async Task<UserModel> GetUserAsync(string userName)
+    public async Task<AuthResponseModel> GetUserAsync(string userName)
     {
         var user = await _userManager.FindByNameAsync(userName);
 
         if (user == null)
             return null;
 
-        return new UserModel
+        return new AuthResponseModel
         {
             Email = user.Email
         };
     }
 
-    public async Task<UserModel> LoginAsync(AuthModel login)
+    public async Task<AuthResponseModel> LoginAsync(AuthModel login)
     {
         var user = await _userManager.FindByNameAsync(login.Email);
 
@@ -35,7 +35,7 @@ public sealed class AuthService(
         return await CreateUserModelAsync(user);
     }
 
-    public async Task<ServiceResult<UserModel>> RegisterAsync(
+    public async Task<ServiceResult<AuthResponseModel>> RegisterAsync(
         AuthModel register)
     {
         var user = new IdentityUser
@@ -61,24 +61,24 @@ public sealed class AuthService(
             return Failure(result);
         }
 
-        return ServiceResult<UserModel>.Success(
+        return ServiceResult<AuthResponseModel>.Success(
             await CreateUserModelAsync(user));
     }
 
-    private async Task<UserModel> CreateUserModelAsync(
+    private async Task<AuthResponseModel> CreateUserModelAsync(
         IdentityUser user)
     {
-        return new UserModel
+        return new AuthResponseModel
         {
             Email = user.Email,
             Token = await _tokenService.GenerateTokenAsync(user)
         };
     }
 
-    private static ServiceResult<UserModel> Failure(
+    private static ServiceResult<AuthResponseModel> Failure(
         IdentityResult result)
     {
-        return ServiceResult<UserModel>.Failure(
+        return ServiceResult<AuthResponseModel>.Failure(
             result.Errors.Select(x => (x.Code, x.Description)));
     }
 }

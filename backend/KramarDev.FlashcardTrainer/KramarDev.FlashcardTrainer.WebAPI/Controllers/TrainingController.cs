@@ -16,9 +16,11 @@ public sealed class TrainingController(ITrainingService trainingService) : BaseC
 
     [Authorize]
     [HttpPost("answer")]
-    public async Task<IActionResult> Answer(int cardId, bool isKnown, CT cancellationToken)
+    public async Task<IActionResult> Answer(AnswerModel answerModel, CT cancellationToken)
     {
-        await _trainingService.AnswerAsync(UserName, cardId, isKnown, cancellationToken);
+        await _trainingService.AnswerAsync(
+            UserName, answerModel.CardId, answerModel.IsKnown, cancellationToken);
+
         return NoContent();
     }
 }

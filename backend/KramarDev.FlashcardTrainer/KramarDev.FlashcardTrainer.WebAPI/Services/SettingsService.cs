@@ -40,7 +40,7 @@ public sealed class SettingsService(FlashcardsDbContext dbContext) : ISettingsSe
         };
     }
 
-    public async Task SetColorSchemeAsync(string schemeName, string userName, CT cancellationToken)
+    public async Task SetColorSchemeAsync(string userName, string schemeName, CT cancellationToken)
     {
         int rows = await _ctx.Settings
             .Where(s => s.UserName == userName)
@@ -61,7 +61,7 @@ public sealed class SettingsService(FlashcardsDbContext dbContext) : ISettingsSe
         }
     }
 
-    public async Task SetHideKnownCardsAsync(bool hideKnownCards, string userName, CT cancellationToken)
+    public async Task SetHideKnownCardsAsync(string userName, bool hideKnownCards, CT cancellationToken)
     {
         int rows = await _ctx.Settings
             .Where(s => s.UserName == userName)
