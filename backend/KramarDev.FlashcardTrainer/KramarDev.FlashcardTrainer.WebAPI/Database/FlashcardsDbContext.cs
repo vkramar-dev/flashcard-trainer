@@ -18,16 +18,51 @@ public class FlashcardsDbContext : IdentityDbContext<IdentityUser>
     {
         base.OnModelCreating(builder);
 
-        builder.Entity<Set>()
-            .HasMany(e => e.Cards)
-            .WithOne(e => e.ParentSet)
-            .HasForeignKey(e => e.SetId)
-            .HasPrincipalKey(e => e.Id)
-            .OnDelete(DeleteBehavior.Cascade);
+        builder.Entity<Set>(entity =>
+        {
+            entity.Property(e => e.UserName)
+                .HasMaxLength(ModelConstraints.UserNameMaxLength)
+                .IsRequired();
 
-        builder.Entity<Settings>()
-            .HasIndex(e => e.UserName)
-            .IsUnique();
+            entity.Property(e => e.Name)
+                .HasMaxLength(ModelConstraints.SetNameMaxLength)
+                .IsRequired();
+
+            entity.HasIndex(e => e.UserName);
+
+            entity.HasMany(e => e.Cards)
+                .WithOne(e => e.ParentSet)
+                .HasForeignKey(e => e.SetId)
+                .HasPrincipalKey(e => e.Id)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<Settings>(entity =>
+        {
+            entity.Property(e => e.UserName)
+                .HasMaxLength(ModelConstraints.UserNameMaxLength)
+                .IsRequired();
+
+            entity.Property(e => e.ColorScheme)
+                .HasMaxLength(ModelConstraints.ColorSchemeMaxLength)
+                .IsRequired();
+
+            entity.HasIndex(e => e.UserName)
+                .IsUnique();
+        });
+
+        builder.Entity<Card>(entity =>
+        {
+            entity.Property(e => e.FrontSide)
+                .HasMaxLength(ModelConstraints.CardFrontMaxLength)
+                .IsRequired();
+
+            entity.Property(e => e.BackSide)
+                .HasMaxLength(ModelConstraints.CardBackMaxLength);
+
+            entity.HasIndex(c => new { c.SetId, c.FrontSide })
+                .IsUnique();
+        });
 
         builder.Entity<IdentityRole>()
             .HasData(

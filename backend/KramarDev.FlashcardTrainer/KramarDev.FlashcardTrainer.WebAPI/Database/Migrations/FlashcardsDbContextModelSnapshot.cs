@@ -31,10 +31,13 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("BackSide")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("FrontSide")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
 
                     b.Property<int>("KnowCounter")
                         .HasColumnType("int");
@@ -47,7 +50,8 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SetId");
+                    b.HasIndex("SetId", "FrontSide")
+                        .IsUnique();
 
                     b.ToTable("Cards");
                 });
@@ -70,10 +74,14 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("UserName")
-                        .HasColumnType("nvarchar(450)");
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.HasKey("Id");
 
@@ -91,19 +99,22 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ColorScheme")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
 
                     b.Property<bool>("HideKnownCards")
                         .HasColumnType("bit");
 
                     b.Property<string>("UserName")
-                        .HasColumnType("nvarchar(450)");
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("UserName")
-                        .IsUnique()
-                        .HasFilter("[UserName] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("Settings");
                 });

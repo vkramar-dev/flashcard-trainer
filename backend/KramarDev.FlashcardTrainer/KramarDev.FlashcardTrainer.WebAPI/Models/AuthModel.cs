@@ -6,10 +6,10 @@ public sealed record AuthModel
 {
     [Required]
     [EmailAddress]
-    [StringLength(255, MinimumLength = 6)]
+    [StringLength(ModelConstraints.UserNameMaxLength, MinimumLength = ModelConstraints.UserNameMinLength)]
     public string Email { get; init; }
 
     [Required]
-    [StringLength(32, MinimumLength = 6)]
+    [StringLength(ModelConstraints.PasswordMaxLength, MinimumLength = ModelConstraints.PasswordMinLength)]
     public string Password { get; init; }
 }

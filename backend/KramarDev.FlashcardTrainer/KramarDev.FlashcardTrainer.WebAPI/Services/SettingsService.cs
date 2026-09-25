@@ -2,7 +2,7 @@
 
 namespace KramarDev.FlashcardTrainer.WebAPI.Services;
 
-public sealed class SettingsService(FlashcardsDbContext dbContext) : ISettingsService
+public sealed class SettingsService( FlashcardsDbContext dbContext) : ISettingsService
 {
     readonly FlashcardsDbContext _ctx = dbContext;
     const string DefaultColorScheme = "graphite";
@@ -40,6 +40,18 @@ public sealed class SettingsService(FlashcardsDbContext dbContext) : ISettingsSe
         };
     }
 
+    public Task CreateDefaultSettingsAsync(string userName, CT cancellationToken)
+    {
+        var newSettings = new Database.Tables.Settings
+        {
+            UserName = userName,
+            ColorScheme = DefaultColorScheme,
+            HideKnownCards = DefaultHideKnownCards
+        };
+        _ctx.Settings.Add(newSettings);
+        return _ctx.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task SetColorSchemeAsync(string userName, string schemeName, CT cancellationToken)
     {
         int rows = await _ctx.Settings
@@ -49,15 +61,8 @@ public sealed class SettingsService(FlashcardsDbContext dbContext) : ISettingsSe
 
         if (rows == 0)
         {
-            var newSettings = new Database.Tables.Settings
-            {
-                UserName = userName,
-                ColorScheme = schemeName,
-                HideKnownCards = DefaultHideKnownCards
-            };
-
-            _ctx.Settings.Add(newSettings);
-            await _ctx.SaveChangesAsync(cancellationToken);
+            throw new InvalidOperationException(
+                $"Color settings for user '{userName}' were not found.");
         }
     }
 
@@ -70,15 +75,8 @@ public sealed class SettingsService(FlashcardsDbContext dbContext) : ISettingsSe
 
         if (rows == 0)
         {
-            var newSettings = new Database.Tables.Settings
-            {
-                UserName = userName,
-                ColorScheme = DefaultColorScheme,
-                HideKnownCards = hideKnownCards
-            };
-
-            _ctx.Settings.Add(newSettings);
-            await _ctx.SaveChangesAsync(cancellationToken);
+            throw new InvalidOperationException(
+                $"HideKnown settings for user '{userName}' were not found.");
         }
     }
 }

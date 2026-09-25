@@ -23,9 +23,9 @@ builder.Services.AddDbContextFactory<FlashcardsDbContext>(opt =>
     });
 });
 
-builder.Services.AddDbContext<FlashcardsDbContext>(
-    contextLifetime: ServiceLifetime.Transient,
-    optionsLifetime: ServiceLifetime.Singleton);
+//builder.Services.AddDbContext<FlashcardsDbContext>(
+//    contextLifetime: ServiceLifetime.Transient,
+//    optionsLifetime: ServiceLifetime.Singleton);
 
 builder.Services.AddIdentityCore<IdentityUser>(opt =>
 {
@@ -42,11 +42,7 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder =>
     {
-        builder.WithOrigins(
-            "http://localhost:3000",
-            "http://192.168.1.3:3000",
-            "http://localhost:5173",
-            "https://askold-002-site2.ltempurl.com")
+        builder.WithOrigins("https://new-words.online", "http://localhost:3000")
                .AllowAnyMethod()
                .AllowAnyHeader();
     });
@@ -59,6 +55,7 @@ builder.Services.AddScoped<ITrainingService, TrainingService>();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<ISettingsService, SettingsService>();
 builder.Services.AddScoped<IStatisticsService, StatisticsService>();
+builder.Services.AddAppRateLimiting(Constants.RateLimiterName);
 
 var app = builder.Build();
 
@@ -73,10 +70,13 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+app.UseAppExceptionHandler();
 app.UseHttpsRedirection();
+app.UseRouting();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 app.MapControllers();
 
 using (var scope = app.Services.CreateScope())

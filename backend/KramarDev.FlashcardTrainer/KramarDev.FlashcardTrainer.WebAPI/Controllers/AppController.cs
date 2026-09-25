@@ -1,13 +1,13 @@
 ﻿using KramarDev.Flashcard.WebAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace KramarDev.FlashcardTrainer.WebAPI.Controllers;
 
-public class AppController(ISetsService setsService, ISettingsService settingsService) : BaseController
+public class AppController(IDbContextFactory<FlashcardsDbContext> factory) : BaseController
 {
-    readonly ISetsService _setsService = setsService;
-    readonly ISettingsService _settingsService = settingsService;
+    readonly IDbContextFactory<FlashcardsDbContext> _factory = factory;
 
     [Authorize]
     [HttpGet("state")]
@@ -15,8 +15,14 @@ public class AppController(ISetsService setsService, ISettingsService settingsSe
     {
         AppStateModel stateModel = new AppStateModel();
 
-        Task<FullSetModel[]> setsTask = _setsService.GetSetsAsync(UserName, cancellationToken);
-        Task<SettingsModel> settingsTask = _settingsService.GetSettingsAsync(UserName, cancellationToken);
+        using var setsCtx = _factory.CreateDbContext();
+        using var settingsCtx = _factory.CreateDbContext();
+
+        ISetsService setsService = new SetsService(setsCtx);
+        ISettingsService settingsService = new SettingsService(settingsCtx);
+
+        Task<FullSetModel[]> setsTask = setsService.GetSetsAsync(UserName, cancellationToken);
+        Task<SettingsModel> settingsTask = settingsService.GetSettingsAsync(UserName, cancellationToken);
         stateModel.UserName = UserName;
 
         stateModel.Sets = await setsTask;

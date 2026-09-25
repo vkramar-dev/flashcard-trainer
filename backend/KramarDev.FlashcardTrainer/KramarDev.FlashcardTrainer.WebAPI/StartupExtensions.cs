@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Threading.RateLimiting;
 
 namespace KramarDev.FlashcardTrainer.WebAPI;
 
@@ -95,14 +96,21 @@ public static class StartupExtensions
     {
         services.AddRateLimiter(options =>
         {
-            options.AddFixedWindowLimiter(rateLimitName, limiterOptions =>
-            {
-                limiterOptions.PermitLimit = 10;
-                limiterOptions.Window = TimeSpan.FromMinutes(1);
-                limiterOptions.QueueLimit = 0;
-            });
+            options.AddPolicy(rateLimitName, context =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey:
+                        context.Connection.RemoteIpAddress?.ToString()
+                        ?? "unknown",
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 10,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueLimit = 0,
+                        AutoReplenishment = true
+                    }));
 
-            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            options.RejectionStatusCode =
+                StatusCodes.Status429TooManyRequests;
         });
 
         return services;

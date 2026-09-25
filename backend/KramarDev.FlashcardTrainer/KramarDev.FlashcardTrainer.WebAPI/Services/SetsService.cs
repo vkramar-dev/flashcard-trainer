@@ -1,12 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
+using DB = KramarDev.FlashcardTrainer.WebAPI.Database.Tables;
+
 namespace KramarDev.FlashcardTrainer.WebAPI.Services;
 
 public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
 {
-    const int LearntThreshold = 2;
-
     readonly FlashcardsDbContext _ctx = dbContext;
 
     public Task<FullSetModel[]> GetSetsAsync(string userName, CT cancellationToken)
@@ -19,7 +19,7 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
                     Name = s.Name,
                     Shuffle = s.IsShuffled,
                     TotalCards = s.Cards.Count,
-                    LearntCards = s.Cards.Count(card => card.KnowCounter > card.NotKnowCounter + LearntThreshold),
+                    LearntCards = s.Cards.Count(card => card.KnowCounter > card.NotKnowCounter + Constants.LearntThreshold),
                     Created = s.Created,
                     Modified = s.Modified
                 }).ToArrayAsync(cancellationToken);
@@ -74,7 +74,7 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
                 Id = c.Id,
                 Front = c.FrontSide,
                 Back = c.BackSide
-            }).ToArray()
+            }).OrderBy(c => c.Id).ToArray()
         };
     }
 
@@ -93,88 +93,31 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
             throw new InvalidOperationException("setId cannot be 0 for import");
         }
 
-        cards ??= Array.Empty<CardModel>();
-
         var factory = _ctx.GetService<IDbContextFactory<FlashcardsDbContext>>();
         var strategy = _ctx.Database.CreateExecutionStrategy();
 
-        return await strategy.ExecuteAsync<ImportResultModel>(async (ct) =>
-        {
-            await using var ctx = factory.CreateDbContext();
-            await using var transaction = await ctx.Database.BeginTransactionAsync(System.Data.IsolationLevel.RepeatableRead, ct);
+        ImportParam param = new(
+            factory,
+            userName,
+            setId,
+            append,
+            cards);
 
-            try
-            {
-                var existingSet = await ctx.Sets
-                    .Include(s => s.Cards)
-                    .FirstOrDefaultAsync(s => s.Id == setId && s.UserName == userName, ct);
-
-                if (existingSet == null)
-                {
-                    throw new InvalidOperationException($"Set with Id {setId} not found or does not belong to user {userName}");
-                }
-
-                if (!append)
-                {
-                    // remove existing cards
-                    if (existingSet.Cards.Any())
-                    {
-                        ctx.Cards.RemoveRange(existingSet.Cards);
-                    }
-                }
-
-                int imported = 0;
-                foreach (var cardModel in cards)
-                {
-                    // create new card entries regardless of provided Ids
-                    var dbCard = new Database.Tables.Card
-                    {
-                        FrontSide = cardModel.Front,
-                        BackSide = cardModel.Back,
-                        KnowCounter = 0,
-                        NotKnowCounter = 0
-                    };
-                    existingSet.Cards.Add(dbCard);
-                    imported++;
-                }
-
-                await ctx.SaveChangesAsync(ct);
-                await transaction.CommitAsync(ct);
-
-                var resultSet = await (from s in ctx.Sets
-                                       where s.Id == existingSet.Id && s.UserName == userName
-                                       select new FullSetWithCardsModel
-                                       {
-                                           Id = s.Id,
-                                           Name = s.Name,
-                                           Shuffle = s.IsShuffled,
-                                           TotalCards = s.Cards.Count,
-                                           LearntCards = s.Cards.Count(card => card.KnowCounter > card.NotKnowCounter + LearntThreshold),
-                                           Created = s.Created,
-                                           Modified = s.Modified,
-                                           Cards = s.Cards.Select(c => new CardModel { Id = c.Id, Front = c.FrontSide, Back = c.BackSide }).ToArray()
-                                       }).SingleAsync(ct);
-
-                return new ImportResultModel { Imported = imported, Set = resultSet };
-            }
-            catch
-            {
-                await transaction.RollbackAsync(ct);
-                throw;
-            }
-        }, cancellationToken);
+        return await strategy.ExecuteAsync<ImportResultModel>(
+            ct => ImportInternalAsync(param, ct),
+            cancellationToken);
     }
 
     private async Task<FullSetModel> CreateAsync(string userName, SetWithCardsModel set, CT cancellationToken)
     {
-        var newSet = new Database.Tables.Set
+        var newSet = new DB.Set
         {
             UserName = userName,
             Name = set.Name,
             IsShuffled = false,
             Created = DateTime.UtcNow,
             Modified = DateTime.UtcNow,
-            Cards = set.Cards.Select(c => new Database.Tables.Card
+            Cards = set.Cards.Select(c => new DB.Card
             {
                 FrontSide = c.Front,
                 BackSide = c.Back,
@@ -185,103 +128,173 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
 
         _ctx.Sets.Add(newSet);
         await _ctx.SaveChangesAsync(cancellationToken);
-        return await GetSetAsync(userName, newSet.Id, cancellationToken);
+        return await ReadSetAsync(_ctx, newSet.Id, userName, false, cancellationToken);
     }
 
     private async Task<FullSetModel> UpdateAsync(string userName, SetWithCardsModel set, CT cancellationToken)
     {
+        int setId = set.Id ?? throw new InvalidOperationException("Set Id must be greater than 0 for update");
+
         // Obtain IDbContextFactory from the injected context's internal services
         var factory = _ctx.GetService<IDbContextFactory<FlashcardsDbContext>>();
-
         var strategy = _ctx.Database.CreateExecutionStrategy();
 
-        return await strategy.ExecuteAsync<FullSetModel>(async (ct) =>
-        {
-            await using var ctx = factory.CreateDbContext();
-            await using var transaction = await ctx.Database.BeginTransactionAsync(System.Data.IsolationLevel.RepeatableRead, ct);
-
-            try
-            {
-                var existingSet = await ctx.Sets
-                    .Include(s => s.Cards)
-                    .FirstOrDefaultAsync(s => s.Id == set.Id && s.UserName == userName, ct);
-
-                if (existingSet == null)
-                {
-                    throw new InvalidOperationException($"Set with Id {set.Id} not found or does not belong to user {userName}");
-                }
-
-                existingSet.Name = set.Name;
-                existingSet.Modified = DateTime.UtcNow;
-
-                var newCardIds = set.Cards.Where(c => c.Id > 0).Select(c => c.Id).ToHashSet();
-                var cardsToRemove = existingSet.Cards.Where(c => !newCardIds.Contains(c.Id)).ToList();
-                foreach (var card in cardsToRemove)
-                {
-                    ctx.Cards.Remove(card);
-                }
-
-                foreach (var cardModel in set.Cards)
-                {
-                    if (cardModel.Id > 0)
-                    {
-                        var existingCard = existingSet.Cards.FirstOrDefault(c => c.Id == cardModel.Id);
-                        if (existingCard == null)
-                        {
-                            throw new InvalidOperationException($"Card with Id {cardModel.Id} not found.");
-                        }
-                        existingCard.FrontSide = cardModel.Front;
-                        existingCard.BackSide = cardModel.Back;
-                    }
-                    else
-                    {
-                        existingSet.Cards.Add(new Database.Tables.Card
-                        {
-                            FrontSide = cardModel.Front,
-                            BackSide = cardModel.Back,
-                            KnowCounter = 0,
-                            NotKnowCounter = 0
-                        });
-                    }
-                }
-
-                await ctx.SaveChangesAsync(ct);
-                await transaction.CommitAsync(ct);
-
-                return await (from s in ctx.Sets
-                              where s.Id == existingSet.Id && s.UserName == userName
-                              select new FullSetModel
-                              {
-                                  Id = s.Id,
-                                  Name = s.Name,
-                                  Shuffle = s.IsShuffled,
-                                  TotalCards = s.Cards.Count,
-                                  LearntCards = s.Cards.Count(card => card.KnowCounter > card.NotKnowCounter + LearntThreshold),
-                                  Created = s.Created,
-                                  Modified = s.Modified
-                              }).SingleAsync(ct);
-            }
-            catch
-            {
-                await transaction.RollbackAsync(ct);
-                throw;
-            }
-        }, cancellationToken);
+        return await strategy.ExecuteAsync<FullSetModel>(
+            ct => UpdateInternalAsync(factory, userName, set, ct), cancellationToken);
     }
 
-    private Task<FullSetModel> GetSetAsync(string userName, int setId, CT cancellationToken)
+    private static async Task<FullSetModel> UpdateInternalAsync(
+        IDbContextFactory<FlashcardsDbContext> factory, string userName, SetWithCardsModel set, CT ct)
     {
-        return (from s in _ctx.Sets
+        await using var ctx = factory.CreateDbContext();
+        await using var transaction = await ctx.Database.BeginTransactionAsync(ct);
+
+        DB.Set existingSet = await ReadSetWithUpdateLockAsync(ctx, set.Id.Value, userName, ct);
+
+        if (existingSet == null)
+        {
+            throw new InvalidOperationException($"Set with Id {set.Id} not found or does not belong to user {userName}");
+        }
+
+        ProcessUpdatingSet(ctx, existingSet, set);
+
+        await ctx.SaveChangesAsync(ct);
+
+        FullSetModel setResult = await ReadSetAsync(ctx, set.Id.Value, userName, false, ct);
+
+        await transaction.CommitAsync(ct);
+
+        return setResult;
+    }
+
+    private static async Task<ImportResultModel> ImportInternalAsync(ImportParam param, CT ct)
+    {
+        var (factory, userName, setId, append, cards) = param;
+
+        await using var ctx = factory.CreateDbContext();
+        await using var transaction = await ctx.Database.BeginTransactionAsync(ct);
+
+        var existingSet = await ReadSetWithUpdateLockAsync(ctx, setId, userName, ct);
+
+        if (existingSet == null)
+        {
+            throw new InvalidOperationException($"Set with Id {setId} not found or does not belong to user {userName}");
+        }
+
+        ProcessAddingCardsToSet(ctx, existingSet, cards, append);
+
+        await ctx.SaveChangesAsync(ct);
+
+        FullSetWithCardsModel resultSet = await ReadSetAsync(ctx, setId, userName, true, ct);
+
+        await transaction.CommitAsync(ct);
+
+        return new ImportResultModel { Imported = cards.Length, Set = resultSet };
+    }
+
+    private static Task<DB.Set> ReadSetWithUpdateLockAsync(FlashcardsDbContext ctx, int setId, string userName, CT ct)
+    {
+        // Serialize concurrent modifications of the same set
+        // (e.g. double submit, multiple tabs/devices, or repeated requests).
+        return ctx.Sets
+            .FromSqlInterpolated($"""
+                SELECT *
+                FROM [Sets] WITH (UPDLOCK, ROWLOCK)
+                WHERE Id = {setId}
+                  AND UserName = {userName}
+                """)
+            .Include(s => s.Cards)
+            .AsTracking()
+            .SingleOrDefaultAsync(ct);
+    }
+
+    private static void ProcessUpdatingSet(FlashcardsDbContext ctx, DB.Set existingSet, SetWithCardsModel set)
+    {
+        existingSet.Name = set.Name;
+        existingSet.Modified = DateTime.UtcNow;
+
+        var newCardIds = set.Cards
+            .Where(c => c.Id > 0)
+            .Select(c => c.Id)
+            .ToHashSet();
+
+        var cardsToRemove = existingSet.Cards
+            .Where(c => !newCardIds.Contains(c.Id))
+            .ToList();
+
+        ctx.Cards.RemoveRange(cardsToRemove);
+
+        foreach (CardModel cardModel in set.Cards)
+        {
+            if (cardModel.Id > 0)
+            {
+                DB.Card existingCard = existingSet.Cards
+                    .FirstOrDefault(c => c.Id == cardModel.Id);
+
+                if (existingCard == null)
+                {
+                    throw new InvalidOperationException(
+                        $"Card with Id {cardModel.Id} not found.");
+                }
+
+                existingCard.FrontSide = cardModel.Front;
+                existingCard.BackSide = cardModel.Back;
+            }
+            else
+            {
+                existingSet.Cards.Add(new DB.Card
+                {
+                    FrontSide = cardModel.Front,
+                    BackSide = cardModel.Back,
+                    KnowCounter = 0,
+                    NotKnowCounter = 0
+                });
+            }
+        }
+    }
+
+    private static void ProcessAddingCardsToSet(FlashcardsDbContext ctx, Set existingSet, CardModel[] cards, bool append)
+    {
+        if (!append)
+        {
+            ctx.Cards.RemoveRange(existingSet.Cards);
+        }
+
+        foreach (CardModel cardModel in cards)
+        {
+            var dbCard = new DB.Card
+            {
+                FrontSide = cardModel.Front,
+                BackSide = cardModel.Back,
+                KnowCounter = 0,
+                NotKnowCounter = 0
+            };
+            existingSet.Cards.Add(dbCard);
+        }
+
+        existingSet.Modified = DateTime.UtcNow;
+    }
+
+    private static Task<FullSetWithCardsModel> ReadSetAsync(
+        FlashcardsDbContext ctx, int setId, string userName, bool includeCards, CT cancellationToken)
+    {
+        return (from s in ctx.Sets
                 where s.Id == setId && s.UserName == userName
-                select new FullSetModel
+                select new FullSetWithCardsModel
                 {
                     Id = s.Id,
                     Name = s.Name,
                     Shuffle = s.IsShuffled,
                     TotalCards = s.Cards.Count,
-                    LearntCards = s.Cards.Count(card => card.KnowCounter > card.NotKnowCounter + LearntThreshold),
+                    LearntCards = s.Cards.Count(card => card.KnowCounter > card.NotKnowCounter + Constants.LearntThreshold),
                     Created = s.Created,
-                    Modified = s.Modified
+                    Modified = s.Modified,
+                    Cards = (includeCards ? s.Cards.Select(c => new CardModel
+                    {
+                        Id = c.Id,
+                        Front = c.FrontSide,
+                        Back = c.BackSide
+                    }).OrderBy(c => c.Id).ToArray() : null)
                 }).SingleAsync(cancellationToken);
     }
 }

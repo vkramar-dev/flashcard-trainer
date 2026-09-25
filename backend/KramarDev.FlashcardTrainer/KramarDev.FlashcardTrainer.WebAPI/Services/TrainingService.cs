@@ -49,7 +49,7 @@ public sealed class TrainingService(FlashcardsDbContext dbContext) : ITrainingSe
                                          Id = card.Id,
                                          Front = card.FrontSide,
                                          Back = card.BackSide
-                                     }).ToArray();
+                                     }).OrderBy(c => c.Id).ToArray();
 
         if (shuffle)
         {

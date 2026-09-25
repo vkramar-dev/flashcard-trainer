@@ -1,13 +1,18 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace KramarDev.FlashcardTrainer.WebAPI.Services;
 
 public sealed class AuthService(
+    FlashcardsDbContext dbContext,
     UserManager<IdentityUser> userManager,
-    IJwtTokenGenerator tokenService) : IAuthService
+    IJwtTokenGenerator tokenService,
+    ISettingsService settingsService) : IAuthService
 {
+    readonly FlashcardsDbContext _ctx = dbContext;
     readonly UserManager<IdentityUser> _userManager = userManager;
     readonly IJwtTokenGenerator _tokenService = tokenService;
+    readonly ISettingsService _settingsService = settingsService;
 
     public async Task<AuthResponseModel> GetUserAsync(string userName)
     {
@@ -36,33 +41,45 @@ public sealed class AuthService(
     }
 
     public async Task<ServiceResult<AuthResponseModel>> RegisterAsync(
-        AuthModel register)
+    AuthModel register)
     {
-        var user = new IdentityUser
+        var strategy = _ctx.Database.CreateExecutionStrategy();
+
+        return await strategy.ExecuteAsync(async () =>
         {
-            UserName = register.Email,
-            Email = register.Email
-        };
+            await using var transaction =
+                await _ctx.Database.BeginTransactionAsync();
 
-        var result = await _userManager.CreateAsync(
-            user,
-            register.Password);
+            var user = new IdentityUser
+            {
+                UserName = register.Email,
+                Email = register.Email
+            };
 
-        if (!result.Succeeded)
-            return Failure(result);
+            var result = await _userManager.CreateAsync(
+                user,
+                register.Password);
 
-        result = await _userManager.AddToRoleAsync(
-            user,
-            Constants.UserRole);
+            if (!result.Succeeded)
+                return Failure(result);
 
-        if (!result.Succeeded)
-        {
-            await _userManager.DeleteAsync(user);
-            return Failure(result);
-        }
+            result = await _userManager.AddToRoleAsync(
+                user,
+                Constants.UserRole);
 
-        return ServiceResult<AuthResponseModel>.Success(
-            await CreateUserModelAsync(user));
+            if (!result.Succeeded)
+                return Failure(result);
+
+            await _settingsService.CreateDefaultSettingsAsync(
+                user.UserName!,
+                CancellationToken.None);
+
+            var response = await CreateUserModelAsync(user);
+
+            await transaction.CommitAsync();
+
+            return ServiceResult<AuthResponseModel>.Success(response);
+        });
     }
 
     private async Task<AuthResponseModel> CreateUserModelAsync(

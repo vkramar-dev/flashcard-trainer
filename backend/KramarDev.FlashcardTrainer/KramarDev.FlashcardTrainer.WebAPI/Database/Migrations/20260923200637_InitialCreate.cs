@@ -58,8 +58,8 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserName = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UserName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     IsShuffled = table.Column<bool>(type: "bit", nullable: false),
                     Created = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Modified = table.Column<DateTime>(type: "datetime2", nullable: false)
@@ -75,8 +75,8 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserName = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    ColorScheme = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UserName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    ColorScheme = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
                     HideKnownCards = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
@@ -197,8 +197,8 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     SetId = table.Column<int>(type: "int", nullable: false),
-                    FrontSide = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    BackSide = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FrontSide = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
+                    BackSide = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     KnowCounter = table.Column<int>(type: "int", nullable: false),
                     NotKnowCounter = table.Column<int>(type: "int", nullable: false)
                 },
@@ -262,9 +262,10 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Cards_SetId",
+                name: "IX_Cards_SetId_FrontSide",
                 table: "Cards",
-                column: "SetId");
+                columns: new[] { "SetId", "FrontSide" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Sets_UserName",
@@ -275,8 +276,7 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
                 name: "IX_Settings_UserName",
                 table: "Settings",
                 column: "UserName",
-                unique: true,
-                filter: "[UserName] IS NOT NULL");
+                unique: true);
         }
 
         /// <inheritdoc />
