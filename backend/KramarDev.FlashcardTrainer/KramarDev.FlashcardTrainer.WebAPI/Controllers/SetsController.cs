@@ -38,9 +38,10 @@ public sealed class SetsController(ISetsService setsService) : BaseController
 
     [Authorize]
     [HttpPatch("{setId:int}/shuffle")]
-    public async Task<ActionResult<FullSetModel>> Shuffle(int setId, ShuffleModel shuffleModel, CT cancellationToken)
+    public async Task<IActionResult> Shuffle(int setId, ShuffleModel shuffleModel, CT cancellationToken)
     {
-        return Ok(await _setsService.UpdateShuffleAsync(UserName, setId, shuffleModel.Shuffle, cancellationToken));
+        await _setsService.UpdateShuffleAsync(UserName, setId, shuffleModel.Shuffle, cancellationToken);
+        return NoContent();
     }
 
     [Authorize]

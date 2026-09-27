@@ -10,7 +10,7 @@ public interface ISetsService
 
     Task<int> DeleteSetAsync(string userName, int setId, CT cancellationToken);
 
-    Task<FullSetModel> UpdateShuffleAsync(string userName, int setId, bool shuffle, CT cancellationToken);
+    Task UpdateShuffleAsync(string userName, int setId, bool shuffle, CT cancellationToken);
 
     Task<ImportResultModel> ImportAsync(string userName,
         int setId, bool append, CardModel[] cards, CT cancellationToken);
