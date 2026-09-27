@@ -63,7 +63,11 @@ export default function TrainingPage() {
 
   const total = cards.length
   const position = currentIndex + 1
-  const setName = useAppSelector((state) => state.sets.selectedSet?.name ?? "")
+  const setName = useAppSelector((state) => {
+    const listed = state.sets.items.find((set) => set.id === setId)
+    if (listed) return listed.name
+    return state.sets.selectedSet?.id === setId ? state.sets.selectedSet.name : ""
+  })
 
   if (status === "loading") {
     return (
@@ -88,7 +92,7 @@ export default function TrainingPage() {
     return (
       <PageContainer title="Training complete" maxWidth="sm">
         <EmptyState
-          title={`You finished ${setName}`}
+          title={setName ? `You finished ${setName}` : "You finished the set"}
           description={`All ${total} card${total === 1 ? "" : "s"} in this set have been reviewed and your answers are saved.`}
           action={
             <Stack direction={{ xs: "column", sm: "row" }} gap={1.5} justifyContent="center">
