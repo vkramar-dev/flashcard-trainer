@@ -70,6 +70,9 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
                     b.Property<bool>("IsShuffled")
                         .HasColumnType("bit");
 
+                    b.Property<DateTime?>("LastTrained")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("Modified")
                         .HasColumnType("datetime2");
 

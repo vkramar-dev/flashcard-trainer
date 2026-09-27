@@ -14,5 +14,7 @@ public class Set
 
     public DateTime Modified { get; set; } = DateTime.UtcNow;
 
+    public DateTime? LastTrained { get; set; }
+
     public ICollection<Card> Cards { get; set; }
 }

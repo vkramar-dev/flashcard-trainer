@@ -62,7 +62,8 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     IsShuffled = table.Column<bool>(type: "bit", nullable: false),
                     Created = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Modified = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Modified = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastTrained = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
 {
     [DbContext(typeof(FlashcardsDbContext))]
-    [Migration("20260923200637_InitialCreate")]
+    [Migration("20260927200041_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -72,6 +72,9 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
 
                     b.Property<bool>("IsShuffled")
                         .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastTrained")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("Modified")
                         .HasColumnType("datetime2");
