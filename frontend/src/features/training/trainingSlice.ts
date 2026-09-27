@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/tool
 import { toErrorMessage } from "../../api/client"
 import { trainingApi } from "../../api/trainingApi"
 import type { CardData, CardSide, RequestStatus, StoredTrainingProgress } from "../../types"
+import { markLastTrained } from "../sets/setsSlice"
 import { clearTrainingProgress, writeTrainingProgress } from "./trainingStorage"
 
 interface TrainingState {
@@ -30,7 +31,7 @@ const initialState: TrainingState = {
 
 export const startTraining = createAsyncThunk<CardData[], { setId: number; shouldHide: boolean }, { rejectValue: string; }>(
   "training/start",
-  async ({ setId, shouldHide }, { rejectWithValue }) => {
+  async ({ setId, shouldHide }, { dispatch, rejectWithValue }) => {
     try {
       const cards = await trainingApi.start(setId, shouldHide)
       writeTrainingProgress({ setId, cards, currentIndex: 0 })
@@ -38,6 +39,8 @@ export const startTraining = createAsyncThunk<CardData[], { setId: number; shoul
       if (cards.length === 0) {
         return rejectWithValue("This set has no cards yet. Add some cards before training.")
       }
+
+      dispatch(markLastTrained(setId))
 
       return cards
     } catch (error) {

@@ -102,7 +102,7 @@ export function SetTile({ set, onAction, onToggleShuffle }: SetTileProps) {
             Modified: {formatDate(set.modified)}
           </Typography>
           <Typography variant="caption" color="text.secondary" display="block">
-            Last trained: {formatDate(set.created)}
+            Last trained: {formatDate(set.lastTrained)}
           </Typography>
         </Box>
         <ShufflePushpin enabled={set.shuffle} setName={set.name} onToggle={() => onToggleShuffle(set)} />

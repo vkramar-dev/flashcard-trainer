@@ -8,10 +8,11 @@ public sealed class TrainingController(ITrainingService trainingService) : BaseC
     readonly ITrainingService _trainingService = trainingService;
 
     [Authorize]
-    [HttpGet("start")]
-    public async Task<ActionResult<CardModel[]>> Start(int setId, bool shouldHide, CT cancellationToken)
+    [HttpPost("start")]
+    public async Task<ActionResult<CardModel[]>> Start(StartModel startModel, CT cancellationToken)
     {
-        return Ok(await _trainingService.StartAsync(UserName, setId, shouldHide, cancellationToken));
+        return Ok(await _trainingService.StartAsync(
+            UserName, startModel.SetId, startModel.ShouldHide, cancellationToken));
     }
 
     [Authorize]

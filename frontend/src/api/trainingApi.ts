@@ -3,9 +3,10 @@ import type { CardData } from "../types"
 
 export const trainingApi = {
   async start(setId: number, shouldHide: boolean): Promise<CardData[]> {
-    const { data } = await apiClient.get<CardData[]>(
-      `/training/start?setId=${setId}&shouldHide=${shouldHide}`,
-    );
+    const { data } = await apiClient.post<CardData[]>("/training/start", {
+      setId,
+      shouldHide,
+    });
     return data;
   },
   

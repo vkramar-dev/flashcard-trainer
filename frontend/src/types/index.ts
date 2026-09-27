@@ -26,6 +26,7 @@ export interface FullSetModel {
   learntCards: number
   created: string
   modified: string
+  lastTrained: string | null
 }
 
 export interface SetDetail extends FullSetModel {

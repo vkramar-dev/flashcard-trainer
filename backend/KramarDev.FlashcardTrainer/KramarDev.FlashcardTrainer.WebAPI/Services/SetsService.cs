@@ -21,7 +21,8 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
                     TotalCards = s.Cards.Count,
                     LearntCards = s.Cards.Count(card => card.KnowCounter > card.NotKnowCounter + Constants.LearntThreshold),
                     Created = s.Created,
-                    Modified = s.Modified
+                    Modified = s.Modified,
+                    LastTrained = s.LastTrained
                 }).ToArrayAsync(cancellationToken);
     }
 
@@ -289,6 +290,7 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
                     LearntCards = s.Cards.Count(card => card.KnowCounter > card.NotKnowCounter + Constants.LearntThreshold),
                     Created = s.Created,
                     Modified = s.Modified,
+                    LastTrained = s.LastTrained,
                     Cards = (includeCards ? s.Cards.Select(c => new CardModel
                     {
                         Id = c.Id,
