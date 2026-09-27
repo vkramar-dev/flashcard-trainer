@@ -12,7 +12,7 @@ const features = [
   },
   {
     title: "Shuffle",
-    body: "The pushpin on a set tile controls the card order. When it is pinned, the set is shuffled at the start of each session; when it is loose, cards keep the order you created them in.",
+    body: "The shuffle control on a set tile sets the card order. When it is on, the set is shuffled at the start of each session; when it is off, cards keep the order you created them in.",
   },
   {
     title: "Import and export",

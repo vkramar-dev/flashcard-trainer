@@ -80,8 +80,8 @@ function SetStatisticsCard({ stats, highlighted }: { stats: SetStatisticsModel; 
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell>Front</TableCell>
-                  <TableCell>Back</TableCell>
+                  <TableCell>Side A</TableCell>
+                  <TableCell>Side B</TableCell>
                   <TableCell align="right">Missed</TableCell>
                   <TableCell align="right">Miss rate</TableCell>
                 </TableRow>
