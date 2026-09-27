@@ -15,6 +15,7 @@ public sealed class StatisticsService(FlashcardsDbContext dbContext) : IStatisti
             {
                 SetId = s.Id,
                 SetName = s.Name,
+                TotalCards = s.Cards.Count,
                 LearntCards = s.Cards.Count(c => c.KnowCounter > c.NotKnowCounter + Constants.LearntThreshold),
                 TotalCardsShown = s.Cards.Sum(c => c.KnowCounter + c.NotKnowCounter),
                 HardestCards = s.Cards

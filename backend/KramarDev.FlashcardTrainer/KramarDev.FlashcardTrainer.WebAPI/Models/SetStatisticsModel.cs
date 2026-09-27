@@ -6,6 +6,8 @@ public class SetStatisticsModel
 
     public string SetName { get; set; }
 
+    public int TotalCards { get; set; }
+
     public int LearntCards { get; set; }
 
     public int TotalCardsShown { get; set; }
