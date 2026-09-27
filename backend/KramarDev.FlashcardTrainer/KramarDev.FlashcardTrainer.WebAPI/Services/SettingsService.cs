@@ -2,7 +2,7 @@
 
 namespace KramarDev.FlashcardTrainer.WebAPI.Services;
 
-public sealed class SettingsService( FlashcardsDbContext dbContext) : ISettingsService
+public sealed class SettingsService(FlashcardsDbContext dbContext) : ISettingsService
 {
     readonly FlashcardsDbContext _ctx = dbContext;
     const string DefaultColorScheme = "graphite";

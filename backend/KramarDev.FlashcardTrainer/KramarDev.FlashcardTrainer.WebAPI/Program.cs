@@ -78,6 +78,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();
 app.MapControllers();
+app.MapGet("/", () => Results.Ok("Flashcard API"));
 
 using (var scope = app.Services.CreateScope())
 {
