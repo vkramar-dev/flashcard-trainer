@@ -89,12 +89,9 @@ export default function EditSetPage() {
   )
 
   const nameError = name.trim().length === 0 ? "Please enter a name for this set." : null
-  const cardsError =
-    filledCards.length === 0
-      ? "Add at least one card."
-      : filledCards.some((card) => !card.front.trim() || !card.back.trim())
-        ? "Every card needs both a front and a back value."
-        : null
+  const cardsError = filledCards.some((card) => !card.front.trim() || !card.back.trim())
+    ? "Every card needs both a front and a back value."
+    : null
 
   const updateCard = (key: string, patch: Partial<Pick<DraftCard, "front" | "back">>) => {
     setCards((current) => current.map((card) => (card.key === key ? { ...card, ...patch } : card)))
