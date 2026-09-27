@@ -1,6 +1,6 @@
 /** Formats an ISO timestamp as dd-MM-yyyy, as required by the set tiles. */
 export function formatDate(iso: string | null | undefined): string {
-  if (!iso) return "never"
+  if (!iso) return "-"
 
   const date = new Date(iso)
   if (Number.isNaN(date.getTime())) return "unknown"
