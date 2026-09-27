@@ -76,6 +76,7 @@ const settingsSlice = createSlice({
     setSettings(state, action: PayloadAction<SettingsModel>) {
       const scheme = action.payload.colorScheme as ColorSchemeName
       state.colorScheme = scheme
+      state.hideKnownCards = action.payload.hideKnownCards
       cacheScheme(scheme)
     }
   },
