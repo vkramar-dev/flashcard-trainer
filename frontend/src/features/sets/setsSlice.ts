@@ -91,11 +91,11 @@ export const deleteSet = createAsyncThunk<void, number, { rejectValue: string }>
   },
 )
 
-export const toggleShuffle = createAsyncThunk<FullSetModel, { setId: number; shuffle: boolean }, { rejectValue: string }>(
+export const toggleShuffle = createAsyncThunk<void, { setId: number; shuffle: boolean }, { rejectValue: string }>(
   "sets/toggleShuffle",
   async ({ setId, shuffle }, { rejectWithValue }) => {
     try {
-      return await setsApi.updateShuffle(setId, shuffle)
+      await setsApi.updateShuffle(setId, shuffle)
     } catch (error) {
       return rejectWithValue(toErrorMessage(error, "Could not update the shuffle setting."))
     }
@@ -273,7 +273,10 @@ const setsSlice = createSlice({
       })
 
       .addCase(toggleShuffle.fulfilled, (state, action) => {
-        state.items = upsertSummary(state.items, action.payload)
+        const item = state.items.find((set) => set.id === action.meta.arg.setId)
+        if (item) {
+          item.shuffle = action.meta.arg.shuffle
+        }
       })
       .addCase(toggleShuffle.rejected, (state, action) => {
         state.saveError = action.payload ?? "Could not update the shuffle setting."

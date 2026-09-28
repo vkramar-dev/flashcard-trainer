@@ -86,6 +86,18 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
             .ExecuteDeleteAsync(cancellationToken);
     }
 
+    public async Task UpdateShuffleAsync(string userName, int setId, bool shuffle, CT cancellationToken)
+    {
+        int updated = await _ctx.Sets
+            .Where(s => s.Id == setId && s.UserName == userName)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(s => s.IsShuffled, shuffle), cancellationToken);
+
+        if (updated == 0)
+        {
+            throw new InvalidOperationException($"Set with Id {setId} not found or does not belong to user {userName}");
+        }
+    }
+
     public async Task<ImportResultModel> ImportAsync(string userName,
         int setId, bool append, CardModel[] cards, CT cancellationToken)
     {

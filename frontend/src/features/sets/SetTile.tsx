@@ -3,7 +3,7 @@ import { Box, Card, CardActionArea, Divider, IconButton, Menu, MenuItem, Stack, 
 import { useState, type MouseEvent } from "react"
 import type { FullSetModel } from "../../types"
 import { formatDate } from "../../utils/date"
-import { ShufflePushpin } from "./ShufflePushpin"
+import { ShuffleToggle } from "./ShuffleToggle"
 
 export type SetTileAction = "start" | "edit" | "import" | "export" | "statistics" | "remove"
 
@@ -105,7 +105,7 @@ export function SetTile({ set, onAction, onToggleShuffle }: SetTileProps) {
             Last trained: {formatDate(set.lastTrained)}
           </Typography>
         </Box>
-        <ShufflePushpin enabled={set.shuffle} setName={set.name} onToggle={() => onToggleShuffle(set)} />
+        <ShuffleToggle enabled={set.shuffle} setName={set.name} onToggle={() => onToggleShuffle(set)} />
       </Stack>
 
       <Menu
