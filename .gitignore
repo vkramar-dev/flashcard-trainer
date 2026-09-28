@@ -13,9 +13,6 @@
 *.userosscache
 *.sln.docstates
 
-appsettings.Development.json
-appsettings.json
-
 # JetBrains Rider / ReSharper
 .idea/
 _ReSharper*/
