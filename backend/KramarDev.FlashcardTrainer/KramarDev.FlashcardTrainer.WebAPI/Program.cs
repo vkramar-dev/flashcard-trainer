@@ -4,8 +4,8 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("DbConnection")
-                ?? throw new InvalidOperationException("Connection string 'DbConnection' was not found.");
+var connectionString = builder.Configuration.GetConnectionString("FC_DbConnection")
+                ?? throw new InvalidOperationException("Connection string 'FC_DbConnection' was not found.");
 
 // Add services to the container.
 
