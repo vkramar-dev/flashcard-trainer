@@ -105,6 +105,8 @@ export default function EditSetPage() {
     })
   }
 
+  const addCard = () => setCards((current) => [...current, emptyCard()])
+
   const handleSave = async () => {
     setShowErrors(true)
     if (nameError || cardsError) return
@@ -149,21 +151,23 @@ export default function EditSetPage() {
 
   const saving = saveStatus === "loading"
 
+  const formActions = (
+    <Stack direction="row" gap={1.5}>
+      <Button color="inherit" onClick={requestLeave} disabled={saving}>
+        Cancel
+      </Button>
+      <Button variant="contained" onClick={handleSave} disabled={saving}>
+        {saving ? "Saving..." : "Save"}
+      </Button>
+    </Stack>
+  )
+
   return (
     <PageContainer
       title={isNew ? "New set" : "Edit set"}
       description="Cards are only stored once you save. Empty rows are ignored."
       maxWidth="md"
-      actions={
-        <Stack direction="row" gap={1.5}>
-          <Button color="inherit" onClick={requestLeave} disabled={saving}>
-            Cancel
-          </Button>
-          <Button variant="contained" onClick={handleSave} disabled={saving}>
-            {saving ? "Saving..." : "Save"}
-          </Button>
-        </Stack>
-      }
+      actions={formActions}
     >
       <Stack gap={3}>
         <TextField
@@ -185,11 +189,7 @@ export default function EditSetPage() {
               </Typography>
               <Chip label={filledCards.length} size="small" />
             </Stack>
-            <Button
-              startIcon={<AddIcon />}
-              onClick={() => setCards((current) => [...current, emptyCard()])}
-              disabled={saving}
-            >
+            <Button startIcon={<AddIcon />} onClick={addCard} disabled={saving}>
               Add card
             </Button>
           </Stack>
@@ -246,6 +246,12 @@ export default function EditSetPage() {
             </Stack>
           </Paper>
 
+          <Stack direction="row" justifyContent="flex-end" sx={{ mt: 1.5 }}>
+            <Button startIcon={<AddIcon />} onClick={addCard} disabled={saving}>
+              Add card
+            </Button>
+          </Stack>
+
           {showErrors && cardsError && (
             <Alert severity="error" sx={{ mt: 2 }}>
               {cardsError}
@@ -254,6 +260,10 @@ export default function EditSetPage() {
         </Box>
 
         {saveError && <Alert severity="error">{saveError}</Alert>}
+
+        <Stack direction="row" justifyContent="flex-end">
+          {formActions}
+        </Stack>
       </Stack>
 
       <ConfirmDialog
