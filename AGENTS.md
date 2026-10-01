@@ -306,19 +306,9 @@ Database access uses Entity Framework Core and SQL Server.
 
 
 
-SQL Server retry support is enabled with:
-
-
-
-`EnableRetryOnFailure()`.
-
-
-
 Some set update/import operations intentionally use:
 
 
-
-\- EF Core execution strategies
 
 \- explicit database transactions
 
@@ -352,7 +342,7 @@ Do not remove or substantially change this concurrency behavior unless explicitl
 
 \- Preserve database constraints and validation unless a change is explicitly required.
 
-\- Do not silently change transaction boundaries or retry behavior.
+\- Do not silently change transaction boundaries.
 
 \- Do not perform broad architectural refactoring unless explicitly requested.
 

@@ -107,7 +107,6 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
         }
 
         var factory = _ctx.GetService<IDbContextFactory<FlashcardsDbContext>>();
-        var strategy = _ctx.Database.CreateExecutionStrategy();
 
         ImportParam param = new(
             factory,
@@ -116,9 +115,7 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
             append,
             cards);
 
-        return await strategy.ExecuteAsync<ImportResultModel>(
-            ct => ImportInternalAsync(param, ct),
-            cancellationToken);
+        return await ImportInternalAsync(param, cancellationToken);
     }
 
     private async Task<FullSetModel> CreateAsync(string userName, SetWithCardsModel set, CT cancellationToken)
@@ -150,10 +147,8 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
 
         // Obtain IDbContextFactory from the injected context's internal services
         var factory = _ctx.GetService<IDbContextFactory<FlashcardsDbContext>>();
-        var strategy = _ctx.Database.CreateExecutionStrategy();
 
-        return await strategy.ExecuteAsync<FullSetModel>(
-            ct => UpdateInternalAsync(factory, userName, set, ct), cancellationToken);
+        return await UpdateInternalAsync(factory, userName, set, cancellationToken);
     }
 
     private static async Task<FullSetModel> UpdateInternalAsync(
