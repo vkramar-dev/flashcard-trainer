@@ -10,6 +10,22 @@ export interface AuthModel {
   password: string
 }
 
+export interface RegisterModel {
+  email: string
+  password: string
+  code: string
+}
+
+export interface SendRegistrationCodeResponse {
+  codeExpAt: string
+}
+
+export interface RegistrationFailure {
+  code: string
+  message: string
+  attemptsRemaining: number | null
+}
+
 /** A card as returned inside a set detail response or edited on the Add/Edit page. */
 export interface CardData {
   id: number

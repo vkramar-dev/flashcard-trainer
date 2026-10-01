@@ -1,4 +1,5 @@
 import axios from "axios"
+import type { RegistrationFailure } from "../types"
 
 /**
  * Single Axios instance used by the API service layer.
@@ -44,6 +45,32 @@ apiClient.interceptors.request.use((config) => {
  * Turns any failure into a friendly message.
  * Raw JavaScript errors are never surfaced to the user.
  */
+export function readRegistrationFailure(error: unknown, fallback: string): RegistrationFailure {
+  if (axios.isAxiosError(error)) {
+    const data = error.response?.data as
+      | { code?: unknown; message?: unknown; attemptsRemaining?: unknown }
+      | undefined
+
+    if (data && typeof data.message === "string" && data.message) {
+      return {
+        code: typeof data.code === "string" ? data.code : "Unknown",
+        message: data.message,
+        attemptsRemaining: typeof data.attemptsRemaining === "number" ? data.attemptsRemaining : null,
+      }
+    }
+
+    if (error.code === "ERR_NETWORK") {
+      return {
+        code: "Network",
+        message: "Could not reach the server. Please check your connection.",
+        attemptsRemaining: null,
+      }
+    }
+  }
+
+  return { code: "Unknown", message: fallback, attemptsRemaining: null }
+}
+
 export function toErrorMessage(error: unknown, fallback = "Something went wrong. Please try again."): string {
   if (axios.isAxiosError(error)) {
     const message = (error.response?.data as { message?: string } | undefined)?.message

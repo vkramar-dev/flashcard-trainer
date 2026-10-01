@@ -1,8 +1,13 @@
 import { apiClient } from "./client"
-import type { AuthResponseModel, AuthModel } from "../types"
+import type { AuthResponseModel, AuthModel, RegisterModel, SendRegistrationCodeResponse } from "../types"
 
 export const authApi = {
-  async signUp(credentials: AuthModel): Promise<AuthResponseModel> {
+  async sendRegistrationCode(email: string): Promise<SendRegistrationCodeResponse> {
+    const { data } = await apiClient.post<SendRegistrationCodeResponse>("/auth/register/send-code", { email })
+    return data
+  },
+
+  async signUp(credentials: RegisterModel): Promise<AuthResponseModel> {
     const { data } = await apiClient.post<AuthResponseModel>("/auth/register", credentials)
     return data
   },

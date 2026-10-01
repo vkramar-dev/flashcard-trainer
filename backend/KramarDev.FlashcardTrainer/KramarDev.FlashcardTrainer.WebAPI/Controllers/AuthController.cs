@@ -2,47 +2,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Resend;
 
 namespace KramarDev.FlashcardTrainer.WebAPI.Controllers;
 
-public sealed class AuthController(IAuthService authService, IResend resend, IConfiguration configuration) : BaseController
+public sealed class AuthController(IAuthService authService) : BaseController
 {
     readonly IAuthService _authService = authService;
-    readonly IResend _resend = resend;
-    readonly IConfiguration _configuration = configuration;
-
-    [HttpPost("email")]
-    public async Task<ActionResult> Email(CT cancellationToken)
-    {
-        var fromEmail = _configuration["Resend:FC_FromEmail"]!;
-        var fromName = _configuration["Resend:FC_FromName"]!;
-
-        string verificationCode = new Random().Next(100000, 999999).ToString();
-
-        var message = new EmailMessage
-        {
-            From = $"{fromName}<{fromEmail}>",
-            Subject = "Your Flashcard Trainer verification code",
-            HtmlBody = $"" +
-            $"Flashcard Trainer Your verification code is:" +
-            $"" +
-            $"{verificationCode}" +
-            $"" +
-            $"The code expires in 10 minutes." +
-            $"" +
-            $"If you didn't create an account, you can ignore this email."
-        };
-
-        message.To.Add("kramarvladimir@gmail.com");
-        message.To.Add("vkramar.biz@gmail.com");
-
-        var response = await _resend.EmailSendAsync(
-            message,
-            cancellationToken);
-
-        return Ok(response.Content);
-    }
 
     [HttpPost("login")]
     [EnableRateLimiting(Constants.RateLimiterName)]
@@ -57,23 +22,40 @@ public sealed class AuthController(IAuthService authService, IResend resend, ICo
         return user;
     }
 
+    [HttpPost("register/send-code")]
+    [EnableRateLimiting(Constants.RateLimiterName)]
+    [RequestSizeLimit(4 * 1024)]
+    public async Task<ActionResult<SendRegistrationCodeResponse>> SendRegistrationCode(
+        SendRegistrationCodeModel model,
+        CT cancellationToken)
+    {
+        var ipAddress = ClientIp.Normalize(HttpContext.Connection.RemoteIpAddress);
+
+        if (ipAddress == null)
+            return RegistrationFailure(RegistrationErrorCodes.ClientIpMissingError());
+
+        var result = await _authService.SendRegistrationCodeAsync(
+            model.Email,
+            ipAddress,
+            cancellationToken);
+
+        if (!result.Succeeded)
+            return RegistrationFailure(result.Error);
+
+        return result.Value;
+    }
+
     [HttpPost("register")]
     [EnableRateLimiting(Constants.RateLimiterName)]
     [RequestSizeLimit(4 * 1024)]
-    public async Task<ActionResult<AuthResponseModel>> Register(AuthModel register)
+    public async Task<ActionResult<AuthResponseModel>> Register(
+        RegisterModel register,
+        CT cancellationToken)
     {
-        var result = await _authService.RegisterAsync(register);
+        var result = await _authService.RegisterAsync(register, cancellationToken);
 
         if (!result.Succeeded)
-        {
-            foreach (var error in result.Errors)
-            {
-                foreach (var description in error.Value)
-                    ModelState.AddModelError(error.Key, description);
-            }
-
-            return ValidationProblem();
-        }
+            return RegistrationFailure(result.Error);
 
         return result.Value;
     }
@@ -90,5 +72,23 @@ public sealed class AuthController(IAuthService authService, IResend resend, ICo
         user.Token = await HttpContext.GetTokenAsync("access_token");
 
         return user;
+    }
+
+    private ActionResult RegistrationFailure(RegistrationError error)
+    {
+        var status = error.Code switch
+        {
+            RegistrationErrorCodes.IpBlocked => StatusCodes.Status429TooManyRequests,
+            RegistrationErrorCodes.EmailSendFailed => StatusCodes.Status503ServiceUnavailable,
+            RegistrationErrorCodes.TryAgain => StatusCodes.Status503ServiceUnavailable,
+            _ => StatusCodes.Status400BadRequest
+        };
+
+        return StatusCode(status, new RegistrationErrorResponse
+        {
+            Code = error.Code,
+            Message = error.Message,
+            AttemptsRemaining = error.AttemptsRemaining
+        });
     }
 }

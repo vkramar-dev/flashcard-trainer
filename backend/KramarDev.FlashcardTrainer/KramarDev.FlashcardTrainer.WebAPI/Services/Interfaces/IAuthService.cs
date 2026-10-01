@@ -6,5 +6,12 @@ public interface IAuthService
 
     Task<AuthResponseModel> LoginAsync(AuthModel login);
 
-    Task<ServiceResult<AuthResponseModel>> RegisterAsync(AuthModel register);
+    Task<RegistrationOutcome<SendRegistrationCodeResponse>> SendRegistrationCodeAsync(
+        string email,
+        string ipAddress,
+        CT cancellationToken);
+
+    Task<RegistrationOutcome<AuthResponseModel>> RegisterAsync(
+        RegisterModel register,
+        CT cancellationToken);
 }

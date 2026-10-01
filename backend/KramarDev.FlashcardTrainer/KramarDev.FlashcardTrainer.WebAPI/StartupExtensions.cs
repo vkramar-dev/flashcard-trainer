@@ -99,8 +99,8 @@ public static class StartupExtensions
             options.AddPolicy(rateLimitName, context =>
                 RateLimitPartition.GetFixedWindowLimiter(
                     partitionKey:
-                        context.Connection.RemoteIpAddress?.ToString()
-                        ?? "unknown",
+                        ClientIp.Normalize(context.Connection.RemoteIpAddress)
+                        ?? context.Connection.Id,
                     factory: _ => new FixedWindowRateLimiterOptions
                     {
                         PermitLimit = 10,

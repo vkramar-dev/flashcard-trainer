@@ -46,12 +46,12 @@ builder.Services.AddCors(options =>
 });
 
 var resendApiKey = builder.Configuration["Resend:FC_ApiKey"]
-    ?? throw new InvalidOperationException(
-        "Resend API key was not found.");
+    ?? throw new InvalidOperationException("Resend:FC_ApiKey was not found.");
 
 builder.Services.AddResend(options =>
 {
     options.ApiToken = resendApiKey;
+    options.ThrowExceptions = true;
 });
 
 builder.Services.AddJwtAuthentication(builder.Configuration);

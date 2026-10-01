@@ -83,6 +83,56 @@ public class FlashcardsDbContext : IdentityDbContext<IdentityUser>
             );
 
         builder.Entity<Set>().HasIndex(e => e.UserName);
+
+        builder.Entity<RegisteringUser>(entity =>
+        {
+            entity.ToTable("RegisteringUsers");
+
+            entity.Property(e => e.Email)
+                .HasMaxLength(256)
+                .IsRequired();
+
+            entity.Property(e => e.Code)
+                .HasMaxLength(3)
+                .IsFixedLength()
+                .IsUnicode(false)
+                .IsRequired();
+
+            entity.Property(e => e.IpAddress)
+                .HasMaxLength(45)
+                .IsUnicode(false)
+                .IsRequired();
+
+            entity.Property(e => e.FailCount)
+                .HasColumnType("tinyint")
+                .IsRequired();
+
+            entity.Property(e => e.CreatedAt)
+                .IsRequired();
+
+            entity.Property(e => e.CodeExpAt)
+                .IsRequired();
+
+            entity.Property(e => e.IsCompleted)
+                .IsRequired();
+
+            entity.HasIndex(e => new { e.Email, e.Id });
+            entity.HasIndex(e => new { e.IpAddress, e.CreatedAt });
+        });
+
+        builder.Entity<BlockedIpAddress>(entity =>
+        {
+            entity.ToTable("BlockedIpAddress");
+            entity.HasKey(e => new { e.ExpAt, e.IpAddress });
+
+            entity.Property(e => e.ExpAt)
+                .IsRequired();
+
+            entity.Property(e => e.IpAddress)
+                .HasMaxLength(45)
+                .IsUnicode(false)
+                .IsRequired();
+        });
     }
 
     public DbSet<Set> Sets { get; set; }
@@ -90,4 +140,8 @@ public class FlashcardsDbContext : IdentityDbContext<IdentityUser>
     public DbSet<Card> Cards { get; set; }
 
     public DbSet<Settings> Settings { get; set; }
+
+    public DbSet<RegisteringUser> RegisteringUsers { get; set; }
+
+    public DbSet<BlockedIpAddress> BlockedIpAddresses { get; set; }
 }

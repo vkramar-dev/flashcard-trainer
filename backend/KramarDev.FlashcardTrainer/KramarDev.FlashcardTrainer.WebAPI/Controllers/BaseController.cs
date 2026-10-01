@@ -18,7 +18,7 @@ public abstract class BaseController : ControllerBase
     {
         get
         {
-            return HttpContext.Connection.RemoteIpAddress?.ToString();
+            return ClientIp.Normalize(HttpContext.Connection.RemoteIpAddress);
         }
     }
 }
