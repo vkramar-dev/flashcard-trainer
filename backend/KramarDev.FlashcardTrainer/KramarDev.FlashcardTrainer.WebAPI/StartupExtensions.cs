@@ -12,8 +12,8 @@ public static class StartupExtensions
 {
     public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
-        var tokenKey = configuration["JWTSettings:TokenKey"]
-            ?? throw new InvalidOperationException("JWTSettings:TokenKey was not found.");
+        var tokenKey = configuration["JWTSettings:FC_TokenKey"]
+            ?? throw new InvalidOperationException("JWTSettings:FC_TokenKey was not found.");
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(opt =>

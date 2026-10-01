@@ -19,8 +19,8 @@ public sealed class JwtTokenGenerator(UserManager<IdentityUser> userManager, ICo
         var email = user.Email
             ?? throw new InvalidOperationException("Email is missing.");
 
-        var tokenKey = _config["JWTSettings:TokenKey"]
-            ?? throw new InvalidOperationException("JWTSettings:TokenKey is not configured.");
+        var tokenKey = _config["JWTSettings:FC_TokenKey"]
+            ?? throw new InvalidOperationException("JWTSettings:FC_TokenKey is not configured.");
 
         var claims = new List<Claim>
         {
