@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 
 using DB = KramarDev.FlashcardTrainer.WebAPI.Database.Tables;
 
@@ -99,23 +98,31 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
     }
 
     public async Task<ImportResultModel> ImportAsync(string userName,
-        int setId, bool append, CardModel[] cards, CT cancellationToken)
+        int setId, bool append, CardModel[] cards, CT ct)
     {
         if (setId == 0)
         {
             throw new InvalidOperationException("setId cannot be 0 for import");
         }
+        
+        await using var transaction = await _ctx.Database.BeginTransactionAsync(ct);
 
-        var factory = _ctx.GetService<IDbContextFactory<FlashcardsDbContext>>();
+        var existingSet = await ReadSetWithUpdateLockAsync(_ctx, setId, userName, ct);
 
-        ImportParam param = new(
-            factory,
-            userName,
-            setId,
-            append,
-            cards);
+        if (existingSet == null)
+        {
+            throw new InvalidOperationException($"Set with Id {setId} not found or does not belong to user {userName}");
+        }
 
-        return await ImportInternalAsync(param, cancellationToken);
+        ProcessAddingCardsToSet(_ctx, existingSet, cards, append);
+
+        await _ctx.SaveChangesAsync(ct);
+
+        FullSetWithCardsModel resultSet = await ReadSetAsync(_ctx, setId, userName, true, ct);
+
+        await transaction.CommitAsync(ct);
+
+        return new ImportResultModel { Imported = cards.Length, Set = resultSet };
     }
 
     private async Task<FullSetModel> CreateAsync(string userName, SetWithCardsModel set, CT cancellationToken)
@@ -141,63 +148,26 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
         return await ReadSetAsync(_ctx, newSet.Id, userName, false, cancellationToken);
     }
 
-    private async Task<FullSetModel> UpdateAsync(string userName, SetWithCardsModel set, CT cancellationToken)
+    private async Task<FullSetModel> UpdateAsync(string userName, SetWithCardsModel set, CT ct)
     {
-        int setId = set.Id ?? throw new InvalidOperationException("Set Id must be greater than 0 for update");
+        await using var transaction = await _ctx.Database.BeginTransactionAsync(ct);
 
-        // Obtain IDbContextFactory from the injected context's internal services
-        var factory = _ctx.GetService<IDbContextFactory<FlashcardsDbContext>>();
-
-        return await UpdateInternalAsync(factory, userName, set, cancellationToken);
-    }
-
-    private static async Task<FullSetModel> UpdateInternalAsync(
-        IDbContextFactory<FlashcardsDbContext> factory, string userName, SetWithCardsModel set, CT ct)
-    {
-        await using var ctx = factory.CreateDbContext();
-        await using var transaction = await ctx.Database.BeginTransactionAsync(ct);
-
-        DB.Set existingSet = await ReadSetWithUpdateLockAsync(ctx, set.Id.Value, userName, ct);
+        DB.Set existingSet = await ReadSetWithUpdateLockAsync(_ctx, set.Id.Value, userName, ct);
 
         if (existingSet == null)
         {
             throw new InvalidOperationException($"Set with Id {set.Id} not found or does not belong to user {userName}");
         }
 
-        ProcessUpdatingSet(ctx, existingSet, set);
+        ProcessUpdatingSet(_ctx, existingSet, set);
 
-        await ctx.SaveChangesAsync(ct);
+        await _ctx.SaveChangesAsync(ct);
 
-        FullSetModel setResult = await ReadSetAsync(ctx, set.Id.Value, userName, false, ct);
+        FullSetModel setResult = await ReadSetAsync(_ctx, set.Id.Value, userName, false, ct);
 
         await transaction.CommitAsync(ct);
 
         return setResult;
-    }
-
-    private static async Task<ImportResultModel> ImportInternalAsync(ImportParam param, CT ct)
-    {
-        var (factory, userName, setId, append, cards) = param;
-
-        await using var ctx = factory.CreateDbContext();
-        await using var transaction = await ctx.Database.BeginTransactionAsync(ct);
-
-        var existingSet = await ReadSetWithUpdateLockAsync(ctx, setId, userName, ct);
-
-        if (existingSet == null)
-        {
-            throw new InvalidOperationException($"Set with Id {setId} not found or does not belong to user {userName}");
-        }
-
-        ProcessAddingCardsToSet(ctx, existingSet, cards, append);
-
-        await ctx.SaveChangesAsync(ct);
-
-        FullSetWithCardsModel resultSet = await ReadSetAsync(ctx, setId, userName, true, ct);
-
-        await transaction.CommitAsync(ct);
-
-        return new ImportResultModel { Imported = cards.Length, Set = resultSet };
     }
 
     private static Task<DB.Set> ReadSetWithUpdateLockAsync(FlashcardsDbContext ctx, int setId, string userName, CT ct)
