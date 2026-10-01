@@ -1,6 +1,7 @@
 using KramarDev.FlashcardTrainer.WebAPI;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Resend;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,10 +24,6 @@ builder.Services.AddDbContextFactory<FlashcardsDbContext>(opt =>
     });
 });
 
-//builder.Services.AddDbContext<FlashcardsDbContext>(
-//    contextLifetime: ServiceLifetime.Transient,
-//    optionsLifetime: ServiceLifetime.Singleton);
-
 builder.Services.AddIdentityCore<IdentityUser>(opt =>
 {
     opt.Password.RequireUppercase = false;
@@ -46,6 +43,15 @@ builder.Services.AddCors(options =>
                .AllowAnyMethod()
                .AllowAnyHeader();
     });
+});
+
+var resendApiKey = builder.Configuration["Resend:FC_ApiKey"]
+    ?? throw new InvalidOperationException(
+        "Resend API key was not found.");
+
+builder.Services.AddResend(options =>
+{
+    options.ApiToken = resendApiKey;
 });
 
 builder.Services.AddJwtAuthentication(builder.Configuration);

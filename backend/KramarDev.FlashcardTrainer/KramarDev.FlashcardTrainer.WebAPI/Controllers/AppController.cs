@@ -30,4 +30,11 @@ public class AppController(IDbContextFactory<FlashcardsDbContext> factory) : Bas
 
         return Ok(stateModel);
     }
+
+
+    [HttpGet("ip")]
+    public ActionResult<string> Ip()
+    {
+        return Ok(IpAddress);
+    }
 }

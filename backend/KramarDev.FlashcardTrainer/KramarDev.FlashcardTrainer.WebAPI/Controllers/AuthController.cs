@@ -2,13 +2,47 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Resend;
 
 namespace KramarDev.FlashcardTrainer.WebAPI.Controllers;
 
-public sealed class AuthController(IAuthService authService) : BaseController
+public sealed class AuthController(IAuthService authService, IResend resend, IConfiguration configuration) : BaseController
 {
     readonly IAuthService _authService = authService;
+    readonly IResend _resend = resend;
+    readonly IConfiguration _configuration = configuration;
 
+    [HttpPost("email")]
+    public async Task<ActionResult> Email(CT cancellationToken)
+    {
+        var fromEmail = _configuration["Resend:FC_FromEmail"]!;
+        var fromName = _configuration["Resend:FC_FromName"]!;
+
+        string verificationCode = new Random().Next(100000, 999999).ToString();
+
+        var message = new EmailMessage
+        {
+            From = $"{fromName}<{fromEmail}>",
+            Subject = "Your Flashcard Trainer verification code",
+            HtmlBody = $"" +
+            $"Flashcard Trainer Your verification code is:" +
+            $"" +
+            $"{verificationCode}" +
+            $"" +
+            $"The code expires in 10 minutes." +
+            $"" +
+            $"If you didn't create an account, you can ignore this email."
+        };
+
+        message.To.Add("kramarvladimir@gmail.com");
+        message.To.Add("vkramar.biz@gmail.com");
+
+        var response = await _resend.EmailSendAsync(
+            message,
+            cancellationToken);
+
+        return Ok(response.Content);
+    }
 
     [HttpPost("login")]
     [EnableRateLimiting(Constants.RateLimiterName)]
