@@ -61,7 +61,7 @@ export default function AboutPage() {
                 Vladimir Kramar
               </Typography>
 
-              <Typography variant="body2" color="text.secondary">
+              {/* <Typography variant="body2" color="text.secondary">
                 Website:{" "}
                 <Link
                   href="https://vladimirkramar.online"
@@ -70,7 +70,7 @@ export default function AboutPage() {
                 >
                   vladimirkramar.online
                 </Link>
-              </Typography>
+              </Typography> */}
 
               <Typography variant="body2" color="text.secondary">
                 Email:{" "}
