@@ -54,10 +54,10 @@ export function Header() {
     </Stack>
   ) : (
     <>
-      <Button color="inherit" onClick={() => dispatch(openAuthDialog("signUp"))}>
+      <Button color="inherit" variant="outlined" onClick={() => dispatch(openAuthDialog("signUp"))}>
         Sign Up
       </Button>
-      <Button variant="contained" onClick={() => dispatch(openAuthDialog("signIn"))}>
+      <Button color="inherit" variant="outlined" onClick={() => dispatch(openAuthDialog("signIn"))}>
         Sign In
       </Button>
     </>
@@ -102,7 +102,7 @@ export function Header() {
           {isCompact ? (
             <>
               {!isAuthenticated && (
-                <Button variant="contained" size="small" onClick={() => dispatch(openAuthDialog("signIn"))}>
+                <Button variant="outlined" size="small" onClick={() => dispatch(openAuthDialog("signIn"))}>
                   Sign In
                 </Button>
               )}
@@ -146,7 +146,7 @@ export function Header() {
                 direction="row"
                 alignItems="center"
                 justifyContent="flex-end"
-                gap={1}
+                gap={2}
                 sx={{ flex: "1 1 0", minWidth: 0 }}
               >
                 {authButtons}
@@ -196,7 +196,7 @@ export function Header() {
               <Stack gap={1}>
                 <Button
                   fullWidth
-                  variant="contained"
+                  variant="outlined"
                   onClick={() => {
                     dispatch(openAuthDialog("signIn"))
                     closeDrawer()

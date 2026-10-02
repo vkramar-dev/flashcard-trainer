@@ -4,8 +4,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { PageContainer } from "../components/PageContainer";
-import { EmptyState, ErrorState, LoadingState } from "../components/StateViews";
-import { SignedOutNotice } from "../features/auth/SignedOutNotice";
+import { HomeSignedOutHero } from "../features/auth/HomeSignedOutHero"
+import { ErrorState, LoadingState } from "../components/StateViews";
 import { ImportDialog } from "../features/sets/ImportDialog";
 import { SetTile, type SetTileAction } from "../features/sets/SetTile";
 import {
@@ -43,27 +43,16 @@ export default function HomePage() {
   );
 
   if (!isAuthenticated) {
-    return (
-      <PageContainer
-        title="Your sets"
-        description="Flashcard sets belong to an account, so there is nothing to show until you sign in."
-      >
-        {sessionChecked ? (
-          <SignedOutNotice
-            title="Sign in to see your sets"
-            description="Your flashcard sets, their cards and your learning progress are all stored with your account. Sign in to open them, or create an account to start your first set."
-            highlights={[
-              "Create sets and add cards, or import them from a CSV file",
-              "Train with flip cards and keep track of what you have learnt",
-              "Pick up where you left off from any device",
-            ]}
-          />
-        ) : (
-          <LoadingState label="Checking your session..." />
-        )}
-      </PageContainer>
-    );
-  }
+  return (
+    <PageContainer>
+      {sessionChecked ? (
+        <HomeSignedOutHero />
+      ) : (
+        <LoadingState label="Checking your session..." />
+      )}
+    </PageContainer>
+  )
+}
 
   const importTarget = items.find((item) => item.id === importSetId) ?? null;
 
