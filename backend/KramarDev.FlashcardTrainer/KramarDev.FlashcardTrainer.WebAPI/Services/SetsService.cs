@@ -34,7 +34,7 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
 
         if (set == null)
         {
-            throw new InvalidOperationException($"Set with Id {setId} not found or does not belong to user {userName}");
+            throw new Http404NotFoundException($"Set with Id {setId} not found or does not belong to user {userName}");
         }
 
         var cards = set.Cards.Select(c => new ExportCardModel { Front = c.FrontSide, Back = c.BackSide }).ToArray();
@@ -93,7 +93,7 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
 
         if (updated == 0)
         {
-            throw new InvalidOperationException($"Set with Id {setId} not found or does not belong to user {userName}");
+            throw new Http404NotFoundException($"Set with Id {setId} not found or does not belong to user {userName}");
         }
     }
 
@@ -102,7 +102,7 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
     {
         if (setId == 0)
         {
-            throw new InvalidOperationException("setId cannot be 0 for import");
+            throw new Http400BadRequestException("setId cannot be 0 for import");
         }
         
         await using var transaction = await _ctx.Database.BeginTransactionAsync(ct);
@@ -111,7 +111,7 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
 
         if (existingSet == null)
         {
-            throw new InvalidOperationException($"Set with Id {setId} not found or does not belong to user {userName}");
+            throw new Http404NotFoundException($"Set with Id {setId} not found or does not belong to user {userName}");
         }
 
         ProcessAddingCardsToSet(_ctx, existingSet, cards, append);
@@ -156,7 +156,7 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
 
         if (existingSet == null)
         {
-            throw new InvalidOperationException($"Set with Id {set.Id} not found or does not belong to user {userName}");
+            throw new Http404NotFoundException($"Set with Id {set.Id} not found or does not belong to user {userName}");
         }
 
         ProcessUpdatingSet(_ctx, existingSet, set);
@@ -211,7 +211,7 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
 
                 if (existingCard == null)
                 {
-                    throw new InvalidOperationException(
+                    throw new Http404NotFoundException(
                         $"Card with Id {cardModel.Id} not found.");
                 }
 

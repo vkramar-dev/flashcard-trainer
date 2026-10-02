@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Threading.RateLimiting;
@@ -54,25 +53,69 @@ public static class StartupExtensions
                 {
                     logger.LogError(exception, "Unhandled exception occurred.");
                 }
+                else
+                {
+                    logger.LogError(
+                        "Global exception handler was invoked, but no exception was available.");
+                }
+
+                ProblemDetails problem = ProcessException(exception);
 
                 context.Response.Clear();
-                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                context.Response.StatusCode = problem.Status ?? StatusCodes.Status500InternalServerError;
                 context.Response.ContentType = "application/problem+json";
-
-                var problem = new ProblemDetails
-                {
-                    Status = StatusCodes.Status500InternalServerError,
-                    Title = "An unexpected error occurred.",
-                    Detail = env.IsDevelopment()
-                        ? exception?.Message
-                        : "Please try again later."
-                };
 
                 await context.Response.WriteAsJsonAsync(problem);
             });
         });
 
         return app;
+    }
+
+    private static ProblemDetails ProcessException(Exception ex)
+    {
+        ProblemDetails details = null;
+
+        switch (ex)
+        {
+            case Http400BadRequestException:
+                details = new ProblemDetails
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Title = "Bad request.",
+                    Detail = "Bad request."
+                };
+                break;
+
+            case Http404NotFoundException:
+                details = new ProblemDetails
+                {
+                    Status = StatusCodes.Status404NotFound,
+                    Title = "Resource not found.",
+                    Detail = "Resource not found."
+                };
+                break;
+
+            case Http409ConflictException:
+                details = new ProblemDetails
+                {
+                    Status = StatusCodes.Status409Conflict,
+                    Title = "Conflict.",
+                    Detail = "Conflict."
+                };
+                break;
+
+            default:
+                details = new ProblemDetails
+                {
+                    Status = StatusCodes.Status500InternalServerError,
+                    Title = "An unexpected error occurred.",
+                    Detail = "Please try again later."
+                };
+                break;
+        }
+
+        return details;
     }
 
     public static WebApplication UseApiNoCaching(this WebApplication app)

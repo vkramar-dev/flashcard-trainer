@@ -27,7 +27,7 @@ public sealed class TrainingService(FlashcardsDbContext dbContext) : ITrainingSe
 
         if (rowsAffected == 0)
         {
-            throw new InvalidOperationException($"Card with Id {cardId} not found or does not belong to user {userName}");
+            throw new Http404NotFoundException($"Card with Id {cardId} not found or does not belong to user {userName}");
         }
     }
 

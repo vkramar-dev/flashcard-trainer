@@ -61,7 +61,7 @@ public sealed class SettingsService(FlashcardsDbContext dbContext) : ISettingsSe
 
         if (rows == 0)
         {
-            throw new InvalidOperationException(
+            throw new Http404NotFoundException(
                 $"Color settings for user '{userName}' were not found.");
         }
     }
@@ -75,7 +75,7 @@ public sealed class SettingsService(FlashcardsDbContext dbContext) : ISettingsSe
 
         if (rows == 0)
         {
-            throw new InvalidOperationException(
+            throw new Http404NotFoundException(
                 $"HideKnown settings for user '{userName}' were not found.");
         }
     }
