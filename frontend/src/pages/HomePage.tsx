@@ -1,13 +1,13 @@
-import AddIcon from "@mui/icons-material/Add"
-import { Box, Button, Snackbar, Alert } from "@mui/material"
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { ConfirmDialog } from "../components/ConfirmDialog"
-import { PageContainer } from "../components/PageContainer"
-import { EmptyState, ErrorState, LoadingState } from "../components/StateViews"
-import { SignedOutNotice } from "../features/auth/SignedOutNotice"
-import { ImportDialog } from "../features/sets/ImportDialog"
-import { SetTile, type SetTileAction } from "../features/sets/SetTile"
+import AddIcon from "@mui/icons-material/Add";
+import { Box, Button, Snackbar, Alert } from "@mui/material";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ConfirmDialog } from "../components/ConfirmDialog";
+import { PageContainer } from "../components/PageContainer";
+import { EmptyState, ErrorState, LoadingState } from "../components/StateViews";
+import { SignedOutNotice } from "../features/auth/SignedOutNotice";
+import { ImportDialog } from "../features/sets/ImportDialog";
+import { SetTile, type SetTileAction } from "../features/sets/SetTile";
 import {
   clearSetsNotice,
   closeImportDialog,
@@ -17,19 +17,30 @@ import {
   openImportDialog,
   deleteSet,
   toggleShuffle,
-} from "../features/sets/setsSlice"
-import { useAppDispatch, useAppSelector } from "../store/hooks"
-import type { ImportMode, FullSetModel } from "../types"
-import { downloadCsv, toCardsCsv, toCsvFileName, type CsvCard } from "../utils/csv"
-import { startTraining } from "@/features/training/trainingSlice"
+} from "../features/sets/setsSlice";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import type { ImportMode, FullSetModel } from "../types";
+import {
+  downloadCsv,
+  toCardsCsv,
+  toCsvFileName,
+  type CsvCard,
+} from "../utils/csv";
+import { startTraining } from "@/features/training/trainingSlice";
+import { SetsEmptyHero } from "../features/sets/SetsEmptyHero";
 
 export default function HomePage() {
-  const dispatch = useAppDispatch()
-  const navigate = useNavigate()
-  const { items, status, error, saveStatus, saveError, importSetId, notice } = useAppSelector((state) => state.sets)
-  const { hideKnownCards } = useAppSelector((state) => state.settings)
-  const { isAuthenticated, sessionChecked } = useAppSelector((state) => state.auth)
-  const [pendingRemoval, setPendingRemoval] = useState<FullSetModel | null>(null)
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const { items, status, error, saveStatus, saveError, importSetId, notice } =
+    useAppSelector((state) => state.sets);
+  const { hideKnownCards } = useAppSelector((state) => state.settings);
+  const { isAuthenticated, sessionChecked } = useAppSelector(
+    (state) => state.auth,
+  );
+  const [pendingRemoval, setPendingRemoval] = useState<FullSetModel | null>(
+    null,
+  );
 
   if (!isAuthenticated) {
     return (
@@ -51,77 +62,91 @@ export default function HomePage() {
           <LoadingState label="Checking your session..." />
         )}
       </PageContainer>
-    )
+    );
   }
 
-  const importTarget = items.find((item) => item.id === importSetId) ?? null
+  const importTarget = items.find((item) => item.id === importSetId) ?? null;
 
   const handleExport = async (set: FullSetModel) => {
-    const result = await dispatch(exportSet(set.id))
+    const result = await dispatch(exportSet(set.id));
     if (exportSet.fulfilled.match(result)) {
-      downloadCsv(toCsvFileName(result.payload.name), toCardsCsv(result.payload.cards))
+      downloadCsv(
+        toCsvFileName(result.payload.name),
+        toCardsCsv(result.payload.cards),
+      );
     }
-  }
+  };
 
   const handleAction = (action: SetTileAction, set: FullSetModel) => {
     switch (action) {
       case "start":
-        dispatch(startTraining({ setId: set.id, shouldHide: hideKnownCards })).unwrap()
-        navigate(`/set/${set.id}/train`)
-        break
+        dispatch(
+          startTraining({ setId: set.id, shouldHide: hideKnownCards }),
+        ).unwrap();
+        navigate(`/set/${set.id}/train`);
+        break;
       case "edit":
-        navigate(`/set/${set.id}/edit`)
-        break
+        navigate(`/set/${set.id}/edit`);
+        break;
       case "import":
-        dispatch(openImportDialog(set.id))
-        break
+        dispatch(openImportDialog(set.id));
+        break;
       case "export":
-        void handleExport(set)
-        break
+        void handleExport(set);
+        break;
       case "statistics":
-        navigate(`/statistics?setId=${set.id}`)
-        break
+        navigate(`/statistics?setId=${set.id}`);
+        break;
       case "remove":
-        setPendingRemoval(set)
-        break
+        setPendingRemoval(set);
+        break;
     }
-  }
+  };
 
   const handleImport = (mode: ImportMode, cards: CsvCard[]) => {
-    if (importSetId === null) return
-    dispatch(importCards({ setId: importSetId, mode, cards }))
-  }
+    if (importSetId === null) return;
+    dispatch(importCards({ setId: importSetId, mode, cards }));
+  };
 
   const confirmRemoval = async () => {
-    if (!pendingRemoval) return
-    const result = await dispatch(deleteSet(pendingRemoval.id))
-    if (deleteSet.fulfilled.match(result)) setPendingRemoval(null)
-  }
+    if (!pendingRemoval) return;
+    const result = await dispatch(deleteSet(pendingRemoval.id));
+    if (deleteSet.fulfilled.match(result)) setPendingRemoval(null);
+  };
 
   const newSetButton = (
-    <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate("/set/new")}>
+    <Button
+      variant="contained"
+      startIcon={<AddIcon />}
+      onClick={() => navigate("/set/new")}
+    >
       New set
     </Button>
-  )
+  );
+
+  const isEmpty = status !== "loading" && items.length === 0 && !error;
 
   return (
     <PageContainer
-      title="Your sets"
-      description="Start training with a set, or create one."
+      title={isEmpty ? undefined : "Your sets"}
+      description={
+        isEmpty ? undefined : "Start training with a set, or create one."
+      }
       actions={items.length > 0 ? newSetButton : undefined}
     >
-      {status === "loading" && items.length === 0 && <LoadingState label="Loading your sets..." />}
+      {status === "loading" && items.length === 0 && (
+        <LoadingState label="Loading your sets..." />
+      )}
 
       {status === "failed" && items.length === 0 && (
-        <ErrorState message={error ?? "Could not load your sets."} onRetry={() => dispatch(fetchSets())} />
+        <ErrorState
+          message={error ?? "Could not load your sets."}
+          onRetry={() => dispatch(fetchSets())}
+        />
       )}
 
       {status !== "loading" && items.length === 0 && !error && (
-        <EmptyState
-          title="No sets yet"
-          description="Create your first flashcard set to start learning. You can also import cards from a CSV file once a set exists."
-          action={newSetButton}
-        />
+        <SetsEmptyHero onCreate={() => navigate("/set/new")} />
       )}
 
       {items.length > 0 && (
@@ -142,7 +167,11 @@ export default function HomePage() {
               key={set.id}
               set={set}
               onAction={handleAction}
-              onToggleShuffle={(target) => dispatch(toggleShuffle({ setId: target.id, shuffle: !target.shuffle }))}
+              onToggleShuffle={(target) =>
+                dispatch(
+                  toggleShuffle({ setId: target.id, shuffle: !target.shuffle }),
+                )
+              }
             />
           ))}
         </Box>
@@ -177,10 +206,14 @@ export default function HomePage() {
         onClose={() => dispatch(clearSetsNotice())}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
-        <Alert severity="success" variant="filled" onClose={() => dispatch(clearSetsNotice())}>
+        <Alert
+          severity="success"
+          variant="filled"
+          onClose={() => dispatch(clearSetsNotice())}
+        >
           {notice}
         </Alert>
       </Snackbar>
     </PageContainer>
-  )
+  );
 }
