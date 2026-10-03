@@ -1,5 +1,6 @@
-import { Card, CardContent, Link, Stack, Typography } from "@mui/material"
-import { PageContainer } from "../components/PageContainer"
+import { Box, Card, CardContent, Link, Stack, Typography } from "@mui/material";
+import { PageContainer } from "../components/PageContainer";
+import StyleIcon from "@mui/icons-material/Style";
 
 export default function AboutPage() {
   return (
@@ -7,6 +8,26 @@ export default function AboutPage() {
       title="About"
       description="A simple way to practise what you want to remember."
       maxWidth="md"
+      actions={
+        <Box
+          aria-hidden
+          sx={{
+            display: { xs: "none", sm: "grid" },
+            placeItems: "center",
+            width: 72,
+            height: 72,
+            borderRadius: 3,
+            bgcolor: "background.paper",
+            color: "primary.main",
+            border: 1,
+            borderColor: "divider",
+            boxShadow: 2,
+            mr: 1.25,
+          }}
+        >
+          <StyleIcon sx={{ fontSize: 34 }} />
+        </Box>
+      }
     >
       <Stack gap={3}>
         <Card>
@@ -17,19 +38,20 @@ export default function AboutPage() {
 
             <Stack gap={2}>
               <Typography variant="body1" color="text.secondary">
-                Flashcard Trainer is built around active recall: instead of repeatedly
-                rereading information, you try to retrieve it from memory.
+                Flashcard Trainer is built around active recall: instead of
+                repeatedly rereading information, you try to retrieve it from
+                memory.
               </Typography>
 
               <Typography variant="body1" color="text.secondary">
-                Create your own card sets, practise them at your own pace, and use the
-                statistics to focus on what still needs more attention.
+                Create your own card sets, practise them at your own pace, and
+                use the statistics to focus on what still needs more attention.
               </Typography>
 
               <Typography variant="body1" color="text.secondary">
-                The application supports shuffled training, optional hiding of learned
-                cards, CSV import and export, and persistent user accounts with saved
-                settings and progress.
+                The application supports shuffled training, optional hiding of
+                learned cards, CSV import and export, and persistent user
+                accounts with saved settings and progress.
               </Typography>
             </Stack>
           </CardContent>
@@ -42,10 +64,10 @@ export default function AboutPage() {
             </Typography>
 
             <Typography variant="body2" color="text.secondary">
-              Flashcard Trainer is a web application built with React, TypeScript,
-              Redux Toolkit and Material UI on the frontend, with an ASP.NET Core Web
-              API, Entity Framework Core, ASP.NET Core Identity and SQL Server on the
-              backend.
+              Flashcard Trainer is a web application built with React,
+              TypeScript, Redux Toolkit and Material UI on the frontend, with an
+              ASP.NET Core Web API, Entity Framework Core, ASP.NET Core Identity
+              and SQL Server on the backend.
             </Typography>
           </CardContent>
         </Card>
@@ -78,11 +100,10 @@ export default function AboutPage() {
                   vkramar.biz@gmail.com
                 </Link>
               </Typography>
-
             </Stack>
           </CardContent>
         </Card>
       </Stack>
     </PageContainer>
-  )
+  );
 }
