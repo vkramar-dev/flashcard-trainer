@@ -176,6 +176,15 @@ const setsSlice = createSlice({
       if (item) {
         item.lastTrained = new Date().toISOString()
       }
+    },
+    cleanSetsSlice(state) {
+      state.items = []
+      state.selectedSet = null
+      state.importSetId = null
+      state.notice = null
+      state.error = null
+      state.saveStatus = "idle"
+      state.saveError = null
     }
   },
   extraReducers: (builder) => {
@@ -303,6 +312,6 @@ const setsSlice = createSlice({
   },
 })
 
-export const { clearSelectedSet, openImportDialog, closeImportDialog, clearSetsNotice, clearSetsError, initState, markLastTrained } =
+export const { clearSelectedSet, openImportDialog, closeImportDialog, clearSetsNotice, clearSetsError, initState, markLastTrained, cleanSetsSlice } =
   setsSlice.actions
 export default setsSlice.reducer

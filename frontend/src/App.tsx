@@ -5,16 +5,17 @@ import { Header } from "./components/Header"
 import { AppRoutes } from "./routes/AppRoutes"
 import { useAppDispatch, useAppSelector } from "./store/hooks"
 import { restoreState } from "./features/training/trainingSlice"
-import { readTrainingProgress } from "./features/training/trainingStorage"
 import { useNavigate } from "react-router-dom"
 import { initState } from "./features/sets/setsSlice"
 import { appApi } from "./api/appApi"
 import { setSettings } from "./features/settings/settingsSlice"
 import { restoreSession } from "./features/auth/authSlice"
+import { AppStorage } from "./utils/AppStorage"
+import { ColorSchemeName } from "./types"
 
 export default function App() {
   const dispatch = useAppDispatch()
-  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated)
+  const {isAuthenticated, user} = useAppSelector((state) => state.auth)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -29,10 +30,11 @@ export default function App() {
     appApi.getState().then((data) => {
       dispatch(initState(data.sets))
       dispatch(setSettings(data.settings))
+      AppStorage.cacheScheme(data.settings.colorScheme as ColorSchemeName)
     })
     
-    const trainingProgress = readTrainingProgress()
-    if (trainingProgress) {
+    const trainingProgress = AppStorage.getTrainingProgress()
+    if (trainingProgress && user && trainingProgress.userName === user.email) {
       dispatch(restoreState(trainingProgress))
       navigate(`/set/${trainingProgress.setId}/train`)
     }

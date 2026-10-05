@@ -1,11 +1,11 @@
-import { Box, Paper, Typography } from "@mui/material"
-import type { CardSide } from "../../types"
+import { Box, Paper, Typography } from "@mui/material";
+import type { CardSide } from "../../types";
 
 interface FlipCardProps {
-  front: string
-  back: string
-  side: CardSide
-  onFlip: () => void
+  front: string;
+  back: string;
+  side: CardSide;
+  onFlip: () => void;
 }
 
 const faceStyles = {
@@ -17,11 +17,40 @@ const faceStyles = {
   p: { xs: 3, sm: 5 },
   backfaceVisibility: "hidden",
   WebkitBackfaceVisibility: "hidden",
-} as const
+} as const;
+
+function getCardFontSize(text: string) {
+
+  const length = text.length;
+  const lines = text.split(/\r?\n/).length;
+
+  if (length > 240 || lines >= 8) {
+    return { xs: "1rem", sm: "1.2rem" };
+  }
+
+  if (length > 180 || lines >= 6) {
+    return { xs: "1.15rem", sm: "1.35rem" };
+  }
+
+  if (length > 120 || lines >= 5) {
+    return { xs: "1.3rem", sm: "1.55rem" };
+  }
+
+  if (length > 70 || lines >= 4) {
+    return { xs: "1.5rem", sm: "1.8rem" };
+  }
+
+  return { xs: "1.75rem", sm: "2.125rem" };
+}
 
 /** A flashcard that rotates in 3D between its front and back side when activated. */
 export function FlipCard({ front, back, side, onFlip }: FlipCardProps) {
-  const flipped = side === "back"
+  const flipped = side === "back";
+
+  if (front == null || back == null) {
+    return null;
+  }
+
   return (
     <Box
       role="button"
@@ -30,8 +59,8 @@ export function FlipCard({ front, back, side, onFlip }: FlipCardProps) {
       onClick={onFlip}
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault()
-          onFlip()
+          event.preventDefault();
+          onFlip();
         }
       }}
       sx={{
@@ -39,7 +68,9 @@ export function FlipCard({ front, back, side, onFlip }: FlipCardProps) {
         cursor: "pointer",
         outline: "none",
         borderRadius: 3,
-        "&:focus-visible": { boxShadow: (theme) => `0 0 0 3px ${theme.palette.primary.main}55` },
+        "&:focus-visible": {
+          boxShadow: (theme) => `0 0 0 3px ${theme.palette.primary.main}55`,
+        },
       }}
     >
       <Box
@@ -57,10 +88,19 @@ export function FlipCard({ front, back, side, onFlip }: FlipCardProps) {
           sx={{ ...faceStyles, bgcolor: "background.paper" }}
         >
           <Typography
-            variant="h4"
             component="p"
             align="center"
-            sx={{ overflowWrap: "anywhere", whiteSpace: "pre-wrap" }}
+            sx={{
+              width: "100%",
+              maxHeight: "100%",
+              overflowY: "auto",
+
+              whiteSpace: "pre-wrap",
+              overflowWrap: "anywhere",
+
+              fontSize: getCardFontSize(front),
+              lineHeight: 1.25,
+            }}
           >
             {front}
           </Typography>
@@ -78,15 +118,24 @@ export function FlipCard({ front, back, side, onFlip }: FlipCardProps) {
           }}
         >
           <Typography
-            variant="h4"
             component="p"
             align="center"
-            sx={{ overflowWrap: "anywhere", whiteSpace: "pre-wrap" }}
+            sx={{
+              width: "100%",
+              maxHeight: "100%",
+              overflowY: "auto",
+
+              whiteSpace: "pre-wrap",
+              overflowWrap: "anywhere",
+
+              fontSize: getCardFontSize(back),
+              lineHeight: 1.25,
+            }}
           >
             {back}
           </Typography>
         </Paper>
       </Box>
     </Box>
-  )
+  );
 }

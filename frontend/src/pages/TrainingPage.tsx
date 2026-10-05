@@ -1,5 +1,5 @@
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline"
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline"
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import {
   Alert,
   Box,
@@ -10,19 +10,19 @@ import {
   Paper,
   Stack,
   Typography,
-} from "@mui/material"
+} from "@mui/material";
 
-import { useNavigate, useParams } from "react-router-dom"
-import { PageContainer } from "../components/PageContainer"
-import { EmptyState, ErrorState, LoadingState } from "../components/StateViews"
-import { FlipCard } from "../features/training/FlipCard"
+import { useNavigate, useParams } from "react-router-dom";
+import { PageContainer } from "../components/PageContainer";
+import { EmptyState, ErrorState } from "../components/StateViews";
+import { FlipCard } from "../features/training/FlipCard";
 import {
-  abandonTraining,
   flipCard,
   answer,
   startTraining,
-} from "../features/training/trainingSlice"
-import { useAppDispatch, useAppSelector } from "../store/hooks"
+} from "../features/training/trainingSlice";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { AppStorage } from "@/utils/AppStorage";
 
 /**
  * Both answer buttons advance to the next card, so each is labelled "Next"
@@ -35,47 +35,80 @@ const answerButtonStyles = {
   minWidth: 168,
   // The icon is centred against the two-line label rather than the first line.
   "& .MuiButton-startIcon": { alignSelf: "center" },
-}
+};
 
 const answerLabelStyles = {
   display: "flex",
   flexDirection: "column",
   alignItems: "flex-start",
   lineHeight: 1.2,
-}
+};
 
 const answerHintStyles = {
   fontSize: "0.75rem",
   fontWeight: 400,
   opacity: 0.85,
   textTransform: "none",
-}
+};
 
 export default function TrainingPage() {
-  const dispatch = useAppDispatch()
-  const navigate = useNavigate()
-  const { setId: setIdParam } = useParams<{ setId: string }>()
-  const setId = Number(setIdParam)
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const { setId: setIdParam } = useParams<{ setId: string }>();
+  const setId = Number(setIdParam);
 
-  const { currentCard, currentIndex, side, pendingAnswer, status, error, finished, cards } =
-    useAppSelector((state) => state.training)
-  const { hideKnownCards } = useAppSelector((state) => state.settings)
+  const {
+    currentCard,
+    currentIndex,
+    side,
+    status,
+    error,
+    finished,
+    cards,
+  } = useAppSelector((state) => state.training);
+  const { hideKnownCards } = useAppSelector((state) => state.settings);
 
-  const total = cards.length
-  const position = currentIndex + 1
+  const total = cards.length;
+  const position = currentIndex + 1;
   const setName = useAppSelector((state) => {
-    const listed = state.sets.items.find((set) => set.id === setId)
-    if (listed) return listed.name
-    return state.sets.selectedSet?.id === setId ? state.sets.selectedSet.name : ""
-  })
+    const listed = state.sets.items.find((set) => set.id === setId);
+    if (listed) return listed.name;
+    return state.sets.selectedSet?.id === setId
+      ? state.sets.selectedSet.name
+      : "";
+  });
 
-  if (status === "loading") {
-    return (
-      <PageContainer title="Training" maxWidth="sm">
-        <LoadingState label="Preparing your cards..." />
-      </PageContainer>
-    )
-  }
+  const userName = useAppSelector((state) => state.auth.user?.email);
+
+  const handleAnswer = async (isKnown: boolean) => {
+    if (!currentCard || !userName) return;
+
+    try {
+      await dispatch(
+        answer({
+          cardId: currentCard.id,
+          isKnown,
+        }),
+      ).unwrap();
+
+      const nextIndex = currentIndex + 1;
+
+      if (nextIndex >= cards.length) {
+        AppStorage.clearTrainingProgress();
+      } else {
+        AppStorage.setTrainingProgressNoException({
+          userName,
+          setId,
+          cards,
+          currentIndex: nextIndex,
+        });
+      }
+    } catch {
+      // answer thunk already keeps the error in Redux state
+    }
+  };
+
+  if (!userName) return null;
 
   if (status === "failed") {
     return (
@@ -85,7 +118,7 @@ export default function TrainingPage() {
           <Button onClick={() => navigate("/")}>Back to sets</Button>
         </Box>
       </PageContainer>
-    )
+    );
   }
 
   if (finished) {
@@ -95,14 +128,28 @@ export default function TrainingPage() {
           title={setName ? `You finished ${setName}` : "You finished the set"}
           description={`All ${total} card${total === 1 ? "" : "s"} in this set have been reviewed and your answers are saved.`}
           action={
-            <Stack direction={{ xs: "column", sm: "row" }} gap={1.5} justifyContent="center">
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              gap={1.5}
+              justifyContent="center"
+            >
               <Button
                 variant="contained"
-                onClick={() => dispatch(startTraining({ setId, shouldHide: hideKnownCards }))}
+                onClick={() =>
+                  dispatch(
+                    startTraining({
+                      userName,
+                      setId,
+                      shouldHide: hideKnownCards,
+                    }),
+                  ).unwrap()
+                }
               >
                 Train again
               </Button>
-              <Button onClick={() => navigate(`/statistics?setId=${setId}`)}>View statistics</Button>
+              <Button onClick={() => navigate(`/statistics?setId=${setId}`)}>
+                View statistics
+              </Button>
               <Button color="inherit" onClick={() => navigate("/")}>
                 Back to sets
               </Button>
@@ -110,7 +157,7 @@ export default function TrainingPage() {
           }
         />
       </PageContainer>
-    )
+    );
   }
 
   return (
@@ -122,8 +169,8 @@ export default function TrainingPage() {
         <Button
           color="inherit"
           onClick={() => {
-            dispatch(abandonTraining())
-            navigate("/")
+            AppStorage.clearTrainingProgress()
+            navigate("/");
           }}
         >
           End session
@@ -132,8 +179,17 @@ export default function TrainingPage() {
     >
       <Stack gap={3}>
         <Box>
-          <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
-            <Typography variant="body2" color="text.secondary" sx={{ fontVariantNumeric: "tabular-nums" }}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            sx={{ mb: 1 }}
+          >
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ fontVariantNumeric: "tabular-nums" }}
+            >
               Card {position} of {total}
             </Typography>
             <Chip size="small" label={side === "front" ? "Front" : "Back"} />
@@ -173,7 +229,10 @@ export default function TrainingPage() {
           <Stack
             direction={{ xs: "column", sm: "row" }}
             gap={1.5}
-            sx={{ alignItems: { xs: "stretch", sm: "center" }, justifyContent: "center" }}
+            sx={{
+              alignItems: { xs: "stretch", sm: "center" },
+              justifyContent: "center",
+            }}
             role="group"
             aria-label="Did you know this card? Either answer saves your result and moves to the next card."
           >
@@ -181,47 +240,45 @@ export default function TrainingPage() {
               variant="contained"
               color="warning"
               startIcon={<HelpOutlineIcon />}
-              onClick={() => dispatch(answer({ cardId: currentCard.id, isKnown: false }))}
-              disabled={!currentCard}
+              onClick={() => handleAnswer(false)}
+              disabled={!currentCard || status === "loading"}
               sx={answerButtonStyles}
             >
-              {pendingAnswer === false ? (
-                "Saving..."
-              ) : (
-                <Box component="span" sx={answerLabelStyles}>
-                  <Box component="span" sx={{ fontSize: "1rem", fontWeight: 600 }}>
-                    Next
-                  </Box>
-                  <Box component="span" sx={answerHintStyles}>
-                    {"I don't know this"}
-                  </Box>
+              <Box component="span" sx={answerLabelStyles}>
+                <Box
+                  component="span"
+                  sx={{ fontSize: "1rem", fontWeight: 600 }}
+                >
+                  Next
                 </Box>
-              )}
+                <Box component="span" sx={answerHintStyles}>
+                  {"I don't know this"}
+                </Box>
+              </Box>
             </Button>
             <Button
               variant="contained"
               color="success"
               startIcon={<CheckCircleOutlineIcon />}
-              onClick={() => dispatch(answer({ cardId: currentCard.id, isKnown: true }))}
-              disabled={!currentCard}
+              onClick={() => handleAnswer(true)}
+              disabled={!currentCard || status === "loading"}
               sx={answerButtonStyles}
             >
-              {pendingAnswer === true ? (
-                "Saving..."
-              ) : (
-                <Box component="span" sx={answerLabelStyles}>
-                  <Box component="span" sx={{ fontSize: "1rem", fontWeight: 600 }}>
-                    Next
-                  </Box>
-                  <Box component="span" sx={answerHintStyles}>
-                    I know this
-                  </Box>
+              <Box component="span" sx={answerLabelStyles}>
+                <Box
+                  component="span"
+                  sx={{ fontSize: "1rem", fontWeight: 600 }}
+                >
+                  Next
                 </Box>
-              )}
+                <Box component="span" sx={answerHintStyles}>
+                  I know this
+                </Box>
+              </Box>
             </Button>
           </Stack>
         </Box>
       </Stack>
     </PageContainer>
-  )
+  );
 }

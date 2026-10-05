@@ -1,5 +1,5 @@
-import MenuIcon from "@mui/icons-material/Menu"
-import StyleIcon from "@mui/icons-material/Style"
+import MenuIcon from "@mui/icons-material/Menu";
+import StyleIcon from "@mui/icons-material/Style";
 import {
   AppBar,
   Box,
@@ -15,58 +15,87 @@ import {
   Typography,
   useMediaQuery,
   useTheme,
-} from "@mui/material"
-import { useState } from "react"
-import { NavLink, useLocation, useNavigate } from "react-router-dom"
-import { openAuthDialog, signOut } from "../features/auth/authSlice"
-import { useAppDispatch, useAppSelector } from "../store/hooks"
+} from "@mui/material";
+import { useState } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { openAuthDialog, signOut } from "../features/auth/authSlice";
+import { cleanTrainingSlice } from "../features/training/trainingSlice";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { AppStorage } from "@/utils/AppStorage";
+import { cleanSettingsSlice } from "@/features/settings/settingsSlice";
+import { cleanSetsSlice } from "@/features/sets/setsSlice";
+import { cleanStatisticsSlice } from "@/features/statistics/statisticsSlice";
 
 const navItems = [
   { label: "Home", to: "/" },
   { label: "Statistics", to: "/statistics" },
   { label: "Settings", to: "/settings" },
   { label: "About", to: "/about" },
-]
+];
 
 export function Header() {
-  const dispatch = useAppDispatch()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const theme = useTheme()
-  const isCompact = useMediaQuery(theme.breakpoints.down("md"))
-  const [drawerOpen, setDrawerOpen] = useState(false)
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const theme = useTheme();
+  const isCompact = useMediaQuery(theme.breakpoints.down("md"));
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated)
-  const user = useAppSelector((state) => state.auth.user)
+  const { isAuthenticated, user } = useAppSelector((state) => state.auth);
 
-  const closeDrawer = () => setDrawerOpen(false)
+  const closeDrawer = () => setDrawerOpen(false);
+
+  function performSignOut() {
+    AppStorage.setAuthToken(null)
+    AppStorage.clearTrainingProgress()
+    dispatch(signOut())
+    dispatch(cleanTrainingSlice())
+    dispatch(cleanSettingsSlice())
+    dispatch(cleanStatisticsSlice())
+    dispatch(cleanSetsSlice())
+  }
 
   const authButtons = isAuthenticated ? (
     <Stack alignItems="center" gap={0.25}>
       {user && (
-        <Typography variant="caption" color="text.secondary" sx={{ maxWidth: 200, lineHeight: 1.2 }} noWrap>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ maxWidth: 200, lineHeight: 1.2 }}
+          noWrap
+        >
           {user.email}
         </Typography>
       )}
-      <Button color="inherit" size="small" onClick={() => dispatch(signOut())}>
+      <Button color="inherit" size="small" onClick={() => performSignOut()}>
         Sign Out
       </Button>
     </Stack>
   ) : (
     <>
-      <Button color="inherit" variant="outlined" onClick={() => dispatch(openAuthDialog("signUp"))}>
+      <Button
+        color="inherit"
+        variant="outlined"
+        onClick={() => dispatch(openAuthDialog("signUp"))}
+      >
         Sign Up
       </Button>
-      <Button color="inherit" variant="outlined" onClick={() => dispatch(openAuthDialog("signIn"))}>
+      <Button
+        color="inherit"
+        variant="outlined"
+        onClick={() => dispatch(openAuthDialog("signIn"))}
+      >
         Sign In
       </Button>
     </>
-  )
+  );
 
   return (
     <>
       <AppBar position="sticky">
-        <Toolbar sx={{ gap: 2, minHeight: { xs: 64, md: 72 }, position: "relative" }}>
+        <Toolbar
+          sx={{ gap: 2, minHeight: { xs: 64, md: 72 }, position: "relative" }}
+        >
           <Stack
             component={NavLink}
             to="/"
@@ -94,7 +123,11 @@ export function Header() {
             >
               <StyleIcon fontSize="small" />
             </Box>
-            <Typography variant="h6" component="span" sx={{ letterSpacing: "-0.01em" }}>
+            <Typography
+              variant="h6"
+              component="span"
+              sx={{ letterSpacing: "-0.01em" }}
+            >
               Flashcard Trainer
             </Typography>
           </Stack>
@@ -102,11 +135,19 @@ export function Header() {
           {isCompact ? (
             <>
               {!isAuthenticated && (
-                <Button variant="outlined" size="small" onClick={() => dispatch(openAuthDialog("signIn"))}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => dispatch(openAuthDialog("signIn"))}
+                >
                   Sign In
                 </Button>
               )}
-              <IconButton edge="end" aria-label="Open navigation menu" onClick={() => setDrawerOpen(true)}>
+              <IconButton
+                edge="end"
+                aria-label="Open navigation menu"
+                onClick={() => setDrawerOpen(true)}
+              >
                 <MenuIcon />
               </IconButton>
             </>
@@ -128,7 +169,7 @@ export function Header() {
                 }}
               >
                 {navItems.map((item) => {
-                  const active = location.pathname === item.to
+                  const active = location.pathname === item.to;
                   return (
                     <Button
                       key={item.to}
@@ -139,7 +180,7 @@ export function Header() {
                     >
                       {item.label}
                     </Button>
-                  )
+                  );
                 })}
               </Stack>
               <Stack
@@ -164,8 +205,8 @@ export function Header() {
                 key={item.to}
                 selected={location.pathname === item.to}
                 onClick={() => {
-                  navigate(item.to)
-                  closeDrawer()
+                  navigate(item.to);
+                  closeDrawer();
                 }}
               >
                 <ListItemText primary={item.label} />
@@ -185,8 +226,8 @@ export function Header() {
                   fullWidth
                   variant="outlined"
                   onClick={() => {
-                    dispatch(signOut())
-                    closeDrawer()
+                    signOut();
+                    closeDrawer();
                   }}
                 >
                   Sign Out
@@ -198,8 +239,8 @@ export function Header() {
                   fullWidth
                   variant="outlined"
                   onClick={() => {
-                    dispatch(openAuthDialog("signIn"))
-                    closeDrawer()
+                    dispatch(openAuthDialog("signIn"));
+                    closeDrawer();
                   }}
                 >
                   Sign In
@@ -208,8 +249,8 @@ export function Header() {
                   fullWidth
                   variant="outlined"
                   onClick={() => {
-                    dispatch(openAuthDialog("signUp"))
-                    closeDrawer()
+                    dispatch(openAuthDialog("signUp"));
+                    closeDrawer();
                   }}
                 >
                   Sign Up
@@ -220,5 +261,5 @@ export function Header() {
         </Box>
       </Drawer>
     </>
-  )
+  );
 }

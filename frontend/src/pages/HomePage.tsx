@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { PageContainer } from "../components/PageContainer";
-import { HomeSignedOutHero } from "../features/auth/HomeSignedOutHero"
+import { HomeSignedOutHero } from "../features/auth/HomeSignedOutHero";
 import { ErrorState, LoadingState } from "../components/StateViews";
 import { ImportDialog } from "../features/sets/ImportDialog";
 import { SetTile, type SetTileAction } from "../features/sets/SetTile";
@@ -34,6 +34,7 @@ export default function HomePage() {
   const navigate = useNavigate();
   const { items, status, error, saveStatus, saveError, importSetId, notice } =
     useAppSelector((state) => state.sets);
+  const userName = useAppSelector((state) => state.auth.user?.email);
   const { hideKnownCards } = useAppSelector((state) => state.settings);
   const { isAuthenticated, sessionChecked } = useAppSelector(
     (state) => state.auth,
@@ -43,16 +44,18 @@ export default function HomePage() {
   );
 
   if (!isAuthenticated) {
-  return (
-    <PageContainer>
-      {sessionChecked ? (
-        <HomeSignedOutHero />
-      ) : (
-        <LoadingState label="Checking your session..." />
-      )}
-    </PageContainer>
-  )
-}
+    return (
+      <PageContainer>
+        {sessionChecked ? (
+          <HomeSignedOutHero />
+        ) : (
+          <LoadingState label="Checking your session..." />
+        )}
+      </PageContainer>
+    );
+  }
+
+  if (!userName) return null;
 
   const importTarget = items.find((item) => item.id === importSetId) ?? null;
 
@@ -66,11 +69,15 @@ export default function HomePage() {
     }
   };
 
-  const handleAction = (action: SetTileAction, set: FullSetModel) => {
+  const handleAction = async (action: SetTileAction, set: FullSetModel) => {
     switch (action) {
       case "start":
-        dispatch(
-          startTraining({ setId: set.id, shouldHide: hideKnownCards }),
+        await dispatch(
+          startTraining({
+            userName,
+            setId: set.id,
+            shouldHide: hideKnownCards,
+          }),
         ).unwrap();
         navigate(`/set/${set.id}/train`);
         break;

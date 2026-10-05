@@ -2,8 +2,8 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit"
 import { toErrorMessage } from "../../api/client"
 import { settingsApi } from "../../api/settingsApi"
 import type { ColorSchemeName, RequestStatus, SettingsModel } from "../../types"
+import { AppStorage } from "@/utils/AppStorage"
 
-const SCHEME_STORAGE_KEY = "flashcard-trainer.colorScheme"
 const KNOWN_SCHEMES: ColorSchemeName[] = ["graphite", "coastal", "porcelain", "mist", "slate", "espresso", "indigo", "midnight", "forest"]
 
 /**
@@ -12,18 +12,10 @@ const KNOWN_SCHEMES: ColorSchemeName[] = ["graphite", "coastal", "porcelain", "m
  */
 function readCachedScheme(): ColorSchemeName {
   try {
-    const value = window.localStorage.getItem(SCHEME_STORAGE_KEY)
+    const value = AppStorage.getScheme()
     return KNOWN_SCHEMES.includes(value as ColorSchemeName) ? (value as ColorSchemeName) : "graphite"
   } catch {
     return "graphite"
-  }
-}
-
-function cacheScheme(scheme: ColorSchemeName): void {
-  try {
-    window.localStorage.setItem(SCHEME_STORAGE_KEY, scheme)
-  } catch {
-    // Ignore storage failures - the backend remains the source of truth.
   }
 }
 
@@ -48,7 +40,7 @@ export const updateColorScheme = createAsyncThunk<void, ColorSchemeName, { rejec
   async (colorScheme, { rejectWithValue }) => {
     try {
       await settingsApi.update(colorScheme)
-      cacheScheme(colorScheme)
+      AppStorage.cacheScheme(colorScheme)
     } catch (error) {
       return rejectWithValue(toErrorMessage(error, "Could not save your color scheme."))
     }
@@ -61,7 +53,7 @@ export const updateHideKnownCards = createAsyncThunk<void, boolean, { rejectValu
     try {
       await settingsApi.updateHideKnownCards(hide)
     } catch (error) {
-      return rejectWithValue(toErrorMessage(error, "Could not save your color scheme."))
+      return rejectWithValue(toErrorMessage(error, "Could not save your training preferences."))
     }
   },
 )
@@ -77,7 +69,12 @@ const settingsSlice = createSlice({
       const scheme = action.payload.colorScheme as ColorSchemeName
       state.colorScheme = scheme
       state.hideKnownCards = action.payload.hideKnownCards
-      cacheScheme(scheme)
+    },
+    cleanSettingsSlice(state) {
+      state.availableColorSchemes = KNOWN_SCHEMES
+      state.hideKnownCards = true
+      state.status = "idle"
+      state.error = null
     }
   },
   extraReducers: (builder) => {
@@ -109,5 +106,5 @@ const settingsSlice = createSlice({
   },
 })
 
-export const { clearSettingsError, setSettings } = settingsSlice.actions
+export const { clearSettingsError, setSettings, cleanSettingsSlice } = settingsSlice.actions
 export default settingsSlice.reducer

@@ -3,14 +3,13 @@ import { toErrorMessage } from "../../api/client"
 import { trainingApi } from "../../api/trainingApi"
 import type { CardData, CardSide, RequestStatus, StoredTrainingProgress } from "../../types"
 import { markLastTrained } from "../sets/setsSlice"
-import { clearTrainingProgress, writeTrainingProgress } from "./trainingStorage"
+import { AppStorage } from "@/utils/AppStorage"
 
 interface TrainingState {
   setId: number
   currentIndex: number
-  currentCard: CardData
+  currentCard: CardData | null
   side: CardSide
-  pendingAnswer: boolean | null
   status: RequestStatus
   error: string | null
   finished: boolean
@@ -21,20 +20,25 @@ const initialState: TrainingState = {
   setId: 0,
   currentIndex: 0,
   side: "front",
-  pendingAnswer: null,
   status: "idle",
   error: null,
   finished: false,
-  currentCard: {} as CardData,
+  currentCard: null,
   cards: [],
 }
 
-export const startTraining = createAsyncThunk<CardData[], { setId: number; shouldHide: boolean }, { rejectValue: string; }>(
+export const startTraining = createAsyncThunk<CardData[], { userName: string; setId: number; shouldHide: boolean }, { rejectValue: string; }>(
   "training/start",
-  async ({ setId, shouldHide }, { dispatch, rejectWithValue }) => {
+  async ({ userName, setId, shouldHide }, { dispatch, rejectWithValue }) => {
     try {
       const cards = await trainingApi.start(setId, shouldHide)
-      writeTrainingProgress({ setId, cards, currentIndex: 0 })
+
+      AppStorage.setTrainingProgressNoException({
+                    userName,
+                    setId,
+                    cards,
+                    currentIndex: 0,
+                  });
 
       if (cards.length === 0) {
         return rejectWithValue("This set has no cards yet. Add some cards before training.")
@@ -71,10 +75,6 @@ const trainingSlice = createSlice({
     resetTraining() {
       return initialState
     },
-    abandonTraining() {
-      clearTrainingProgress()
-      return initialState
-    },
     clearTrainingError(state) {
       state.error = null
     },
@@ -85,6 +85,16 @@ const trainingSlice = createSlice({
       state.currentIndex = data.currentIndex
       state.currentCard = data.cards[data.currentIndex]
     },
+    cleanTrainingSlice(state) {
+      state.setId = 0
+      state.currentIndex = 0
+      state.side = "front"
+      state.status = "idle"
+      state.error = null
+      state.finished = false
+      state.currentCard = null
+      state.cards = []
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -99,7 +109,6 @@ const trainingSlice = createSlice({
         state.cards = action.payload
         state.currentIndex = 0
         state.currentCard = action.payload[0]
-        state.pendingAnswer = null
         state.side = "front"
       })
       .addCase(startTraining.rejected, (state, action) => {
@@ -119,13 +128,9 @@ const trainingSlice = createSlice({
         state.status = "succeeded"
         state.currentIndex = index
         state.currentCard = state.cards[index]
-        state.pendingAnswer = null
+
         if (index >= state.cards.length) {
           state.finished = true
-          clearTrainingProgress()
-        }
-        else{
-          writeTrainingProgress({ setId: state.setId, cards: state.cards, currentIndex: index })
         }
       })
       .addCase(answer.rejected, (state, action) => {
@@ -135,5 +140,5 @@ const trainingSlice = createSlice({
     }
 })
 
-export const { flipCard, resetTraining, abandonTraining, clearTrainingError, restoreState } = trainingSlice.actions
+export const { flipCard, resetTraining, clearTrainingError, restoreState, cleanTrainingSlice } = trainingSlice.actions
 export default trainingSlice.reducer

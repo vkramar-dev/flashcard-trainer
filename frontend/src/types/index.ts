@@ -26,14 +26,12 @@ export interface RegistrationFailure {
   attemptsRemaining: number | null
 }
 
-/** A card as returned inside a set detail response or edited on the Add/Edit page. */
 export interface CardData {
   id: number
   front: string
   back: string
 }
 
-/** Tile representation on the Home page. */
 export interface FullSetModel {
   id: number
   name: string
@@ -49,7 +47,6 @@ export interface SetDetail extends FullSetModel {
   cards: CardData[]
 }
 
-/** Payload used for create/update: new cards have a null id. */
 export interface CardModel {
   id: number | null
   front: string
@@ -88,11 +85,8 @@ export interface FullCardModel {
   shownCount: number
 }
 
-/**
- * Training progress is persisted in localStorage so a refresh does not restart
- * the run. Exactly three values are stored: setId, cardIds and currentId.
- */
 export interface StoredTrainingProgress {
+  userName: string
   setId: number
   cards: CardData[]
   currentIndex: number

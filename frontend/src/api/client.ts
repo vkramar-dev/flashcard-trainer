@@ -1,5 +1,6 @@
 import axios from "axios"
 import type { RegistrationFailure } from "../types"
+import { AppStorage } from "@/utils/AppStorage"
 
 /**
  * Single Axios instance used by the API service layer.
@@ -11,30 +12,8 @@ export const apiClient = axios.create({
   headers: { "Content-Type": "application/json" },
 })
 
-const TOKEN_STORAGE_KEY = "flashcard-trainer.token"
-
-export function readStoredToken(): string | null {
-  try {
-    return window.localStorage.getItem(TOKEN_STORAGE_KEY)
-  } catch {
-    return null
-  }
-}
-
-export function setAuthToken(token: string | null): void {
-  try {
-    if (token) {
-      window.localStorage.setItem(TOKEN_STORAGE_KEY, token)
-    } else {
-      window.localStorage.removeItem(TOKEN_STORAGE_KEY)
-    }
-  } catch {
-    // Storage can be unavailable in private browsing modes - ignore.
-  }
-}
-
 apiClient.interceptors.request.use((config) => {
-  const token = readStoredToken()
+  const token = AppStorage.getAuthToken()
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }

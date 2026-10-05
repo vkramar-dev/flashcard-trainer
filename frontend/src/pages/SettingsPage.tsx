@@ -1,4 +1,5 @@
-import CheckIcon from "@mui/icons-material/Check"
+import CheckIcon from "@mui/icons-material/Check";
+import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import {
   Alert,
   Box,
@@ -7,83 +8,75 @@ import {
   Stack,
   Switch,
   Typography,
-} from "@mui/material"
-import { PageContainer } from "../components/PageContainer"
-import { LoadingState } from "../components/StateViews"
-import { SignedOutNotice } from "../features/auth/SignedOutNotice"
+} from "@mui/material";
+import { PageContainer } from "../components/PageContainer";
+import { LoadingState } from "../components/StateViews";
+import { SignedOutNotice } from "../features/auth/SignedOutNotice";
 import {
   clearSettingsError,
   updateColorScheme,
   updateHideKnownCards,
-} from "../features/settings/settingsSlice"
-import { useAppDispatch, useAppSelector } from "../store/hooks"
-import { colorSchemeLabels, colorSchemes } from "../theme"
-import type { ColorSchemeName } from "../types"
+} from "../features/settings/settingsSlice";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { colorSchemeLabels, colorSchemes } from "../theme";
+import type { ColorSchemeName } from "../types";
 
 function SchemeSwatch({ scheme }: { scheme: ColorSchemeName }) {
-  const definition = colorSchemes[scheme]
+  const definition = colorSchemes[scheme];
 
   return (
     <Stack direction="row" gap={0.75} aria-hidden="true">
-      {[definition.paper, definition.backdrop, definition.primary].map((color) => (
-        <Box
-          key={color}
-          sx={{
-            width: 28,
-            height: 28,
-            borderRadius: "50%",
-            bgcolor: color,
-            border: "1px solid",
-            borderColor: "divider",
-          }}
-        />
-      ))}
+      {[definition.paper, definition.backdrop, definition.primary].map(
+        (color) => (
+          <Box
+            key={color}
+            sx={{
+              width: 28,
+              height: 28,
+              borderRadius: "50%",
+              bgcolor: color,
+              border: "1px solid",
+              borderColor: "divider",
+            }}
+          />
+        ),
+      )}
     </Stack>
-  )
+  );
 }
 
 export default function SettingsPage() {
-  const dispatch = useAppDispatch()
+  const dispatch = useAppDispatch();
 
-  const {
-    colorScheme,
-    availableColorSchemes,
-    error,
-    hideKnownCards,
-  } = useAppSelector((state) => state.settings)
+  const { colorScheme, availableColorSchemes, error, hideKnownCards } =
+    useAppSelector((state) => state.settings);
 
-  const { isAuthenticated, sessionChecked } = useAppSelector((state) => state.auth)
+  const { isAuthenticated, sessionChecked } = useAppSelector(
+    (state) => state.auth,
+  );
 
   if (!isAuthenticated) {
     return (
       <PageContainer
         title="Settings"
-        description="Settings are stored with your account, so there is nothing to change while you are signed out."
+        description="Manage your training preferences."
         maxWidth="md"
       >
         {sessionChecked ? (
           <SignedOutNotice
-            title="Sign in to change your settings"
-            description="Your settings are saved to your account so they follow you everywhere."
-            highlights={[
-              "Choose your preferred color scheme",
-              "Customize your training behavior",
-              "Use the same settings on every device",
-            ]}
+            icon={<SettingsOutlinedIcon />}
+            title="Sign in to manage settings"
+            description="Your preferences are saved with your account and follow you across devices."
           />
         ) : (
           <LoadingState label="Checking your session..." />
         )}
       </PageContainer>
-    )
+    );
   }
 
   return (
-    <PageContainer
-      title=""
-      description=""
-      maxWidth="md"
-    >
+    <PageContainer title="" description="" maxWidth="md">
       <Stack gap={5}>
         {error && (
           <Alert
@@ -106,9 +99,7 @@ export default function SettingsPage() {
               }}
             >
               <Box>
-                <Typography variant="subtitle1">
-                  Hide learned words
-                </Typography>
+                <Typography variant="subtitle1">Hide learned words</Typography>
 
                 <Typography
                   variant="body2"
@@ -148,7 +139,7 @@ export default function SettingsPage() {
             }}
           >
             {availableColorSchemes.map((scheme) => {
-              const selected = scheme === colorScheme
+              const selected = scheme === colorScheme;
 
               return (
                 <Card
@@ -183,11 +174,11 @@ export default function SettingsPage() {
                     </Stack>
                   </CardActionArea>
                 </Card>
-              )
+              );
             })}
           </Box>
         </Box>
       </Stack>
     </PageContainer>
-  )
+  );
 }

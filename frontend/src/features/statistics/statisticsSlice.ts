@@ -37,6 +37,12 @@ const statisticsSlice = createSlice({
     highlightSet(state, action: PayloadAction<number | null>) {
       state.highlightedSetId = action.payload
     },
+    cleanStatisticsSlice(state) {
+      state.bySet = []
+      state.status = "idle"
+      state.error = null
+      state.highlightedSetId = null
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -55,5 +61,5 @@ const statisticsSlice = createSlice({
   },
 })
 
-export const { highlightSet } = statisticsSlice.actions
+export const { highlightSet, cleanStatisticsSlice } = statisticsSlice.actions
 export default statisticsSlice.reducer
