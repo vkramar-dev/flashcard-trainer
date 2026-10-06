@@ -21,6 +21,7 @@ import {
   signInAsync,
   signUpAsync,
 } from "./authSlice"
+import { ProjectConstants } from "../../utils/ProjectConstants"
 
 interface FieldErrors {
   email?: string
@@ -102,11 +103,20 @@ export function AuthDialogs() {
   const validate = (includeCode: boolean): boolean => {
     const next: FieldErrors = {}
 
-    if (!email.trim()) next.email = "Email is required."
-    else if (!emailPattern.test(email.trim())) next.email = "Enter a valid email address."
+    const address = email.trim()
+    if (!address) next.email = "Email is required."
+    else if (address.length < ProjectConstants.userNameMinLength) {
+      next.email = `Email must be at least ${ProjectConstants.userNameMinLength} characters.`
+    } else if (address.length > ProjectConstants.userNameMaxLength) {
+      next.email = `Email cannot be longer than ${ProjectConstants.userNameMaxLength} characters.`
+    } else if (!emailPattern.test(address)) next.email = "Enter a valid email address."
 
     if (!password) next.password = "Password is required."
-    else if (isSignUp && password.length < 6) next.password = "Use at least 6 characters."
+    else if (password.length < ProjectConstants.passwordMinLength) {
+      next.password = `Use at least ${ProjectConstants.passwordMinLength} characters.`
+    } else if (password.length > ProjectConstants.passwordMaxLength) {
+      next.password = `Password cannot be longer than ${ProjectConstants.passwordMaxLength} characters.`
+    }
 
     if (isSignUp) {
       if (!confirmPassword) next.confirmPassword = "Please confirm your password."
@@ -206,6 +216,7 @@ export function AuthDialogs() {
                 fullWidth
                 autoFocus={!codeSent}
                 disabled={codeSent}
+                slotProps={{ htmlInput: { maxLength: ProjectConstants.userNameMaxLength } }}
               />
 
               <TextField
@@ -218,6 +229,7 @@ export function AuthDialogs() {
                 helperText={errors.password}
                 required
                 fullWidth
+                slotProps={{ htmlInput: { maxLength: ProjectConstants.passwordMaxLength } }}
               />
 
               {isSignUp && (
@@ -231,6 +243,7 @@ export function AuthDialogs() {
                   helperText={errors.confirmPassword}
                   required
                   fullWidth
+                  slotProps={{ htmlInput: { maxLength: ProjectConstants.passwordMaxLength } }}
                 />
               )}
 

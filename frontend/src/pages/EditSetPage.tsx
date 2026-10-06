@@ -119,7 +119,12 @@ export default function EditSetPage() {
     [cards],
   )
 
-  const nameError = name.trim().length === 0 ? "Please enter a name for this set." : null
+  const nameError =
+    name.trim().length === 0
+      ? "Please enter a name for this set."
+      : name.trim().length > ProjectConstants.setNameMaxLength
+        ? `Set name cannot be longer than ${ProjectConstants.setNameMaxLength} characters.`
+        : null
   const cardsError = cardListError(filledCards)
 
   const updateCard = (key: string, patch: Partial<Pick<DraftCard, "front" | "back">>) => {
@@ -207,7 +212,7 @@ export default function EditSetPage() {
           helperText={showErrors && nameError ? nameError : " "}
           disabled={saving}
           fullWidth
-          slotProps={{ htmlInput: { maxLength: 120 } }}
+          slotProps={{ htmlInput: { maxLength: ProjectConstants.setNameMaxLength } }}
         />
 
         <Box>
