@@ -12,7 +12,7 @@ import {
   clearSetsNotice,
   closeImportDialog,
   exportSetAsync,
-  fetchSetsAsync,
+  loadAppStateAsync,
   importCardsAsync,
   openImportDialog,
   deleteSetAsync,
@@ -151,7 +151,7 @@ export default function HomePage() {
       {status === "failed" && items.length === 0 && (
         <ErrorState
           message={error ?? "Could not load your sets."}
-          onRetry={() => dispatch(fetchSetsAsync())}
+          onRetry={() => dispatch(loadAppStateAsync())}
         />
       )}
 

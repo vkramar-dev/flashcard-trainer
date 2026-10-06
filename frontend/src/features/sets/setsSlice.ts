@@ -1,7 +1,11 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit"
+import { appApi } from "../../api/appApi"
 import { setsApi } from "../../api/setsApi"
 import { toErrorMessage } from "../../api/client"
+import { setSettings } from "../settings/settingsSlice"
+import { AppStorage } from "@/utils/AppStorage"
 import type {
+  ColorSchemeName,
   ExportDataModel,
   ImportPayload,
   ImportResultModel,
@@ -35,6 +39,20 @@ const initialState: SetsState = {
   importSetId: null,
   notice: null,
 }
+
+export const loadAppStateAsync = createAsyncThunk<void, void, { rejectValue: string }>(
+  "sets/loadAppState",
+  async (_, { dispatch, rejectWithValue }) => {
+    try {
+      const data = await appApi.getState()
+      dispatch(initState(data.sets))
+      dispatch(setSettings(data.settings))
+      AppStorage.cacheScheme(data.settings.colorScheme as ColorSchemeName)
+    } catch (error) {
+      return rejectWithValue(toErrorMessage(error, "Could not load your account."))
+    }
+  },
+)
 
 export const fetchSetsAsync = createAsyncThunk<FullSetModel[], void, { rejectValue: string }>(
   "sets/fetchAll",
@@ -167,6 +185,7 @@ const setsSlice = createSlice({
       state.selectedSet = null
       state.importSetId = null
       state.notice = null
+      state.status = "succeeded"
       state.error = null
       state.saveStatus = "idle"
       state.saveError = null
@@ -182,6 +201,7 @@ const setsSlice = createSlice({
       state.selectedSet = null
       state.importSetId = null
       state.notice = null
+      state.status = "idle"
       state.error = null
       state.saveStatus = "idle"
       state.saveError = null
@@ -189,6 +209,14 @@ const setsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase(loadAppStateAsync.pending, (state) => {
+        state.status = "loading"
+        state.error = null
+      })
+      .addCase(loadAppStateAsync.rejected, (state, action) => {
+        state.status = "failed"
+        state.error = action.payload ?? "Could not load your account."
+      })
       .addCase(fetchSetsAsync.pending, (state) => {
         state.status = "loading"
         state.error = null
