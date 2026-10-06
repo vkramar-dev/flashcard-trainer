@@ -52,8 +52,18 @@ export function readRegistrationFailure(error: unknown, fallback: string): Regis
 
 export function toErrorMessage(error: unknown, fallback = "Something went wrong. Please try again."): string {
   if (axios.isAxiosError(error)) {
-    const message = (error.response?.data as { message?: string } | undefined)?.message
-    if (message) return message
+    const data = error.response?.data as { message?: unknown; detail?: unknown } | undefined
+    if (typeof data?.message === "string" && data.message) return data.message
+
+    const status = error.response?.status
+    if (
+      (status === 400 || status === 404 || status === 409) &&
+      typeof data?.detail === "string" &&
+      data.detail
+    ) {
+      return data.detail
+    }
+
     if (error.code === "ERR_NETWORK") return "Could not reach the server. Please check your connection."
   }
   return fallback

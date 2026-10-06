@@ -9,6 +9,7 @@ import { ErrorState, LoadingState } from "../components/StateViews"
 import { clearSelectedSet, createSetAsync, fetchSetAsync } from "../features/sets/setsSlice"
 import { useAppDispatch, useAppSelector } from "../store/hooks"
 import type { CardModel } from "../types"
+import { ProjectConstants } from "../utils/ProjectConstants"
 
 /** A card row held in local component state while editing. */
 interface DraftCard {
@@ -20,9 +21,6 @@ interface DraftCard {
   back: string
 }
 
-const CARD_FRONT_MAX_LENGTH = 300
-const CARD_BACK_MAX_LENGTH = 500
-
 let keyCounter = 0
 const nextKey = () => `draft-${(keyCounter += 1)}`
 
@@ -33,27 +31,27 @@ function frontFieldError(card: DraftCard): string | null {
   const back = card.back.trim()
   if (!front && !back) return null
   if (!front) return "Enter a front value."
-  if (front.length > CARD_FRONT_MAX_LENGTH) {
-    return `Front text cannot be longer than ${CARD_FRONT_MAX_LENGTH} characters.`
+  if (front.length > ProjectConstants.cardFrontMaxLength) {
+    return `Front text cannot be longer than ${ProjectConstants.cardFrontMaxLength} characters.`
   }
   return null
 }
 
 function backFieldError(card: DraftCard): string | null {
   const back = card.back.trim()
-  if (back.length > CARD_BACK_MAX_LENGTH) {
-    return `Back text cannot be longer than ${CARD_BACK_MAX_LENGTH} characters.`
+  if (back.length > ProjectConstants.cardBackMaxLength) {
+    return `Back text cannot be longer than ${ProjectConstants.cardBackMaxLength} characters.`
   }
   return null
 }
 
 function cardListError(cards: DraftCard[]): string | null {
   if (cards.some((card) => !card.front.trim())) return "Every card needs a front value."
-  if (cards.some((card) => card.front.trim().length > CARD_FRONT_MAX_LENGTH)) {
-    return `Front text cannot be longer than ${CARD_FRONT_MAX_LENGTH} characters.`
+  if (cards.some((card) => card.front.trim().length > ProjectConstants.cardFrontMaxLength)) {
+    return `Front text cannot be longer than ${ProjectConstants.cardFrontMaxLength} characters.`
   }
-  if (cards.some((card) => card.back.trim().length > CARD_BACK_MAX_LENGTH)) {
-    return `Back text cannot be longer than ${CARD_BACK_MAX_LENGTH} characters.`
+  if (cards.some((card) => card.back.trim().length > ProjectConstants.cardBackMaxLength)) {
+    return `Back text cannot be longer than ${ProjectConstants.cardBackMaxLength} characters.`
   }
   return null
 }
@@ -253,7 +251,7 @@ export default function EditSetPage() {
                     size="small"
                     multiline
                     maxRows={4}
-                    slotProps={{ htmlInput: { maxLength: CARD_FRONT_MAX_LENGTH } }}
+                    slotProps={{ htmlInput: { maxLength: ProjectConstants.cardFrontMaxLength } }}
                   />
                   <TextField
                     label="Back"
@@ -266,7 +264,7 @@ export default function EditSetPage() {
                     size="small"
                     multiline
                     maxRows={4}
-                    slotProps={{ htmlInput: { maxLength: CARD_BACK_MAX_LENGTH } }}
+                    slotProps={{ htmlInput: { maxLength: ProjectConstants.cardBackMaxLength } }}
                   />
                   <IconButton
                     aria-label={`Remove card ${index + 1}`}

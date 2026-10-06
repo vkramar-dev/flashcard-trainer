@@ -3,15 +3,14 @@
  * Quoted fields may contain commas, escaped quotes ("") and line breaks.
  */
 
+import { ProjectConstants } from "./ProjectConstants"
+
 export interface CsvCard {
   front: string
   back: string
 }
 
 export class CsvParseError extends Error {}
-
-const CARD_FRONT_MAX_LENGTH = 300
-const CARD_BACK_MAX_LENGTH = 500
 
 /** Splits CSV text into rows of fields, honouring quoted fields. */
 function parseRows(text: string): string[][] {
@@ -98,7 +97,7 @@ export function parseCardsCsv(text: string): CsvCard[] {
     const front = (row[0] ?? "").trim()
     const back = (row[1] ?? "").trim()
 
-    if (!front || front.length > CARD_FRONT_MAX_LENGTH || back.length > CARD_BACK_MAX_LENGTH) {
+    if (!front || front.length > ProjectConstants.cardFrontMaxLength || back.length > ProjectConstants.cardBackMaxLength) {
       invalidLines.push(index + 1)
       return
     }
@@ -106,7 +105,7 @@ export function parseCardsCsv(text: string): CsvCard[] {
   })
 
   if (cards.length === 0) {
-    throw new CsvParseError("No valid rows were found. Each row needs a front value of at most 300 characters. The back value can be empty and must be at most 500 characters.")
+    throw new CsvParseError(`No valid rows were found. Each row needs a front value of at most ${ProjectConstants.cardFrontMaxLength} characters. The back value can be empty and must be at most ${ProjectConstants.cardBackMaxLength} characters.`)
   }
 
   if (invalidLines.length > 0) {
@@ -115,7 +114,7 @@ export function parseCardsCsv(text: string): CsvCard[] {
     throw new CsvParseError(
       `Row${invalidLines.length === 1 ? "" : "s"} ${shown}${suffix} ${
         invalidLines.length === 1 ? "needs" : "need"
-      } a front value of at most ${CARD_FRONT_MAX_LENGTH} characters. The back value can be empty and must be at most ${CARD_BACK_MAX_LENGTH} characters.`,
+      } a front value of at most ${ProjectConstants.cardFrontMaxLength} characters. The back value can be empty and must be at most ${ProjectConstants.cardBackMaxLength} characters.`,
     )
   }
 
