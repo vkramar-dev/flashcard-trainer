@@ -53,6 +53,8 @@ export function Header() {
     dispatch(cleanSettingsSlice())
     dispatch(cleanStatisticsSlice())
     dispatch(cleanSetsSlice())
+
+    navigate("/")
   }
 
   const authButtons = isAuthenticated ? (
