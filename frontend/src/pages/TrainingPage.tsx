@@ -12,6 +12,7 @@ import {
   Typography,
 } from "@mui/material";
 
+import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { PageContainer } from "../components/PageContainer";
 import { EmptyState, ErrorState } from "../components/StateViews";
@@ -19,6 +20,7 @@ import { FlipCard } from "../features/training/FlipCard";
 import {
   flipCard,
   answerAsync,
+  restoreState,
   startTrainingAsync,
 } from "../features/training/trainingSlice";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
@@ -58,6 +60,7 @@ export default function TrainingPage() {
   const setId = Number(setIdParam);
 
   const {
+    setId: trainingSetId,
     currentCard,
     currentIndex,
     side,
@@ -79,6 +82,42 @@ export default function TrainingPage() {
   });
 
   const userName = useAppSelector((state) => state.auth.user?.email);
+
+  useEffect(() => {
+    if (!userName || !Number.isFinite(setId) || setId <= 0) return;
+    if (status === "loading") return;
+    if (trainingSetId === setId && (status === "failed" || finished)) return;
+    if (cards.length > 0 && trainingSetId === setId && currentCard) return;
+
+    const saved = AppStorage.getTrainingProgress();
+    if (
+      saved &&
+      saved.userName === userName &&
+      saved.setId === setId &&
+      saved.cards.length > 0
+    ) {
+      dispatch(restoreState(saved));
+      return;
+    }
+
+    void dispatch(
+      startTrainingAsync({
+        userName,
+        setId,
+        shouldHide: hideKnownCards,
+      }),
+    );
+  }, [
+    cards.length,
+    currentCard,
+    dispatch,
+    finished,
+    hideKnownCards,
+    setId,
+    status,
+    trainingSetId,
+    userName,
+  ]);
 
   const handleAnswer = async (isKnown: boolean) => {
     if (!currentCard || !userName) return;
@@ -109,6 +148,17 @@ export default function TrainingPage() {
   };
 
   if (!userName) return null;
+
+  if (!Number.isFinite(setId) || setId <= 0) {
+    return (
+      <PageContainer title="Training" maxWidth="sm">
+        <ErrorState message="This training link is not valid." />
+        <Box sx={{ mt: 3 }}>
+          <Button onClick={() => navigate("/")}>Back to sets</Button>
+        </Box>
+      </PageContainer>
+    );
+  }
 
   if (status === "failed") {
     return (
