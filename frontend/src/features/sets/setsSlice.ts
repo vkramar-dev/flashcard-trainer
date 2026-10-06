@@ -93,7 +93,7 @@ export const updateSetAsync = createAsyncThunk<FullSetModel, SetWithCardsModel, 
     try {
       return await setsApi.create(payload)
     } catch (error) {
-      return rejectWithValue(toErrorMessage(error, "Could not save the set."))
+      return rejectWithValue(toErrorMessage(error, "Could not update the set."))
     }
   },
 )
@@ -262,7 +262,7 @@ const setsSlice = createSlice({
         if (!isFound) {
           state.items = state.items.concat(action.payload)
         }
-        state.notice = "Set created."
+        state.notice = "Set saved."
       })
       .addCase(createSetAsync.rejected, (state, action) => {
         state.saveStatus = "failed"

@@ -25,6 +25,7 @@ import {
 } from "../features/training/trainingSlice";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { AppStorage } from "@/utils/AppStorage";
+import { fetchSetsAsync } from "@/features/sets/setsSlice";
 
 /**
  * Both answer buttons advance to the next card, so each is labelled "Next"
@@ -200,7 +201,13 @@ export default function TrainingPage() {
               <Button onClick={() => navigate(`/statistics?setId=${setId}`)}>
                 View statistics
               </Button>
-              <Button color="inherit" onClick={() => navigate("/")}>
+              <Button
+                color="inherit"
+                onClick={() => {
+                  dispatch(fetchSetsAsync());
+                  navigate("/");
+                }}
+              >
                 Back to sets
               </Button>
             </Stack>
@@ -219,7 +226,7 @@ export default function TrainingPage() {
         <Button
           color="inherit"
           onClick={() => {
-            AppStorage.clearTrainingProgress()
+            AppStorage.clearTrainingProgress();
             navigate("/");
           }}
         >

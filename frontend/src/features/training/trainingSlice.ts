@@ -98,14 +98,14 @@ const trainingSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(startTrainingAsync.pending, (state) => {
+      .addCase(startTrainingAsync.pending, (state, action) => {
+        state.setId = action.meta.arg.setId
         state.status = "loading"
         state.error = null
         state.finished = false
       })
       .addCase(startTrainingAsync.fulfilled, (state, action) => {
         state.status = "succeeded"
-        state.setId = action.meta.arg.setId
         state.cards = action.payload
         state.currentIndex = 0
         state.currentCard = action.payload[0]

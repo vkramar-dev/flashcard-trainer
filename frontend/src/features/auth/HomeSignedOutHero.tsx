@@ -139,9 +139,11 @@ export function HomeSignedOutHero() {
         <Stack
           spacing={1.1}
           sx={{
-            width: "100%",
-            maxWidth: 520,
+            width: { xs: "100%", sm: "fit-content" },
+            maxWidth: "100%",
             textAlign: "left",
+            mx: "auto",
+            px: { xs: 2, sm: 0 },
           }}
         >
           {highlights.map((item) => (
