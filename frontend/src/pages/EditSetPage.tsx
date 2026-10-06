@@ -20,10 +20,43 @@ interface DraftCard {
   back: string
 }
 
+const CARD_FRONT_MAX_LENGTH = 300
+const CARD_BACK_MAX_LENGTH = 500
+
 let keyCounter = 0
 const nextKey = () => `draft-${(keyCounter += 1)}`
 
 const emptyCard = (): DraftCard => ({ key: nextKey(), id: null, front: "", back: "" })
+
+function frontFieldError(card: DraftCard): string | null {
+  const front = card.front.trim()
+  const back = card.back.trim()
+  if (!front && !back) return null
+  if (!front) return "Enter a front value."
+  if (front.length > CARD_FRONT_MAX_LENGTH) {
+    return `Front text cannot be longer than ${CARD_FRONT_MAX_LENGTH} characters.`
+  }
+  return null
+}
+
+function backFieldError(card: DraftCard): string | null {
+  const back = card.back.trim()
+  if (back.length > CARD_BACK_MAX_LENGTH) {
+    return `Back text cannot be longer than ${CARD_BACK_MAX_LENGTH} characters.`
+  }
+  return null
+}
+
+function cardListError(cards: DraftCard[]): string | null {
+  if (cards.some((card) => !card.front.trim())) return "Every card needs a front value."
+  if (cards.some((card) => card.front.trim().length > CARD_FRONT_MAX_LENGTH)) {
+    return `Front text cannot be longer than ${CARD_FRONT_MAX_LENGTH} characters.`
+  }
+  if (cards.some((card) => card.back.trim().length > CARD_BACK_MAX_LENGTH)) {
+    return `Back text cannot be longer than ${CARD_BACK_MAX_LENGTH} characters.`
+  }
+  return null
+}
 
 export default function EditSetPage() {
   const dispatch = useAppDispatch()
@@ -89,9 +122,7 @@ export default function EditSetPage() {
   )
 
   const nameError = name.trim().length === 0 ? "Please enter a name for this set." : null
-  const cardsError = filledCards.some((card) => !card.front.trim() || !card.back.trim())
-    ? "Every card needs both a front and a back value."
-    : null
+  const cardsError = cardListError(filledCards)
 
   const updateCard = (key: string, patch: Partial<Pick<DraftCard, "front" | "back">>) => {
     setCards((current) => current.map((card) => (card.key === key ? { ...card, ...patch } : card)))
@@ -215,23 +246,27 @@ export default function EditSetPage() {
                     label="Front"
                     value={card.front}
                     onChange={(event) => updateCard(card.key, { front: event.target.value })}
-                    error={showErrors && Boolean(card.back.trim()) && !card.front.trim()}
+                    error={showErrors && Boolean(frontFieldError(card))}
+                    helperText={showErrors ? frontFieldError(card) ?? undefined : undefined}
                     disabled={saving}
                     fullWidth
                     size="small"
                     multiline
                     maxRows={4}
+                    slotProps={{ htmlInput: { maxLength: CARD_FRONT_MAX_LENGTH } }}
                   />
                   <TextField
                     label="Back"
                     value={card.back}
                     onChange={(event) => updateCard(card.key, { back: event.target.value })}
-                    error={showErrors && Boolean(card.front.trim()) && !card.back.trim()}
+                    error={showErrors && Boolean(backFieldError(card))}
+                    helperText={showErrors ? backFieldError(card) ?? undefined : undefined}
                     disabled={saving}
                     fullWidth
                     size="small"
                     multiline
                     maxRows={4}
+                    slotProps={{ htmlInput: { maxLength: CARD_BACK_MAX_LENGTH } }}
                   />
                   <IconButton
                     aria-label={`Remove card ${index + 1}`}

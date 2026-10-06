@@ -78,30 +78,30 @@ public static class StartupExtensions
 
         switch (ex)
         {
-            case Http400BadRequestException:
+            case Http400BadRequestException exception:
                 details = new ProblemDetails
                 {
                     Status = StatusCodes.Status400BadRequest,
                     Title = "Bad request.",
-                    Detail = "Bad request."
+                    Detail = exception.ClientMessage
                 };
                 break;
 
-            case Http404NotFoundException:
+            case Http404NotFoundException exception:
                 details = new ProblemDetails
                 {
                     Status = StatusCodes.Status404NotFound,
                     Title = "Resource not found.",
-                    Detail = "Resource not found."
+                    Detail = exception.ClientMessage
                 };
                 break;
 
-            case Http409ConflictException:
+            case Http409ConflictException exception:
                 details = new ProblemDetails
                 {
                     Status = StatusCodes.Status409Conflict,
                     Title = "Conflict.",
-                    Detail = "Conflict."
+                    Detail = exception.ClientMessage
                 };
                 break;
 

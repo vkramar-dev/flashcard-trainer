@@ -10,6 +10,9 @@ export interface CsvCard {
 
 export class CsvParseError extends Error {}
 
+const CARD_FRONT_MAX_LENGTH = 300
+const CARD_BACK_MAX_LENGTH = 500
+
 /** Splits CSV text into rows of fields, honouring quoted fields. */
 function parseRows(text: string): string[][] {
   const rows: string[][] = []
@@ -95,7 +98,7 @@ export function parseCardsCsv(text: string): CsvCard[] {
     const front = (row[0] ?? "").trim()
     const back = (row[1] ?? "").trim()
 
-    if (!front || !back) {
+    if (!front || front.length > CARD_FRONT_MAX_LENGTH || back.length > CARD_BACK_MAX_LENGTH) {
       invalidLines.push(index + 1)
       return
     }
@@ -103,7 +106,7 @@ export function parseCardsCsv(text: string): CsvCard[] {
   })
 
   if (cards.length === 0) {
-    throw new CsvParseError("No valid rows were found. Each row needs a front and a back value.")
+    throw new CsvParseError("No valid rows were found. Each row needs a front value of at most 300 characters. The back value can be empty and must be at most 500 characters.")
   }
 
   if (invalidLines.length > 0) {
@@ -111,8 +114,8 @@ export function parseCardsCsv(text: string): CsvCard[] {
     const suffix = invalidLines.length > 5 ? ", ..." : ""
     throw new CsvParseError(
       `Row${invalidLines.length === 1 ? "" : "s"} ${shown}${suffix} ${
-        invalidLines.length === 1 ? "does" : "do"
-      } not contain both a front and a back value.`,
+        invalidLines.length === 1 ? "needs" : "need"
+      } a front value of at most ${CARD_FRONT_MAX_LENGTH} characters. The back value can be empty and must be at most ${CARD_BACK_MAX_LENGTH} characters.`,
     )
   }
 

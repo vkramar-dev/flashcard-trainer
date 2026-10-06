@@ -1,3 +1,4 @@
+using KramarDev.FlashcardTrainer.WebAPI.Utils;
 using Microsoft.EntityFrameworkCore;
 
 using DB = KramarDev.FlashcardTrainer.WebAPI.Database.Tables;
@@ -41,15 +42,19 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
         return new ExportDataModel { Name = set.Name, Cards = cards };
     }
 
-    public Task<FullSetModel> CreateOrUpdateAsync(string userName, SetWithCardsModel set, CT cancellationToken)
+    public async Task<FullSetModel> CreateOrUpdateAsync(string userName, SetWithCardsModel set, CT cancellationToken)
     {
-        if (set.Id > 0)
+        try
         {
-            return UpdateAsync(userName, set, cancellationToken);
+            return set.Id > 0
+                ? await UpdateAsync(userName, set, cancellationToken)
+                : await CreateAsync(userName, set, cancellationToken);
         }
-        else
+        catch (Exception ex)
         {
-            return CreateAsync(userName, set, cancellationToken);
+            ExceptionHelper.ThrowIfDuplicateCard(ex);
+
+            throw;
         }
     }
 
@@ -104,7 +109,7 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
         {
             throw new Http400BadRequestException("setId cannot be 0 for import");
         }
-        
+
         await using var transaction = await _ctx.Database.BeginTransactionAsync(ct);
 
         var existingSet = await ReadSetWithUpdateLockAsync(_ctx, setId, userName, ct);
@@ -150,24 +155,34 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
 
     private async Task<FullSetModel> UpdateAsync(string userName, SetWithCardsModel set, CT ct)
     {
-        await using var transaction = await _ctx.Database.BeginTransactionAsync(ct);
-
-        DB.Set existingSet = await ReadSetWithUpdateLockAsync(_ctx, set.Id.Value, userName, ct);
-
-        if (existingSet == null)
+        try
         {
-            throw new Http404NotFoundException($"Set with Id {set.Id} not found or does not belong to user {userName}");
+            await using var transaction = await _ctx.Database.BeginTransactionAsync(ct);
+
+            DB.Set existingSet = await ReadSetWithUpdateLockAsync(_ctx, set.Id.Value, userName, ct);
+
+            if (existingSet == null)
+            {
+                throw new Http404NotFoundException(
+                    $"Set with Id {set.Id} not found or does not belong to user {userName}");
+            }
+
+            ProcessUpdatingSet(_ctx, existingSet, set);
+
+            await _ctx.SaveChangesAsync(ct);
+
+            FullSetModel setResult = await ReadSetAsync(_ctx, set.Id.Value, userName, false, ct);
+
+            await transaction.CommitAsync(ct);
+
+            return setResult;
         }
+        catch (Exception ex)
+        {
+            ExceptionHelper.ThrowIfDuplicateCard(ex);
 
-        ProcessUpdatingSet(_ctx, existingSet, set);
-
-        await _ctx.SaveChangesAsync(ct);
-
-        FullSetModel setResult = await ReadSetAsync(_ctx, set.Id.Value, userName, false, ct);
-
-        await transaction.CommitAsync(ct);
-
-        return setResult;
+            throw;
+        }
     }
 
     private static Task<DB.Set> ReadSetWithUpdateLockAsync(FlashcardsDbContext ctx, int setId, string userName, CT ct)

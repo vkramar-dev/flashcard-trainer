@@ -72,7 +72,7 @@ export function ImportDialog({ set, submitting, serverError, onClose, onConfirm 
       <DialogContent dividers>
         <Stack gap={3}>
           <Typography variant="body2" color="text.secondary">
-            {'Choose a CSV file with one card per row: the first column is the front, the second is the back. Example: '}
+            {'Choose a CSV file with one card per row: the first column is the front, the second is the back. The back can be empty. Example: '}
             <Box component="code" sx={{ fontFamily: "monospace" }}>
               {'Haus,house'}
             </Box>
