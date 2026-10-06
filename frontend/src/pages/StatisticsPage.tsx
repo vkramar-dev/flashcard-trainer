@@ -19,7 +19,7 @@ import { useSearchParams } from "react-router-dom";
 import { PageContainer } from "../components/PageContainer";
 import { EmptyState, ErrorState, LoadingState } from "../components/StateViews";
 import { SignedOutNotice } from "../features/auth/SignedOutNotice";
-import { fetchStatistics } from "../features/statistics/statisticsSlice";
+import { fetchStatisticsAsync } from "../features/statistics/statisticsSlice";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import type { SetStatisticsModel } from "../types";
 
@@ -172,7 +172,7 @@ export default function StatisticsPage() {
 
   useEffect(() => {
     if (!isAuthenticated) return;
-    dispatch(fetchStatistics());
+    dispatch(fetchStatisticsAsync());
   }, [dispatch, isAuthenticated]);
 
   // Bring the set selected from the tile menu into view once data has arrived.
@@ -225,7 +225,7 @@ export default function StatisticsPage() {
       {status === "failed" && bySet.length === 0 && (
         <ErrorState
           message={error ?? "Could not load your statistics."}
-          onRetry={() => dispatch(fetchStatistics())}
+          onRetry={() => dispatch(fetchStatisticsAsync())}
         />
       )}
 

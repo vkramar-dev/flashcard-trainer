@@ -18,8 +18,8 @@ import { EmptyState, ErrorState } from "../components/StateViews";
 import { FlipCard } from "../features/training/FlipCard";
 import {
   flipCard,
-  answer,
-  startTraining,
+  answerAsync,
+  startTrainingAsync,
 } from "../features/training/trainingSlice";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { AppStorage } from "@/utils/AppStorage";
@@ -85,7 +85,7 @@ export default function TrainingPage() {
 
     try {
       await dispatch(
-        answer({
+        answerAsync({
           cardId: currentCard.id,
           isKnown,
         }),
@@ -104,7 +104,7 @@ export default function TrainingPage() {
         });
       }
     } catch {
-      // answer thunk already keeps the error in Redux state
+      // answerAsync already keeps the error in Redux state
     }
   };
 
@@ -137,7 +137,7 @@ export default function TrainingPage() {
                 variant="contained"
                 onClick={() =>
                   dispatch(
-                    startTraining({
+                    startTrainingAsync({
                       userName,
                       setId,
                       shouldHide: hideKnownCards,

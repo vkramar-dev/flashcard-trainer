@@ -36,7 +36,7 @@ const initialState: SetsState = {
   notice: null,
 }
 
-export const fetchSets = createAsyncThunk<FullSetModel[], void, { rejectValue: string }>(
+export const fetchSetsAsync = createAsyncThunk<FullSetModel[], void, { rejectValue: string }>(
   "sets/fetchAll",
   async (_, { rejectWithValue }) => {
     try {
@@ -47,7 +47,7 @@ export const fetchSets = createAsyncThunk<FullSetModel[], void, { rejectValue: s
   },
 )
 
-export const fetchSet = createAsyncThunk<SetWithCardsModel, number, { rejectValue: string }>(
+export const fetchSetAsync = createAsyncThunk<SetWithCardsModel, number, { rejectValue: string }>(
   "sets/fetchOne",
   async (setId, { rejectWithValue }) => {
     try {
@@ -58,7 +58,7 @@ export const fetchSet = createAsyncThunk<SetWithCardsModel, number, { rejectValu
   },
 )
 
-export const createSet = createAsyncThunk<FullSetModel, SetWithCardsModel, { rejectValue: string }>(
+export const createSetAsync = createAsyncThunk<FullSetModel, SetWithCardsModel, { rejectValue: string }>(
   "sets/create",
   async (payload, { rejectWithValue }) => {
     try {
@@ -69,7 +69,7 @@ export const createSet = createAsyncThunk<FullSetModel, SetWithCardsModel, { rej
   },
 )
 
-export const updateSet = createAsyncThunk<FullSetModel, SetWithCardsModel, { rejectValue: string }>(
+export const updateSetAsync = createAsyncThunk<FullSetModel, SetWithCardsModel, { rejectValue: string }>(
   "sets/update",
   async (payload, { rejectWithValue }) => {
     try {
@@ -80,7 +80,7 @@ export const updateSet = createAsyncThunk<FullSetModel, SetWithCardsModel, { rej
   },
 )
 
-export const deleteSet = createAsyncThunk<void, number, { rejectValue: string }>(
+export const deleteSetAsync = createAsyncThunk<void, number, { rejectValue: string }>(
   "sets/delete",
   async (setId, { rejectWithValue }) => {
     try {
@@ -91,7 +91,7 @@ export const deleteSet = createAsyncThunk<void, number, { rejectValue: string }>
   },
 )
 
-export const toggleShuffle = createAsyncThunk<void, { setId: number; shuffle: boolean }, { rejectValue: string }>(
+export const toggleShuffleAsync = createAsyncThunk<void, { setId: number; shuffle: boolean }, { rejectValue: string }>(
   "sets/toggleShuffle",
   async ({ setId, shuffle }, { rejectWithValue }) => {
     try {
@@ -102,7 +102,7 @@ export const toggleShuffle = createAsyncThunk<void, { setId: number; shuffle: bo
   },
 )
 
-export const importCards = createAsyncThunk<ImportResultModel, ImportPayload, { rejectValue: string }>(
+export const importCardsAsync = createAsyncThunk<ImportResultModel, ImportPayload, { rejectValue: string }>(
   "sets/importCards",
   async (payload, { rejectWithValue }) => {
     try {
@@ -113,7 +113,7 @@ export const importCards = createAsyncThunk<ImportResultModel, ImportPayload, { 
   },
 )
 
-export const exportSet = createAsyncThunk<ExportDataModel, number, { rejectValue: string }>(
+export const exportSetAsync = createAsyncThunk<ExportDataModel, number, { rejectValue: string }>(
   "sets/export",
   async (setId, { rejectWithValue }) => {
     try {
@@ -189,38 +189,38 @@ const setsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchSets.pending, (state) => {
+      .addCase(fetchSetsAsync.pending, (state) => {
         state.status = "loading"
         state.error = null
       })
-      .addCase(fetchSets.fulfilled, (state, action) => {
+      .addCase(fetchSetsAsync.fulfilled, (state, action) => {
         state.status = "succeeded"
         state.items = action.payload
       })
-      .addCase(fetchSets.rejected, (state, action) => {
+      .addCase(fetchSetsAsync.rejected, (state, action) => {
         state.status = "failed"
         state.error = action.payload ?? "Could not load your flashcard sets."
       })
 
-      .addCase(fetchSet.pending, (state) => {
+      .addCase(fetchSetAsync.pending, (state) => {
         state.status = "loading"
         state.error = null
         state.selectedSet = null
       })
-      .addCase(fetchSet.fulfilled, (state, action) => {
+      .addCase(fetchSetAsync.fulfilled, (state, action) => {
         state.status = "succeeded"
         state.selectedSet = action.payload
       })
-      .addCase(fetchSet.rejected, (state, action) => {
+      .addCase(fetchSetAsync.rejected, (state, action) => {
         state.status = "failed"
         state.error = action.payload ?? "Could not load this flashcard set."
       })
 
-      .addCase(createSet.pending, (state) => {
+      .addCase(createSetAsync.pending, (state) => {
         state.saveStatus = "loading"
         state.saveError = null
       })
-      .addCase(createSet.fulfilled, (state, action) => {
+      .addCase(createSetAsync.fulfilled, (state, action) => {
         state.saveStatus = "succeeded"
         state.selectedSet = null
         let isFound = false
@@ -236,16 +236,16 @@ const setsSlice = createSlice({
         }
         state.notice = "Set created."
       })
-      .addCase(createSet.rejected, (state, action) => {
+      .addCase(createSetAsync.rejected, (state, action) => {
         state.saveStatus = "failed"
         state.saveError = action.payload ?? "Could not create the set."
       })
 
-      .addCase(updateSet.pending, (state) => {
+      .addCase(updateSetAsync.pending, (state) => {
         state.saveStatus = "loading"
         state.saveError = null
       })
-      .addCase(updateSet.fulfilled, (state, action) => {
+      .addCase(updateSetAsync.fulfilled, (state, action) => {
         state.saveStatus = "succeeded"
         state.selectedSet = null
 
@@ -262,51 +262,51 @@ const setsSlice = createSlice({
         }
         state.notice = "Changes saved."
       })
-      .addCase(updateSet.rejected, (state, action) => {
+      .addCase(updateSetAsync.rejected, (state, action) => {
         state.saveStatus = "failed"
         state.saveError = action.payload ?? "Could not save the set."
       })
 
-      .addCase(deleteSet.pending, (state) => {
+      .addCase(deleteSetAsync.pending, (state) => {
         state.saveStatus = "loading"
         state.saveError = null
       })
-      .addCase(deleteSet.fulfilled, (state, action) => {
+      .addCase(deleteSetAsync.fulfilled, (state, action) => {
         state.saveStatus = "succeeded"
         state.items = state.items.filter((item) => item.id !== action.meta.arg)
         state.notice = "Set removed."
       })
-      .addCase(deleteSet.rejected, (state, action) => {
+      .addCase(deleteSetAsync.rejected, (state, action) => {
         state.saveStatus = "failed"
         state.saveError = action.payload ?? "Could not remove the set."
       })
 
-      .addCase(toggleShuffle.fulfilled, (state, action) => {
+      .addCase(toggleShuffleAsync.fulfilled, (state, action) => {
         const item = state.items.find((set) => set.id === action.meta.arg.setId)
         if (item) {
           item.shuffle = action.meta.arg.shuffle
         }
       })
-      .addCase(toggleShuffle.rejected, (state, action) => {
+      .addCase(toggleShuffleAsync.rejected, (state, action) => {
         state.saveError = action.payload ?? "Could not update the shuffle setting."
       })
 
-      .addCase(importCards.pending, (state) => {
+      .addCase(importCardsAsync.pending, (state) => {
         state.saveStatus = "loading"
         state.saveError = null
       })
-      .addCase(importCards.fulfilled, (state, action) => {
+      .addCase(importCardsAsync.fulfilled, (state, action) => {
         state.saveStatus = "succeeded"
         state.items = upsertSummary(state.items, toSummary(action.payload.set))
         state.importSetId = null
         state.notice = `Imported ${action.payload.imported} card${action.payload.imported === 1 ? "" : "s"}.`
       })
-      .addCase(importCards.rejected, (state, action) => {
+      .addCase(importCardsAsync.rejected, (state, action) => {
         state.saveStatus = "failed"
         state.saveError = action.payload ?? "Could not import the cards."
       })
 
-      .addCase(exportSet.rejected, (state, action) => {
+      .addCase(exportSetAsync.rejected, (state, action) => {
         state.saveError = action.payload ?? "Could not export the set."
       })
   },

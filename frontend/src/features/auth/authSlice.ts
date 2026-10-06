@@ -38,7 +38,7 @@ const initialState: AuthState = {
   sessionChecked: false,
 };
 
-export const sendRegistrationCode = createAsyncThunk<
+export const sendRegistrationCodeAsync = createAsyncThunk<
   SendRegistrationCodeResult,
   string,
   { rejectValue: RegistrationFailure }
@@ -52,7 +52,7 @@ export const sendRegistrationCode = createAsyncThunk<
   }
 });
 
-export const signUp = createAsyncThunk<
+export const signUpAsync = createAsyncThunk<
   AuthResponseModel,
   RegisterModel,
   { rejectValue: RegistrationFailure }
@@ -68,7 +68,7 @@ export const signUp = createAsyncThunk<
   }
 });
 
-export const signIn = createAsyncThunk<
+export const signInAsync = createAsyncThunk<
   AuthResponseModel,
   AuthModel,
   { rejectValue: string }
@@ -82,7 +82,7 @@ export const signIn = createAsyncThunk<
   }
 });
 
-export const restoreSession = createAsyncThunk<AuthResponseModel | null, void>(
+export const restoreSessionAsync = createAsyncThunk<AuthResponseModel | null, void>(
   "auth/restoreSession",
   async () => {
     if (!AppStorage.getAuthToken()) return null;
@@ -147,63 +147,63 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(restoreSession.fulfilled, (state, action) => {
+      .addCase(restoreSessionAsync.fulfilled, (state, action) => {
         state.user = action.payload;
         state.isAuthenticated = action.payload !== null;
         state.sessionChecked = true;
       })
-      .addCase(restoreSession.rejected, (state) => {
+      .addCase(restoreSessionAsync.rejected, (state) => {
         state.user = null;
         state.isAuthenticated = false;
         state.sessionChecked = true;
       })
-      .addCase(sendRegistrationCode.pending, (state) => {
+      .addCase(sendRegistrationCodeAsync.pending, (state) => {
         state.status = "loading";
         state.error = null;
         state.registrationFailure = null;
       })
-      .addCase(sendRegistrationCode.fulfilled, (state) => {
+      .addCase(sendRegistrationCodeAsync.fulfilled, (state) => {
         state.status = "idle";
         state.error = null;
         state.registrationFailure = null;
       })
-      .addCase(sendRegistrationCode.rejected, (state, action) => {
+      .addCase(sendRegistrationCodeAsync.rejected, (state, action) => {
         applyRegistrationFailure(
           state,
           action.payload,
           "Could not send the verification email.",
         );
       })
-      .addCase(signIn.pending, (state) => {
+      .addCase(signInAsync.pending, (state) => {
         state.status = "loading";
         state.error = null;
         state.registrationFailure = null;
       })
-      .addCase(signIn.fulfilled, (state, action) => {
+      .addCase(signInAsync.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.user = action.payload;
         state.isAuthenticated = true;
         state.dialog = null;
         state.registrationFailure = null;
       })
-      .addCase(signIn.rejected, (state, action) => {
+      .addCase(signInAsync.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload ?? "Authentication failed.";
         state.registrationFailure = null;
       })
-      .addCase(signUp.pending, (state) => {
+      .addCase(signUpAsync.pending, (state) => {
         state.status = "loading";
         state.error = null;
         state.registrationFailure = null;
       })
-      .addCase(signUp.fulfilled, (state, action) => {
+      .addCase(signUpAsync.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.user = action.payload;
         state.isAuthenticated = true;
         state.dialog = null;
         state.registrationFailure = null;
       })
-      .addCase(signUp.rejected, (state, action) => {
+      .addCase(signUpAsync.rejected, (state, action) => {
         applyRegistrationFailure(
           state,
           action.payload,

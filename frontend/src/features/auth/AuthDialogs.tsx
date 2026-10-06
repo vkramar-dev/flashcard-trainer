@@ -17,9 +17,9 @@ import {
   clearAuthError,
   closeAuthDialog,
   openAuthDialog,
-  sendRegistrationCode,
-  signIn,
-  signUp,
+  sendRegistrationCodeAsync,
+  signInAsync,
+  signUpAsync,
 } from "./authSlice"
 
 interface FieldErrors {
@@ -131,7 +131,7 @@ export function AuthDialogs() {
     requestLock.current = true
     setPendingAction(action)
     try {
-      const result = await dispatch(sendRegistrationCode(address)).unwrap()
+      const result = await dispatch(sendRegistrationCodeAsync(address)).unwrap()
       if (viewRef.current !== "signUp") return
       setEmail(address)
       setCode("")
@@ -156,7 +156,7 @@ export function AuthDialogs() {
       requestLock.current = true
       setPendingAction("signIn")
       try {
-        await dispatch(signIn({ email: email.trim(), password }))
+        await dispatch(signInAsync({ email: email.trim(), password }))
       } finally {
         requestLock.current = false
         setPendingAction(null)
@@ -174,7 +174,7 @@ export function AuthDialogs() {
     requestLock.current = true
     setPendingAction("verify")
     try {
-      await dispatch(signUp({ email: email.trim(), password, code: code.trim() }))
+      await dispatch(signUpAsync({ email: email.trim(), password, code: code.trim() }))
     } finally {
       requestLock.current = false
       setPendingAction(null)

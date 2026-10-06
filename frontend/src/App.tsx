@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom"
 import { initState } from "./features/sets/setsSlice"
 import { appApi } from "./api/appApi"
 import { setSettings } from "./features/settings/settingsSlice"
-import { restoreSession } from "./features/auth/authSlice"
+import { restoreSessionAsync } from "./features/auth/authSlice"
 import { AppStorage } from "./utils/AppStorage"
 import { ColorSchemeName } from "./types"
 
@@ -20,7 +20,7 @@ export default function App() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      dispatch(restoreSession())
+      dispatch(restoreSessionAsync())
     }
   }, [dispatch])
 

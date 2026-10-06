@@ -11,12 +11,12 @@ import { SetTile, type SetTileAction } from "../features/sets/SetTile";
 import {
   clearSetsNotice,
   closeImportDialog,
-  exportSet,
-  fetchSets,
-  importCards,
+  exportSetAsync,
+  fetchSetsAsync,
+  importCardsAsync,
   openImportDialog,
-  deleteSet,
-  toggleShuffle,
+  deleteSetAsync,
+  toggleShuffleAsync,
 } from "../features/sets/setsSlice";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import type { ImportMode, FullSetModel } from "../types";
@@ -26,7 +26,7 @@ import {
   toCsvFileName,
   type CsvCard,
 } from "../utils/csv";
-import { startTraining } from "@/features/training/trainingSlice";
+import { startTrainingAsync } from "@/features/training/trainingSlice";
 import { SetsEmptyHero } from "../features/sets/SetsEmptyHero";
 
 export default function HomePage() {
@@ -60,8 +60,8 @@ export default function HomePage() {
   const importTarget = items.find((item) => item.id === importSetId) ?? null;
 
   const handleExport = async (set: FullSetModel) => {
-    const result = await dispatch(exportSet(set.id));
-    if (exportSet.fulfilled.match(result)) {
+    const result = await dispatch(exportSetAsync(set.id));
+    if (exportSetAsync.fulfilled.match(result)) {
       downloadCsv(
         toCsvFileName(result.payload.name),
         toCardsCsv(result.payload.cards),
@@ -73,7 +73,7 @@ export default function HomePage() {
     switch (action) {
       case "start":
         await dispatch(
-          startTraining({
+          startTrainingAsync({
             userName,
             setId: set.id,
             shouldHide: hideKnownCards,
@@ -101,13 +101,13 @@ export default function HomePage() {
 
   const handleImport = (mode: ImportMode, cards: CsvCard[]) => {
     if (importSetId === null) return;
-    dispatch(importCards({ setId: importSetId, mode, cards }));
+    dispatch(importCardsAsync({ setId: importSetId, mode, cards }));
   };
 
   const confirmRemoval = async () => {
     if (!pendingRemoval) return;
-    const result = await dispatch(deleteSet(pendingRemoval.id));
-    if (deleteSet.fulfilled.match(result)) setPendingRemoval(null);
+    const result = await dispatch(deleteSetAsync(pendingRemoval.id));
+    if (deleteSetAsync.fulfilled.match(result)) setPendingRemoval(null);
   };
 
   const newSetButton = (
@@ -137,7 +137,7 @@ export default function HomePage() {
       {status === "failed" && items.length === 0 && (
         <ErrorState
           message={error ?? "Could not load your sets."}
-          onRetry={() => dispatch(fetchSets())}
+          onRetry={() => dispatch(fetchSetsAsync())}
         />
       )}
 
@@ -165,7 +165,7 @@ export default function HomePage() {
               onAction={handleAction}
               onToggleShuffle={(target) =>
                 dispatch(
-                  toggleShuffle({ setId: target.id, shuffle: !target.shuffle }),
+                  toggleShuffleAsync({ setId: target.id, shuffle: !target.shuffle }),
                 )
               }
             />

@@ -35,7 +35,7 @@ const initialState: SettingsState = {
   error: null,
 }
 
-export const updateColorScheme = createAsyncThunk<void, ColorSchemeName, { rejectValue: string }>(
+export const updateColorSchemeAsync = createAsyncThunk<void, ColorSchemeName, { rejectValue: string }>(
   "settings/updateColorScheme",
   async (colorScheme, { rejectWithValue }) => {
     try {
@@ -47,7 +47,7 @@ export const updateColorScheme = createAsyncThunk<void, ColorSchemeName, { rejec
   },
 )
 
-export const updateHideKnownCards = createAsyncThunk<void, boolean, { rejectValue: string }>(
+export const updateHideKnownCardsAsync = createAsyncThunk<void, boolean, { rejectValue: string }>(
   "settings/updateHideKnownCards",
   async (hide, { rejectWithValue }) => {
     try {
@@ -79,28 +79,28 @@ const settingsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(updateColorScheme.pending, (state, action) => {
+      .addCase(updateColorSchemeAsync.pending, (state, action) => {
         // Applied straight away so switching schemes feels instant.
         state.colorScheme = action.meta.arg
         state.error = null
       })
-      .addCase(updateColorScheme.fulfilled, (state, action) => {
+      .addCase(updateColorSchemeAsync.fulfilled, (state, action) => {
         state.status = "succeeded"
         state.colorScheme = action.meta.arg
         // state.availableColorSchemes = action.payload.availableColorSchemes
       })
-      .addCase(updateColorScheme.rejected, (state, action) => {
+      .addCase(updateColorSchemeAsync.rejected, (state, action) => {
         state.error = action.payload ?? "Could not save your color scheme."
       })
 
-      .addCase(updateHideKnownCards.pending, (state) => {
+      .addCase(updateHideKnownCardsAsync.pending, (state) => {
         state.error = null
       })
-      .addCase(updateHideKnownCards.fulfilled, (state, action) => {
+      .addCase(updateHideKnownCardsAsync.fulfilled, (state, action) => {
         state.status = "succeeded"
         state.hideKnownCards = action.meta.arg
       })
-      .addCase(updateHideKnownCards.rejected, (state, action) => {
+      .addCase(updateHideKnownCardsAsync.rejected, (state, action) => {
         state.error = action.payload ?? "Could not save your settings."
       })
   },

@@ -19,7 +19,7 @@ const initialState: StatisticsState = {
   highlightedSetId: null,
 }
 
-export const fetchStatistics = createAsyncThunk<SetStatisticsModel[], void, { rejectValue: string }>(
+export const fetchStatisticsAsync = createAsyncThunk<SetStatisticsModel[], void, { rejectValue: string }>(
   "statistics/fetchAll",
   async (_, { rejectWithValue }) => {
     try {
@@ -46,15 +46,15 @@ const statisticsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchStatistics.pending, (state) => {
+      .addCase(fetchStatisticsAsync.pending, (state) => {
         state.status = "loading"
         state.error = null
       })
-      .addCase(fetchStatistics.fulfilled, (state, action) => {
+      .addCase(fetchStatisticsAsync.fulfilled, (state, action) => {
         state.status = "succeeded"
         state.bySet = action.payload
       })
-      .addCase(fetchStatistics.rejected, (state, action) => {
+      .addCase(fetchStatisticsAsync.rejected, (state, action) => {
         state.status = "failed"
         state.error = action.payload ?? "Could not load your statistics."
       })

@@ -27,7 +27,7 @@ const initialState: TrainingState = {
   cards: [],
 }
 
-export const startTraining = createAsyncThunk<CardData[], { userName: string; setId: number; shouldHide: boolean }, { rejectValue: string; }>(
+export const startTrainingAsync = createAsyncThunk<CardData[], { userName: string; setId: number; shouldHide: boolean }, { rejectValue: string; }>(
   "training/start",
   async ({ userName, setId, shouldHide }, { dispatch, rejectWithValue }) => {
     try {
@@ -53,7 +53,7 @@ export const startTraining = createAsyncThunk<CardData[], { userName: string; se
   },
 )
 
-export const answer = createAsyncThunk<void, { cardId: number; isKnown: boolean }, { rejectValue: string }>(
+export const answerAsync = createAsyncThunk<void, { cardId: number; isKnown: boolean }, { rejectValue: string }>(
   "training/answer",
   async ({ cardId, isKnown }, { rejectWithValue }) => {
     try {
@@ -98,12 +98,12 @@ const trainingSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(startTraining.pending, (state) => {
+      .addCase(startTrainingAsync.pending, (state) => {
         state.status = "loading"
         state.error = null
         state.finished = false
       })
-      .addCase(startTraining.fulfilled, (state, action) => {
+      .addCase(startTrainingAsync.fulfilled, (state, action) => {
         state.status = "succeeded"
         state.setId = action.meta.arg.setId
         state.cards = action.payload
@@ -111,18 +111,18 @@ const trainingSlice = createSlice({
         state.currentCard = action.payload[0]
         state.side = "front"
       })
-      .addCase(startTraining.rejected, (state, action) => {
+      .addCase(startTrainingAsync.rejected, (state, action) => {
         state.status = "failed"
         state.error = action.payload ?? "Could not start training."
       })
 
       builder
-      .addCase(answer.pending, (state) => {
+      .addCase(answerAsync.pending, (state) => {
         state.status = "loading"
         state.error = null
         state.finished = false
       })
-      .addCase(answer.fulfilled, (state) => {
+      .addCase(answerAsync.fulfilled, (state) => {
         const index = state.currentIndex + 1
         state.side = "front"
         state.status = "succeeded"
@@ -133,7 +133,7 @@ const trainingSlice = createSlice({
           state.finished = true
         }
       })
-      .addCase(answer.rejected, (state, action) => {
+      .addCase(answerAsync.rejected, (state, action) => {
         state.status = "failed"
         state.error = action.payload ?? "Could not answer the card."
       })

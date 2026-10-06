@@ -14,8 +14,8 @@ import { LoadingState } from "../components/StateViews";
 import { SignedOutNotice } from "../features/auth/SignedOutNotice";
 import {
   clearSettingsError,
-  updateColorScheme,
-  updateHideKnownCards,
+  updateColorSchemeAsync,
+  updateHideKnownCardsAsync,
 } from "../features/settings/settingsSlice";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { colorSchemeLabels, colorSchemes } from "../theme";
@@ -113,7 +113,7 @@ export default function SettingsPage() {
               <Switch
                 checked={hideKnownCards}
                 onChange={(_, checked) =>
-                  dispatch(updateHideKnownCards(checked))
+                  dispatch(updateHideKnownCardsAsync(checked))
                 }
               />
             </Box>
@@ -153,7 +153,7 @@ export default function SettingsPage() {
                   <CardActionArea
                     role="radio"
                     aria-checked={selected}
-                    onClick={() => dispatch(updateColorScheme(scheme))}
+                    onClick={() => dispatch(updateColorSchemeAsync(scheme))}
                     sx={{ p: 2.5 }}
                   >
                     <Stack

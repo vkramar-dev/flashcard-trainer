@@ -6,7 +6,7 @@ import { useNavigate, useParams } from "react-router-dom"
 import { ConfirmDialog } from "../components/ConfirmDialog"
 import { PageContainer } from "../components/PageContainer"
 import { ErrorState, LoadingState } from "../components/StateViews"
-import { clearSelectedSet, createSet, fetchSet } from "../features/sets/setsSlice"
+import { clearSelectedSet, createSetAsync, fetchSetAsync } from "../features/sets/setsSlice"
 import { useAppDispatch, useAppSelector } from "../store/hooks"
 import type { CardModel } from "../types"
 
@@ -50,7 +50,7 @@ export default function EditSetPage() {
 
   // Load the set being edited, and reset local state when leaving the page.
   useEffect(() => {
-    if (setId !== null) dispatch(fetchSet(setId))
+    if (setId !== null) dispatch(fetchSetAsync(setId))
     return () => {
       dispatch(clearSelectedSet())
     }
@@ -121,7 +121,7 @@ export default function EditSetPage() {
       })),
     }
 
-    await dispatch(createSet(payload)).unwrap()
+    await dispatch(createSetAsync(payload)).unwrap()
     navigate("/")
   }
 
@@ -144,7 +144,7 @@ export default function EditSetPage() {
   if (!isNew && status === "failed" && !selectedSet) {
     return (
       <PageContainer title="Edit set" maxWidth="md">
-        <ErrorState message={error ?? "Could not load this set."} onRetry={() => setId && dispatch(fetchSet(setId))} />
+        <ErrorState message={error ?? "Could not load this set."} onRetry={() => setId && dispatch(fetchSetAsync(setId))} />
       </PageContainer>
     )
   }
