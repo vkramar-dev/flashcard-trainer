@@ -134,7 +134,7 @@ const trainingSlice = createSlice({
         }
       })
       .addCase(answerAsync.rejected, (state, action) => {
-        state.status = "failed"
+        state.status = state.cards.length > 0 ? "succeeded" : "failed"
         state.error = action.payload ?? "Could not answer the card."
       })
     }
