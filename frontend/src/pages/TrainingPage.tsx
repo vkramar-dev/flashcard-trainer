@@ -1,4 +1,3 @@
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import {
   Alert,
@@ -15,7 +14,9 @@ import {
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { PageContainer } from "../components/PageContainer";
-import { EmptyState, ErrorState } from "../components/StateViews";
+import { ErrorState } from "../components/StateViews";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline"
+import { alpha } from "@mui/material/styles"
 import { FlipCard } from "../features/training/FlipCard";
 import {
   flipCard,
@@ -172,50 +173,127 @@ export default function TrainingPage() {
     );
   }
 
-  if (finished) {
-    return (
-      <PageContainer title="Training complete" maxWidth="sm">
-        <EmptyState
-          title={setName ? `You finished ${setName}` : "You finished the set"}
-          description={`All ${total} card${total === 1 ? "" : "s"} in this set have been reviewed and your answers are saved.`}
-          action={
-            <Stack
-              direction={{ xs: "column", sm: "row" }}
-              gap={1.5}
-              justifyContent="center"
-            >
-              <Button
-                variant="contained"
-                onClick={() =>
-                  dispatch(
-                    startTrainingAsync({
-                      userName,
-                      setId,
-                      shouldHide: hideKnownCards,
-                    }),
-                  ).unwrap()
-                }
-              >
-                Train again
-              </Button>
-              <Button onClick={() => navigate(`/statistics?setId=${setId}`)}>
-                View statistics
-              </Button>
-              <Button
-                color="inherit"
-                onClick={() => {
-                  dispatch(fetchSetsAsync());
-                  navigate("/");
-                }}
-              >
-                Back to sets
-              </Button>
-            </Stack>
-          }
-        />
-      </PageContainer>
-    );
-  }
+if (finished) {
+  return (
+    <PageContainer maxWidth="sm">
+      <Stack
+        spacing={2}
+        alignItems="center"
+        textAlign="center"
+        sx={{
+          minHeight: { xs: 480, md: 560 },
+          justifyContent: "center",
+
+          // Move the whole completion block slightly upward
+          transform: {
+            xs: "translateY(-20px)",
+            md: "translateY(-40px)",
+          },
+        }}
+      >
+        <Box
+          sx={{
+            width: 64,
+            height: 64,
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            bgcolor: (theme) =>
+              alpha(theme.palette.primary.main, 0.12),
+          }}
+        >
+          <CheckCircleOutlineIcon
+            color="primary"
+            sx={{ fontSize: 36 }}
+          />
+        </Box>
+
+        <Typography
+          component="h1"
+          sx={{
+            fontWeight: 750,
+            lineHeight: 1.15,
+            letterSpacing: "-0.015em",
+            fontSize: {
+              xs: "1.65rem",
+              md: "1.9rem",
+            },
+          }}
+        >
+          Training complete
+        </Typography>
+
+        <Typography
+          sx={{
+            fontSize: {
+              xs: "1.35rem",
+              md: "1.55rem",
+            },
+            fontWeight: 750,
+          }}
+        >
+          {setName || "Training set"}
+        </Typography>
+
+        <Typography
+          color="text.secondary"
+          sx={{
+            maxWidth: 460,
+            lineHeight: 1.6,
+          }}
+        >
+          All {total} card{total === 1 ? "" : "s"} in this set have been
+          reviewed and your answers are saved.
+        </Typography>
+
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={1.5}
+          justifyContent="center"
+          sx={{ pt: 1.5 }}
+        >
+          <Button
+            variant="contained"
+            size="large"
+            onClick={() =>
+              dispatch(
+                startTrainingAsync({
+                  userName,
+                  setId,
+                  shouldHide: hideKnownCards,
+                }),
+              ).unwrap()
+            }
+          >
+            Train again
+          </Button>
+
+          <Button
+            variant="outlined"
+            size="large"
+            onClick={() =>
+              navigate(`/statistics?setId=${setId}`)
+            }
+          >
+            View statistics
+          </Button>
+
+          <Button
+            variant="outlined"
+            size="large"
+            onClick={() => {
+              dispatch(fetchSetsAsync())
+              navigate("/")
+            }}
+          >
+            Back to sets
+          </Button>
+        </Stack>
+      </Stack>
+    </PageContainer>
+  )
+}
 
   return (
     <PageContainer
