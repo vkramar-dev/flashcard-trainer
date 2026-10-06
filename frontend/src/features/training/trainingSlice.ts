@@ -33,16 +33,16 @@ export const startTrainingAsync = createAsyncThunk<CardData[], { userName: strin
     try {
       const cards = await trainingApi.start(setId, shouldHide)
 
-      AppStorage.setTrainingProgressNoException({
-                    userName,
-                    setId,
-                    cards,
-                    currentIndex: 0,
-                  });
-
       if (cards.length === 0) {
         return rejectWithValue("This set has no cards yet. Add some cards before training.")
       }
+
+      AppStorage.setTrainingProgressNoException({
+        userName,
+        setId,
+        cards,
+        currentIndex: 0,
+      })
 
       dispatch(markLastTrained(setId))
 
@@ -134,7 +134,7 @@ const trainingSlice = createSlice({
         }
       })
       .addCase(answerAsync.rejected, (state, action) => {
-        state.status = "failed"
+        state.status = state.cards.length > 0 ? "succeeded" : "failed"
         state.error = action.payload ?? "Could not answer the card."
       })
     }

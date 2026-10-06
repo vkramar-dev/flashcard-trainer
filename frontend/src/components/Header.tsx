@@ -228,7 +228,7 @@ export function Header() {
                   fullWidth
                   variant="outlined"
                   onClick={() => {
-                    signOut();
+                    performSignOut();
                     closeDrawer();
                   }}
                 >

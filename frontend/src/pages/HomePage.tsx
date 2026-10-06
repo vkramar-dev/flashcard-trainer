@@ -12,7 +12,7 @@ import {
   clearSetsNotice,
   closeImportDialog,
   exportSetAsync,
-  fetchSetsAsync,
+  loadAppStateAsync,
   importCardsAsync,
   openImportDialog,
   deleteSetAsync,
@@ -42,6 +42,7 @@ export default function HomePage() {
   const [pendingRemoval, setPendingRemoval] = useState<FullSetModel | null>(
     null,
   );
+  const [actionError, setActionError] = useState<string | null>(null);
 
   if (!isAuthenticated) {
     return (
@@ -72,14 +73,21 @@ export default function HomePage() {
   const handleAction = async (action: SetTileAction, set: FullSetModel) => {
     switch (action) {
       case "start":
-        await dispatch(
-          startTrainingAsync({
-            userName,
-            setId: set.id,
-            shouldHide: hideKnownCards,
-          }),
-        ).unwrap();
-        navigate(`/set/${set.id}/train`);
+        try {
+          await dispatch(
+            startTrainingAsync({
+              userName,
+              setId: set.id,
+              shouldHide: hideKnownCards,
+            }),
+          ).unwrap();
+          setActionError(null);
+          navigate(`/set/${set.id}/train`);
+        } catch (error) {
+          setActionError(
+            typeof error === "string" ? error : "Could not start training.",
+          );
+        }
         break;
       case "edit":
         navigate(`/set/${set.id}/edit`);
@@ -130,6 +138,12 @@ export default function HomePage() {
       }
       actions={items.length > 0 ? newSetButton : undefined}
     >
+      {actionError && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setActionError(null)}>
+          {actionError}
+        </Alert>
+      )}
+
       {status === "loading" && items.length === 0 && (
         <LoadingState label="Loading your sets..." />
       )}
@@ -137,7 +151,7 @@ export default function HomePage() {
       {status === "failed" && items.length === 0 && (
         <ErrorState
           message={error ?? "Could not load your sets."}
-          onRetry={() => dispatch(fetchSetsAsync())}
+          onRetry={() => dispatch(loadAppStateAsync())}
         />
       )}
 
