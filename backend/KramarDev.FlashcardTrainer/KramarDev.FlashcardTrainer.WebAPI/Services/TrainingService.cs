@@ -24,12 +24,24 @@ public sealed class TrainingService(FlashcardsDbContext dbContext) : ITrainingSe
             card.NotKnowCounter++;
         }
 
+        // Remember the learned status before normalization.
+        bool wasLearnt = card.KnowCounter >
+            card.NotKnowCounter + Constants.LearntThreshold;
+
         // Gradually reduce the influence of older answers so cards can
         // adapt to the user's current knowledge rather than their entire history.
         if (card.KnowCounter >= 8 || card.NotKnowCounter >= 8)
         {
             card.KnowCounter /= 4;
             card.NotKnowCounter /= 4;
+
+            // Preserve the learned status.
+            if (wasLearnt)
+            {
+                card.KnowCounter = Math.Max(
+                    card.KnowCounter,
+                    card.NotKnowCounter + Constants.LearntThreshold + 1);
+            }
         }
 
         await _ctx.SaveChangesAsync(cancellationToken);
