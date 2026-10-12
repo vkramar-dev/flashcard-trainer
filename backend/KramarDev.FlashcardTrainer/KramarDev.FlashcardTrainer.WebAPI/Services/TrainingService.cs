@@ -26,10 +26,10 @@ public sealed class TrainingService(FlashcardsDbContext dbContext) : ITrainingSe
 
         // Gradually reduce the influence of older answers so cards can
         // adapt to the user's current knowledge rather than their entire history.
-        if (card.KnowCounter > 10 || card.NotKnowCounter > 10)
+        if (card.KnowCounter >= 8 || card.NotKnowCounter >= 8)
         {
-            card.KnowCounter /= 2;
-            card.NotKnowCounter /= 2;
+            card.KnowCounter /= 4;
+            card.NotKnowCounter /= 4;
         }
 
         await _ctx.SaveChangesAsync(cancellationToken);
