@@ -91,7 +91,7 @@ export default function TrainingPage() {
     finished,
     cards,
   } = useAppSelector((state) => state.training);
-  const { hideKnownCards } = useAppSelector((state) => state.settings);
+  const hideKnownCards = useAppSelector((state) => state.settings.hideKnownCards);
 
   const total = cards.length;
   const position = currentIndex + 1;
@@ -420,6 +420,7 @@ export default function TrainingPage() {
 
         {currentCard ? (
           <FlipCard
+            key={currentCard.id}
             front={currentCard.front}
             back={currentCard.back}
             side={side}
