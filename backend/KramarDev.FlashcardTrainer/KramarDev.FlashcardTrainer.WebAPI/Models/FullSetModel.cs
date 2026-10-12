@@ -10,8 +10,6 @@ public record FullSetModel
     [StringLength(ModelConstraints.SetNameMaxLength)]
     public string Name { get; set; }
 
-    public bool Shuffle { get; set; }
-
     public int TotalCards { get; set; }
 
     public int LearntCards { get; set; }

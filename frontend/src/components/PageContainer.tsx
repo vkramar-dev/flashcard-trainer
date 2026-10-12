@@ -32,6 +32,7 @@ export function PageContainer({
               <Typography
                 variant="h4"
                 component="h1"
+                
                 sx={{ letterSpacing: "-0.02em" }}
               >
                 {title}

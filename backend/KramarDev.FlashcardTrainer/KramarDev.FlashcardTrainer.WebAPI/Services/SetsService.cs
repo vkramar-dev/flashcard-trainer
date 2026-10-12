@@ -17,7 +17,6 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
                 {
                     Id = s.Id,
                     Name = s.Name,
-                    Shuffle = s.IsShuffled,
                     TotalCards = s.Cards.Count,
                     LearntCards = s.Cards.Count(card => card.KnowCounter > card.NotKnowCounter + Constants.LearntThreshold),
                     Created = s.Created,
@@ -90,18 +89,6 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
             .ExecuteDeleteAsync(cancellationToken);
     }
 
-    public async Task UpdateShuffleAsync(string userName, int setId, bool shuffle, CT cancellationToken)
-    {
-        int updated = await _ctx.Sets
-            .Where(s => s.Id == setId && s.UserName == userName)
-            .ExecuteUpdateAsync(setters => setters.SetProperty(s => s.IsShuffled, shuffle), cancellationToken);
-
-        if (updated == 0)
-        {
-            throw new Http404NotFoundException($"Set with Id {setId} not found or does not belong to user {userName}");
-        }
-    }
-
     public async Task<ImportResultModel> ImportAsync(string userName,
         int setId, bool append, CardModel[] cards, CT ct)
     {
@@ -145,7 +132,6 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
         {
             UserName = userName,
             Name = set.Name,
-            IsShuffled = false,
             Created = DateTime.UtcNow,
             Modified = DateTime.UtcNow,
             Cards = set.Cards.Select(c => new DB.Card
@@ -277,7 +263,6 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
                 {
                     Id = s.Id,
                     Name = s.Name,
-                    Shuffle = s.IsShuffled,
                     TotalCards = s.Cards.Count,
                     LearntCards = s.Cards.Count(card => card.KnowCounter > card.NotKnowCounter + Constants.LearntThreshold),
                     Created = s.Created,

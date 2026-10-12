@@ -21,10 +21,6 @@ export const setsApi = {
     await apiClient.delete(`/sets/${setId}`)
   },
 
-  async updateShuffle(setId: number, shuffle: boolean): Promise<void> {
-    await apiClient.patch(`/sets/${setId}/shuffle`, { shuffle })
-  },
-
   async importCards({ setId, mode, cards }: ImportPayload): Promise<ImportResultModel> {
     const { data } = await apiClient.post<ImportResultModel>(
       `/sets/${setId}/import`, { append: mode === "append", cards })

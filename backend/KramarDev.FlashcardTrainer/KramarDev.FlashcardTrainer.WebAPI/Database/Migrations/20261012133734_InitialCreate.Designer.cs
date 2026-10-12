@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
 {
     [DbContext(typeof(FlashcardsDbContext))]
-    [Migration("20261001150052_AddRegistrationVerification")]
-    partial class AddRegistrationVerification
+    [Migration("20261012133734_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -131,9 +131,6 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
 
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsShuffled")
-                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastTrained")
                         .HasColumnType("datetime2");

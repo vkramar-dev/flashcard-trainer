@@ -16,7 +16,6 @@ import {
   importCardsAsync,
   openImportDialog,
   deleteSetAsync,
-  toggleShuffleAsync,
 } from "../features/sets/setsSlice";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import type { ImportMode, FullSetModel } from "../types";
@@ -177,11 +176,6 @@ export default function HomePage() {
               key={set.id}
               set={set}
               onAction={handleAction}
-              onToggleShuffle={(target) =>
-                dispatch(
-                  toggleShuffleAsync({ setId: target.id, shuffle: !target.shuffle }),
-                )
-              }
             />
           ))}
         </Box>

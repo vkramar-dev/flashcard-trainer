@@ -6,29 +6,35 @@ public sealed class TrainingService(FlashcardsDbContext dbContext) : ITrainingSe
 {
     readonly FlashcardsDbContext _ctx = dbContext;
 
+    const int MaxCardsPerTraining = 50;
+    const int MinCardsPerTraining = 4;
+
     public async Task AnswerAsync(string userName, int cardId, bool isKnown, CT cancellationToken)
     {
-        int rowsAffected;
+        Card card = await _ctx.Cards
+            .FirstOrDefaultAsync(
+                c => c.Id == cardId && c.ParentSet.UserName == userName,
+                cancellationToken)
+            ?? throw new Http404NotFoundException("Card not found.");
 
         if (isKnown)
         {
-            rowsAffected = await _ctx.Cards
-                .Where(c => c.Id == cardId && c.ParentSet.UserName == userName)
-                .ExecuteUpdateAsync(setters => setters.SetProperty(c => c.KnowCounter, c => c.KnowCounter + 1),
-                    cancellationToken);
+            card.KnowCounter++;
         }
         else
         {
-            rowsAffected = await _ctx.Cards
-                .Where(c => c.Id == cardId && c.ParentSet.UserName == userName)
-                .ExecuteUpdateAsync(setters => setters.SetProperty(c => c.NotKnowCounter, c => c.NotKnowCounter + 1),
-                    cancellationToken);
+            card.NotKnowCounter++;
         }
 
-        if (rowsAffected == 0)
+        // Gradually reduce the influence of older answers so cards can
+        // adapt to the user's current knowledge rather than their entire history.
+        if (card.KnowCounter > 10 || card.NotKnowCounter > 10)
         {
-            throw new Http404NotFoundException($"Card with Id {cardId} not found or does not belong to user {userName}");
+            card.KnowCounter /= 2;
+            card.NotKnowCounter /= 2;
         }
+
+        await _ctx.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<CardModel[]> StartAsync(string userName, int setId, bool shouldHide, CT cancellationToken)
@@ -37,7 +43,7 @@ public sealed class TrainingService(FlashcardsDbContext dbContext) : ITrainingSe
                          where s.Id == setId && s.UserName == userName
                          select s).SingleAsync(cancellationToken);
 
-        CardModel[] cards = ShapeCards(set.Cards, set.IsShuffled, shouldHide);
+        CardModel[] cards = ShapeCards(set.Cards, shouldHide);
         if (cards.Length > 0)
         {
             set.LastTrained = DateTime.UtcNow;
@@ -47,8 +53,27 @@ public sealed class TrainingService(FlashcardsDbContext dbContext) : ITrainingSe
         return cards;
     }
 
-    private CardModel[] ShapeCards(ICollection<Card> cards, bool shuffle, bool shouldHide)
+    private CardModel[] ShapeCards(ICollection<Card> cards, bool shouldHide)
     {
+        if (cards.Count < 1)
+        {
+            throw new Http404NotFoundException("No cards available for training.");
+        }
+        else if (cards.Count < MinCardsPerTraining)
+        {
+            CardModel[] allCards = (from card in cards
+                                    select new CardModel
+                                    {
+                                        Id = card.Id,
+                                        Front = card.FrontSide,
+                                        Back = card.BackSide
+                                    }).ToArray();
+
+            Random.Shared.Shuffle(allCards);
+
+            return allCards;
+        }
+
         CardModel[] selectedCards = (from card in cards
                                      where !shouldHide || IsCardSelected(card)
                                      select new CardModel
@@ -56,14 +81,27 @@ public sealed class TrainingService(FlashcardsDbContext dbContext) : ITrainingSe
                                          Id = card.Id,
                                          Front = card.FrontSide,
                                          Back = card.BackSide
-                                     }).OrderBy(c => c.Id).ToArray();
+                                     }).ToArray();
 
-        if (shuffle)
+        if (selectedCards.Length < MinCardsPerTraining)
         {
-            Random.Shared.Shuffle(selectedCards);
+            CardModel[] addingCards = (from card in cards
+                                       where !selectedCards.Any(sc => sc.Id == card.Id)
+                                       select new CardModel
+                                       {
+                                           Id = card.Id,
+                                           Front = card.FrontSide,
+                                           Back = card.BackSide
+                                       })
+                           .Take(MinCardsPerTraining - selectedCards.Length)
+                           .ToArray();
+
+            selectedCards = selectedCards.Concat(addingCards).ToArray();
         }
 
-        return selectedCards;
+        Random.Shared.Shuffle(selectedCards);
+
+        return MaxCardsPerTraining < 1 ? selectedCards : selectedCards.Take(MaxCardsPerTraining).ToArray();
     }
 
     private bool IsCardSelected(Card card)

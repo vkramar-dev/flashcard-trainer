@@ -53,6 +53,37 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "BlockedIpAddress",
+                columns: table => new
+                {
+                    ExpAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IpAddress = table.Column<string>(type: "varchar(45)", unicode: false, maxLength: 45, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BlockedIpAddress", x => new { x.ExpAt, x.IpAddress });
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RegisteringUsers",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    Code = table.Column<string>(type: "char(3)", unicode: false, fixedLength: true, maxLength: 3, nullable: false),
+                    IpAddress = table.Column<string>(type: "varchar(45)", unicode: false, maxLength: 45, nullable: false),
+                    FailCount = table.Column<byte>(type: "tinyint", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CodeExpAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsCompleted = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RegisteringUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Sets",
                 columns: table => new
                 {
@@ -60,7 +91,6 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    IsShuffled = table.Column<bool>(type: "bit", nullable: false),
                     Created = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Modified = table.Column<DateTime>(type: "datetime2", nullable: false),
                     LastTrained = table.Column<DateTime>(type: "datetime2", nullable: true)
@@ -269,6 +299,16 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_RegisteringUsers_Email_Id",
+                table: "RegisteringUsers",
+                columns: new[] { "Email", "Id" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RegisteringUsers_IpAddress_CreatedAt",
+                table: "RegisteringUsers",
+                columns: new[] { "IpAddress", "CreatedAt" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Sets_UserName",
                 table: "Sets",
                 column: "UserName");
@@ -299,7 +339,13 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "BlockedIpAddress");
+
+            migrationBuilder.DropTable(
                 name: "Cards");
+
+            migrationBuilder.DropTable(
+                name: "RegisteringUsers");
 
             migrationBuilder.DropTable(
                 name: "Settings");

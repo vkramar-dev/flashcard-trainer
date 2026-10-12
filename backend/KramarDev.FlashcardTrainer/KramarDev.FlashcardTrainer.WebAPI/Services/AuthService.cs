@@ -323,7 +323,13 @@ public sealed class AuthService(
 
     private static string GenerateCode()
     {
-        return RandomNumberGenerator.GetInt32(0, 1000).ToString("D3");
+        while (true)
+        {
+            var code = RandomNumberGenerator.GetInt32(1000).ToString("D3");
+
+            if (code is not ("666" or "911"))
+                return code;
+        }
     }
 
     private static string IpLockResource(string ipAddress)

@@ -1,0 +1,1200 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Flashcard Trainerなら、思い出す練習をシンプルに続けられます。自分だけのセットを作り、自分のペースで練習し、学習の進み具合を確認できます。"
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://new-words.online/ja/" />
+    <link rel="alternate" hreflang="en" href="https://new-words.online/en/" />
+    <link rel="alternate" hreflang="ru" href="https://new-words.online/ru/" />
+    <link rel="alternate" hreflang="bg" href="https://new-words.online/bg/" />
+    <link rel="alternate" hreflang="es" href="https://new-words.online/es/" />
+    <link rel="alternate" hreflang="de" href="https://new-words.online/de/" />
+    <link rel="alternate" hreflang="fr" href="https://new-words.online/fr/" />
+    <link rel="alternate" hreflang="pt" href="https://new-words.online/pt/" />
+    <link rel="alternate" hreflang="ja" href="https://new-words.online/ja/" />
+    <link
+      rel="alternate"
+      hreflang="zh-Hans"
+      href="https://new-words.online/zh-hans/"
+    />
+    <link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://new-words.online/en/"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://new-words.online/ja/" />
+    <meta property="og:site_name" content="Flashcard Trainer" />
+    <meta property="og:locale" content="ja_JP" />
+    <meta
+      property="og:title"
+      content="Flashcard Trainer — 大切なことを、しっかり覚える"
+    />
+    <meta
+      property="og:description"
+      content="フラッシュカードのセットを作り、思い出す練習を重ねながら学習の進み具合を確認できます。"
+    />
+    <meta
+      property="og:image"
+      content="https://new-words.online/social-preview.png"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="学習カードを表示したFlashcard Trainerのプレビュー"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Flashcard Trainer — 大切なことを、しっかり覚える"
+    />
+    <meta
+      name="twitter:description"
+      content="フラッシュカードのセットを作り、思い出す練習を重ねながら学習の進み具合を確認できます。"
+    />
+    <meta
+      name="twitter:image"
+      content="https://new-words.online/social-preview.png"
+    />
+    <meta
+      name="twitter:image:alt"
+      content="学習カードを表示したFlashcard Trainerのプレビュー"
+    />
+    <meta name="theme-color" content="#f6f2e9" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Flashcard Trainer — 大切なことを、しっかり覚える</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --ink: #17211d;
+        --muted: #66706b;
+        --paper: #f6f2e9;
+        --card: #fffdf8;
+        --line: rgba(23, 33, 29, 0.13);
+        --green: #28604b;
+        --green-2: #3f8066;
+        --mint: #dceadf;
+        --apricot: #e9a875;
+        --shadow: 0 24px 70px rgba(35, 53, 44, 0.14);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--paper);
+        font-family: "DM Sans", sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      a {
+        color: inherit;
+      }
+      button,
+      a {
+        -webkit-tap-highlight-color: transparent;
+      }
+      .page {
+        min-height: 100vh;
+        overflow: hidden;
+        background:
+          radial-gradient(
+            circle at 7% 2%,
+            rgba(233, 168, 117, 0.25),
+            transparent 24rem
+          ),
+          radial-gradient(
+            circle at 91% 25%,
+            rgba(134, 184, 153, 0.22),
+            transparent 27rem
+          ),
+          var(--paper);
+      }
+      .shell {
+        width: min(1180px, calc(100% - 40px));
+        margin: 0 auto;
+      }
+      nav {
+        height: 86px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+        font:
+          700 17px "Manrope",
+          sans-serif;
+        letter-spacing: -0.02em;
+      }
+      .brand-mark {
+        position: relative;
+        width: 33px;
+        height: 28px;
+      }
+      .brand-mark i {
+        position: absolute;
+        inset: 3px 1px 1px 4px;
+        border: 2px solid var(--ink);
+        border-radius: 6px;
+        background: var(--card);
+        transform: rotate(-5deg);
+      }
+      .brand-mark i:nth-child(2) {
+        inset: 0 4px 4px 1px;
+        background: var(--mint);
+        transform: rotate(4deg);
+      }
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 32px;
+      }
+      .nav-links a {
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+        transition: color 0.2s ease;
+      }
+      .nav-links a:hover {
+        color: var(--ink);
+      }
+      .language-menu {
+        position: relative;
+      }
+      .language-menu summary {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 9px 0;
+        color: var(--ink);
+        cursor: pointer;
+        list-style: none;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+      }
+      .language-menu summary::-webkit-details-marker {
+        display: none;
+      }
+      .language-menu summary::after {
+        content: "⌄";
+        margin-top: -3px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .language-options {
+        position: absolute;
+        z-index: 30;
+        top: calc(100% + 8px);
+        right: 0;
+        width: 210px;
+        display: grid;
+        gap: 2px;
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: var(--card);
+        box-shadow: var(--shadow);
+      }
+      .language-options a {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 9px 10px;
+        border-radius: 10px;
+        white-space: nowrap;
+      }
+      .language-options a:hover,
+      .language-options a[aria-current="page"] {
+        color: var(--ink);
+        background: var(--mint);
+      }
+      .language-options small {
+        color: var(--muted);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+      }
+      .nav-cta,
+      .primary,
+      .secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        text-decoration: none;
+        border-radius: 999px;
+        font-weight: 700;
+        transition:
+          transform 0.2s ease,
+          box-shadow 0.2s ease,
+          background 0.2s ease;
+      }
+      .nav-cta {
+        padding: 11px 18px;
+        color: #fff !important;
+        background: var(--green);
+      }
+      .nav-cta:hover,
+      .primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(40, 96, 75, 0.25);
+      }
+      .hero {
+        min-height: 690px;
+        display: grid;
+        grid-template-columns: 1.02fr 0.98fr;
+        align-items: center;
+        gap: clamp(38px, 7vw, 96px);
+        padding: 58px 0 96px;
+      }
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        margin-bottom: 22px;
+        color: var(--green);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .eyebrow::before {
+        content: "";
+        width: 28px;
+        height: 1px;
+        background: currentColor;
+      }
+      h1,
+      h2,
+      h3 {
+        font-family: "Manrope", sans-serif;
+      }
+      h1 {
+        max-width: 680px;
+        margin: 0;
+        font-size: clamp(52px, 6.8vw, 86px);
+        line-height: 0.98;
+        letter-spacing: -0.065em;
+      }
+      h1 em {
+        color: var(--green);
+        font-style: normal;
+      }
+      .hero-copy > p {
+        max-width: 590px;
+        margin: 28px 0 32px;
+        color: var(--muted);
+        font-size: clamp(17px, 1.7vw, 20px);
+        line-height: 1.68;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 14px;
+      }
+      .primary {
+        padding: 16px 23px;
+        color: #fff;
+        background: var(--green);
+      }
+      .primary svg {
+        width: 17px;
+      }
+      .secondary {
+        padding: 15px 21px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.38);
+      }
+      .secondary:hover {
+        background: rgba(255, 255, 255, 0.8);
+        transform: translateY(-2px);
+      }
+      .trust {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 24px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .trust span {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .trust span + span::before {
+        content: "•";
+        margin-right: 5px;
+        color: var(--apricot);
+      }
+      .stage {
+        position: relative;
+        min-height: 550px;
+        display: grid;
+        place-items: center;
+      }
+      .orbit {
+        position: absolute;
+        width: 500px;
+        height: 500px;
+        border: 1px solid rgba(40, 96, 75, 0.14);
+        border-radius: 50%;
+      }
+      .orbit::before,
+      .orbit::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        background: var(--apricot);
+        box-shadow: 0 5px 16px rgba(98, 72, 51, 0.16);
+      }
+      .orbit::before {
+        width: 14px;
+        height: 14px;
+        top: 76px;
+        left: 58px;
+      }
+      .orbit::after {
+        width: 22px;
+        height: 22px;
+        right: 34px;
+        bottom: 107px;
+        background: var(--green-2);
+      }
+      .card-stack {
+        position: relative;
+        width: min(420px, 83vw);
+        height: 430px;
+        perspective: 1000px;
+      }
+      .flashcard {
+        position: absolute;
+        inset: 44px 18px 34px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 34px;
+        border: 1px solid rgba(23, 33, 29, 0.1);
+        border-radius: 24px;
+        background: var(--card);
+        box-shadow: var(--shadow);
+      }
+      .flashcard.back-1 {
+        transform: rotate(-9deg) translate(-30px, 15px);
+        background: #e7d0b7;
+        box-shadow: none;
+      }
+      .flashcard.back-2 {
+        transform: rotate(8deg) translate(27px, 10px);
+        background: #c6ddce;
+        box-shadow: none;
+      }
+      .flashcard.front {
+        animation: float 5.5s ease-in-out infinite;
+      }
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0) rotate(-1deg);
+        }
+        50% {
+          transform: translateY(-12px) rotate(1deg);
+        }
+      }
+      .card-top {
+        display: flex;
+        justify-content: space-between;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .progress {
+        width: 88px;
+        height: 6px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #e8e6df;
+      }
+      .progress i {
+        display: block;
+        width: 64%;
+        height: 100%;
+        border-radius: inherit;
+        background: var(--apricot);
+      }
+      .word {
+        text-align: center;
+      }
+      .word strong {
+        display: block;
+        font:
+          800 clamp(34px, 5vw, 48px) "Manrope",
+          sans-serif;
+        letter-spacing: -0.05em;
+      }
+      .word small {
+        display: block;
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 15px;
+      }
+      .answer-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 11px;
+      }
+      .answer-buttons span {
+        padding: 13px 10px;
+        border-radius: 12px;
+        text-align: center;
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .again {
+        color: #985b36;
+        background: #f7e5d8;
+      }
+      .know {
+        color: #226044;
+        background: #dcecdf;
+      }
+      .note {
+        position: absolute;
+        z-index: 5;
+        padding: 12px 16px;
+        border: 1px solid rgba(23, 33, 29, 0.08);
+        border-radius: 13px;
+        background: rgba(255, 253, 248, 0.9);
+        box-shadow: 0 12px 30px rgba(35, 53, 44, 0.1);
+        backdrop-filter: blur(10px);
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .note.one {
+        top: 45px;
+        right: -5px;
+        transform: rotate(3deg);
+      }
+      .note.two {
+        bottom: 34px;
+        left: -18px;
+        transform: rotate(-4deg);
+      }
+      .section {
+        padding: 115px 0;
+      }
+      .section-head {
+        max-width: 700px;
+        margin-bottom: 52px;
+      }
+      .section-head .eyebrow {
+        margin-bottom: 16px;
+      }
+      h2 {
+        margin: 0;
+        font-size: clamp(36px, 4.8vw, 60px);
+        line-height: 1.08;
+        letter-spacing: -0.05em;
+      }
+      .section-head p {
+        max-width: 590px;
+        margin: 20px 0 0;
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.65;
+      }
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        border-top: 1px solid var(--line);
+      }
+      .step {
+        position: relative;
+        padding: 33px 42px 0 0;
+      }
+      .step:not(:last-child)::after {
+        content: "";
+        position: absolute;
+        top: 33px;
+        right: 26px;
+        width: 1px;
+        height: 130px;
+        background: var(--line);
+      }
+      .step-no {
+        display: inline-grid;
+        width: 34px;
+        height: 34px;
+        place-items: center;
+        border-radius: 50%;
+        color: #fff;
+        background: var(--green);
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .step h3 {
+        margin: 22px 0 11px;
+        font-size: 22px;
+        letter-spacing: -0.03em;
+      }
+      .step p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.65;
+      }
+      .feature-panel {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 30px;
+        background: var(--card);
+        box-shadow: 0 22px 70px rgba(35, 53, 44, 0.07);
+      }
+      .feature-copy {
+        padding: clamp(42px, 7vw, 82px);
+      }
+      .feature-copy h2 {
+        font-size: clamp(34px, 4.2vw, 54px);
+      }
+      .feature-copy > p {
+        margin: 20px 0 32px;
+        color: var(--muted);
+        font-size: 17px;
+        line-height: 1.7;
+      }
+      .feature-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        gap: 18px;
+      }
+      .feature-list li {
+        display: flex;
+        gap: 13px;
+        align-items: flex-start;
+        font-weight: 600;
+      }
+      .check {
+        flex: 0 0 auto;
+        display: grid;
+        width: 24px;
+        height: 24px;
+        place-items: center;
+        border-radius: 50%;
+        color: var(--green);
+        background: var(--mint);
+        font-size: 13px;
+      }
+      .dashboard {
+        position: relative;
+        display: grid;
+        align-content: center;
+        gap: 15px;
+        min-height: 520px;
+        padding: 48px;
+        background: #204f3f;
+        color: #fff;
+      }
+      .dashboard::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        opacity: 0.35;
+        background-image: radial-gradient(
+          rgba(255, 255, 255, 0.18) 1px,
+          transparent 1px
+        );
+        background-size: 20px 20px;
+      }
+      .stat,
+      .hardest {
+        position: relative;
+        border: 1px solid rgba(255, 255, 255, 0.13);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+      }
+      .stat {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        padding: 24px;
+      }
+      .stat small,
+      .hardest small {
+        color: rgba(255, 255, 255, 0.66);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .stat strong {
+        display: block;
+        margin-top: 6px;
+        font:
+          800 39px "Manrope",
+          sans-serif;
+      }
+      .bars {
+        display: flex;
+        align-items: flex-end;
+        justify-content: end;
+        gap: 7px;
+      }
+      .bars i {
+        width: 10px;
+        border-radius: 8px;
+        background: #9ac0a7;
+      }
+      .bars i:nth-child(1) {
+        height: 36%;
+      }
+      .bars i:nth-child(2) {
+        height: 61%;
+      }
+      .bars i:nth-child(3) {
+        height: 48%;
+      }
+      .bars i:nth-child(4) {
+        height: 82%;
+      }
+      .bars i:nth-child(5) {
+        height: 100%;
+        background: #efb27e;
+      }
+      .hardest {
+        padding: 24px;
+      }
+      .hardest ul {
+        list-style: none;
+        padding: 0;
+        margin: 17px 0 0;
+        display: grid;
+        gap: 12px;
+      }
+      .hardest li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-bottom: 11px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.11);
+        font-size: 14px;
+      }
+      .hardest li:last-child {
+        border: 0;
+        padding-bottom: 0;
+      }
+      .pill {
+        padding: 4px 8px;
+        border-radius: 999px;
+        color: #f4cfaf;
+        background: rgba(233, 168, 117, 0.15);
+        font-size: 11px;
+      }
+      .details {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 18px;
+      }
+      .detail {
+        padding: 34px;
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        background: rgba(255, 253, 248, 0.56);
+      }
+      .detail-icon {
+        display: grid;
+        width: 43px;
+        height: 43px;
+        place-items: center;
+        margin-bottom: 28px;
+        border-radius: 13px;
+        color: var(--green);
+        background: var(--mint);
+        font-size: 20px;
+      }
+      .detail h3 {
+        margin: 0 0 10px;
+        font-size: 20px;
+        letter-spacing: -0.03em;
+      }
+      .detail p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.65;
+      }
+      .final {
+        position: relative;
+        margin: 30px auto 80px;
+        padding: clamp(54px, 9vw, 100px) 30px;
+        overflow: hidden;
+        border-radius: 32px;
+        text-align: center;
+        color: #fff;
+        background: var(--green);
+      }
+      .final::before,
+      .final::after {
+        content: "";
+        position: absolute;
+        width: 270px;
+        height: 200px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 28px;
+      }
+      .final::before {
+        left: -120px;
+        top: -85px;
+        transform: rotate(22deg);
+      }
+      .final::after {
+        right: -120px;
+        bottom: -95px;
+        transform: rotate(-16deg);
+      }
+      .final h2 {
+        position: relative;
+        max-width: 720px;
+        margin: 0 auto;
+      }
+      .final p {
+        position: relative;
+        margin: 20px auto 31px;
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 18px;
+      }
+      .final .primary {
+        position: relative;
+        color: var(--ink);
+        background: #fffdf8;
+      }
+      .final .primary:hover {
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+      }
+      footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 30px;
+        padding: 0 0 34px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      footer a {
+        text-decoration: none;
+      }
+      .reveal {
+        opacity: 0;
+        transform: translateY(24px);
+        transition:
+          opacity 0.7s ease,
+          transform 0.7s ease;
+      }
+      .reveal.visible {
+        opacity: 1;
+        transform: none;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        .flashcard.front {
+          animation: none;
+        }
+        .reveal {
+          opacity: 1;
+          transform: none;
+          transition: none;
+        }
+      }
+      @media (max-width: 860px) {
+        .nav-links {
+          gap: 12px;
+        }
+        .nav-links > a:not(.nav-cta) {
+          display: none;
+        }
+        .hero {
+          grid-template-columns: 1fr;
+          padding-top: 45px;
+          text-align: center;
+        }
+        .hero-copy > p {
+          margin-inline: auto;
+        }
+        .eyebrow,
+        .actions,
+        .trust {
+          justify-content: center;
+        }
+        .stage {
+          min-height: 500px;
+        }
+        .steps {
+          grid-template-columns: 1fr;
+        }
+        .step {
+          padding: 28px 0;
+          border-bottom: 1px solid var(--line);
+        }
+        .step:not(:last-child)::after {
+          display: none;
+        }
+        .feature-panel {
+          grid-template-columns: 1fr;
+        }
+        .feature-copy {
+          order: 1;
+        }
+        .dashboard {
+          min-height: 440px;
+        }
+      }
+      @media (max-width: 580px) {
+        .shell {
+          width: min(100% - 28px, 1180px);
+        }
+        nav {
+          height: 72px;
+        }
+        .brand {
+          font-size: 15px;
+        }
+        .nav-cta {
+          padding: 10px 14px;
+        }
+        .hero {
+          min-height: auto;
+          padding: 56px 0 70px;
+        }
+        h1 {
+          font-size: clamp(46px, 15vw, 65px);
+        }
+        .trust {
+          flex-wrap: wrap;
+        }
+        .stage {
+          min-height: 430px;
+        }
+        .orbit {
+          width: 360px;
+          height: 360px;
+        }
+        .card-stack {
+          height: 390px;
+        }
+        .flashcard {
+          inset: 38px 20px 28px;
+          padding: 26px;
+        }
+        .note {
+          display: none;
+        }
+        .section {
+          padding: 85px 0;
+        }
+        .details {
+          grid-template-columns: 1fr;
+        }
+        .dashboard {
+          padding: 25px;
+          min-height: 420px;
+        }
+        .final {
+          margin-bottom: 42px;
+        }
+        footer {
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        }
+      }
+      html[lang="ja"] body,
+      html[lang="ja"] h1,
+      html[lang="ja"] h2,
+      html[lang="ja"] h3,
+      html[lang="ja"] .brand {
+        font-family:
+          "Yu Gothic", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="shell">
+        <nav aria-label="メインナビゲーション">
+          <a class="brand" href="#top" aria-label="Flashcard Trainer ホーム"
+            ><span class="brand-mark"><i></i><i></i></span>Flashcard Trainer</a
+          >
+          <div class="nav-links">
+            <a href="#how">使い方</a>
+            <a href="#features">機能</a>
+            <details class="language-menu">
+              <summary aria-label="言語を選択">
+                <span aria-hidden="true">🌐</span>JA
+              </summary>
+              <div class="language-options">
+                <a href="/en/" lang="en"
+                  ><span>English</span><small>EN</small></a
+                >
+                <a href="/ru/" lang="ru"
+                  ><span>Русский</span><small>RU</small></a
+                >
+                <a href="/bg/" lang="bg"
+                  ><span>Български</span><small>BG</small></a
+                >
+                <a href="/es/" lang="es"
+                  ><span>Español</span><small>ES</small></a
+                >
+                <a href="/de/" lang="de"
+                  ><span>Deutsch</span><small>DE</small></a
+                >
+                <a href="/fr/" lang="fr"
+                  ><span>Français</span><small>FR</small></a
+                >
+                <a href="/pt/" lang="pt-BR"
+                  ><span>Português</span><small>PT</small></a
+                >
+                <a href="/ja/" lang="ja" aria-current="page"
+                  ><span>日本語</span><small>JA</small></a
+                >
+                <a href="/zh-hans/" lang="zh-Hans"
+                  ><span>简体中文</span><small>ZH</small></a
+                >
+              </div>
+            </details>
+            <a class="nav-cta" href="https://new-words.online">アプリを開く</a>
+          </div>
+        </nav>
+      </header>
+      <main id="top">
+        <section class="hero shell">
+          <div class="hero-copy reveal">
+            <div class="eyebrow">思い出す学習を、もっとシンプルに</div>
+            <h1>大切なことを、<em>しっかり覚える。</em></h1>
+            <p>
+              自分だけのフラッシュカードセットを作り、気を散らさずに練習し、まだ定着していない単語により多くの時間を使えます。
+            </p>
+            <div class="actions">
+              <a class="primary" href="https://new-words.online"
+                >アプリを使う
+                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path
+                    d="M4 10h12M11 5l5 5-5 5"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  /></svg
+              ></a>
+              <a class="secondary" href="#how">使い方を見る</a>
+            </div>
+            <div class="trust">
+              <span>無料で使える</span><span>自分だけの学習セット</span
+              ><span>どの画面でも使える</span>
+            </div>
+          </div>
+          <div
+            class="stage reveal"
+            aria-label="フラッシュカード学習のプレビュー"
+          >
+            <div class="orbit"></div>
+            <div class="card-stack">
+              <article class="flashcard back-1" aria-hidden="true"></article>
+              <article class="flashcard back-2" aria-hidden="true"></article>
+              <article class="flashcard front">
+                <div class="card-top">
+                  <span>ブルガリア語 · 14 / 22</span
+                  ><span class="progress"><i></i></span>
+                </div>
+                <div class="word">
+                  <strong>разбирам</strong><small>タップして答えを表示</small>
+                </div>
+                <div class="answer-buttons">
+                  <span class="again">もう一度</span
+                  ><span class="know">覚えた</span>
+                </div>
+              </article>
+              <span class="note one">集中して練習 ✦</span>
+              <span class="note two">進捗を保存</span>
+            </div>
+          </div>
+        </section>
+        <section class="section shell" id="how">
+          <div class="section-head reveal">
+            <div class="eyebrow">わかりやすい学習の流れ</div>
+            <h2>知らないことを、3ステップで身につける。</h2>
+            <p>
+              複雑な設定は必要ありません。覚えたい内容を用意して、すぐに練習を始められます。
+            </p>
+          </div>
+          <div class="steps">
+            <article class="step reveal">
+              <span class="step-no">01</span>
+              <h3>セットを作成</h3>
+              <p>
+                単語、事実、質問を追加できます。学習内容が変わったら、いつでも編集できます。
+              </p>
+            </article>
+            <article class="step reveal">
+              <span class="step-no">02</span>
+              <h3>思い出せるか確認</h3>
+              <p>
+                答えを表示する前に思い出し、そのあとで覚えていたかを正直に評価します。
+              </p>
+            </article>
+            <article class="step reveal">
+              <span class="step-no">03</span>
+              <h3>進捗を確認</h3>
+              <p>
+                覚えたカードと、もう一度練習したほうがよいカードを確認できます。
+              </p>
+            </article>
+          </div>
+        </section>
+        <section class="section shell" id="features">
+          <div class="feature-panel reveal">
+            <div class="feature-copy">
+              <div class="eyebrow">目的を持って学ぶ</div>
+              <h2>必要なところに、しっかり集中。</h2>
+              <p>
+                Flashcard
+                Trainerは操作をシンプルに保ち、記憶を強くする「思い出すこと」に集中できるようにします。
+              </p>
+              <ul class="feature-list">
+                <li>
+                  <span class="check">✓</span
+                  ><span>覚えたカードを隠して練習に集中</span>
+                </li>
+                <li>
+                  <span class="check">✓</span
+                  ><span>順番に頼り始めたらセットをシャッフル</span>
+                </li>
+                <li>
+                  <span class="check">✓</span
+                  ><span>統計から苦手なカードをすぐに発見</span>
+                </li>
+              </ul>
+            </div>
+            <div class="dashboard" aria-label="統計のプレビュー">
+              <div class="stat">
+                <div><small>覚えたカード</small><strong>18 / 24</strong></div>
+                <div class="bars" aria-hidden="true">
+                  <i></i><i></i><i></i><i></i><i></i>
+                </div>
+              </div>
+              <div class="hardest">
+                <small>もう少し練習が必要</small>
+                <ul>
+                  <li><span>обаждам се</span><span class="pill">復習</span></li>
+                  <li><span>забравям</span><span class="pill">復習</span></li>
+                  <li><span>отговарям</span><span class="pill">復習</span></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="section shell">
+          <div class="section-head reveal">
+            <div class="eyebrow">日々の学習に役立つ設計</div>
+            <h2>必要な機能だけを、すっきりと。</h2>
+          </div>
+          <div class="details">
+            <article class="detail reveal">
+              <span class="detail-icon">↕</span>
+              <h3>インポートとエクスポート</h3>
+              <p>
+                カードを一枚ずつ作り直さず、セット全体を簡単に移動できます。
+              </p>
+            </article>
+            <article class="detail reveal">
+              <span class="detail-icon">◐</span>
+              <h3>好みに合う見た目</h3>
+              <p>長時間の学習でも見やすいカラーテーマを選べます。</p>
+            </article>
+            <article class="detail reveal">
+              <span class="detail-icon">⌁</span>
+              <h3>続きから再開</h3>
+              <p>
+                現在の学習位置が保存されるため、中断したセッションを簡単に再開できます。
+              </p>
+            </article>
+            <article class="detail reveal">
+              <span class="detail-icon">◎</span>
+              <h3>わかりやすい統計</h3>
+              <p>
+                セットごとの進捗を確認し、さらに練習が必要なカードをすぐに見つけられます。
+              </p>
+            </article>
+          </div>
+        </section>
+        <section class="final shell reveal">
+          <h2>次の10分を、覚えておきたいことのために。</h2>
+          <p>新しいセットを作るか、途中の学習を続けましょう。</p>
+          <a class="primary" href="https://new-words.online"
+            >Flashcard Trainerを開く
+            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path
+                d="M4 10h12M11 5l5 5-5 5"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              /></svg
+          ></a>
+        </section>
+      </main>
+      <footer class="shell">
+        <span>© <span id="year"></span> Flashcard Trainer</span
+        ><span
+          >意識的な学習のために設計 ·
+          <a href="https://new-words.online">new-words.online</a></span
+        >
+      </footer>
+    </div>
+    <script>
+      document.getElementById("year").textContent = new Date().getFullYear();
+      const items = document.querySelectorAll(".reveal");
+      if (!("IntersectionObserver" in window))
+        items.forEach((item) => item.classList.add("visible"));
+      else {
+        const observer = new IntersectionObserver(
+          (entries) =>
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add("visible");
+                observer.unobserve(entry.target);
+              }
+            }),
+          { threshold: 0.12 },
+        );
+        items.forEach((item) => observer.observe(item));
+      }
+    </script>
+  </body>
+</html>
