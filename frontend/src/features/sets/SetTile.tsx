@@ -4,10 +4,11 @@ import { useState, type MouseEvent } from "react"
 import type { FullSetModel } from "../../types"
 import { formatDate } from "../../utils/date"
 
-export type SetTileAction = "start" | "edit" | "import" | "export" | "statistics" | "remove"
+export type SetTileAction = "start" | "view" | "edit" | "import" | "export" | "statistics" | "remove"
 
 const menuItems: Array<{ action: SetTileAction; label: string; destructive?: boolean }> = [
   { action: "start", label: "Start" },
+  { action: "view", label: "View cards" },
   { action: "edit", label: "Add/Edit" },
   { action: "import", label: "Import" },
   { action: "export", label: "Export" },
@@ -112,15 +113,18 @@ export function SetTile({ set, onAction }: SetTileProps) {
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        {menuItems.map((item) => (
-          <MenuItem
-            key={item.action}
-            onClick={() => handleSelect(item.action)}
-            sx={item.destructive ? { color: "error.main" } : undefined}
-          >
-            {item.label}
-          </MenuItem>
-        ))}
+        {menuItems.flatMap((item) => {
+          const menuItem = (
+            <MenuItem
+              key={item.action}
+              onClick={() => handleSelect(item.action)}
+              sx={item.destructive ? { color: "error.main" } : undefined}
+            >
+              {item.label}
+            </MenuItem>
+          )
+          return item.destructive ? [<Divider key={`${item.action}-divider`} />, menuItem] : [menuItem]
+        })}
       </Menu>
     </Card>
   )

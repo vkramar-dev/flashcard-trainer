@@ -88,6 +88,9 @@ export default function HomePage() {
           );
         }
         break;
+      case "view":
+        navigate(`/set/${set.id}/view`);
+        break;
       case "edit":
         navigate(`/set/${set.id}/edit`);
         break;

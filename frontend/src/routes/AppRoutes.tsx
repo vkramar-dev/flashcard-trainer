@@ -5,6 +5,7 @@ import HomePage from "../pages/HomePage"
 import SettingsPage from "../pages/SettingsPage"
 import StatisticsPage from "../pages/StatisticsPage"
 import TrainingPage from "../pages/TrainingPage"
+import ViewCardsPage from "../pages/ViewCardsPage"
 
 export function AppRoutes() {
   return (
@@ -12,6 +13,7 @@ export function AppRoutes() {
       <Route path="/" element={<HomePage />} />
       <Route path="/set/new" element={<EditSetPage />} />
       <Route path="/set/:setId/edit" element={<EditSetPage />} />
+      <Route path="/set/:setId/view" element={<ViewCardsPage />} />
       <Route path="/set/:setId/train" element={<TrainingPage />} />
       <Route path="/statistics" element={<StatisticsPage />} />
       <Route path="/settings" element={<SettingsPage />} />
