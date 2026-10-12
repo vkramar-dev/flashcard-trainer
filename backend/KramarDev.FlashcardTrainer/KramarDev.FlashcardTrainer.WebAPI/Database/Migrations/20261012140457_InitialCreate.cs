@@ -108,11 +108,13 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     ColorScheme = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
-                    HideKnownCards = table.Column<bool>(type: "bit", nullable: false)
+                    HideKnownCards = table.Column<bool>(type: "bit", nullable: false),
+                    MaxCardsPerTrainingSession = table.Column<int>(type: "int", nullable: false, defaultValue: 20)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Settings", x => x.Id);
+                    table.CheckConstraint("CK_Settings_MaxCardsPerTrainingSession", "[MaxCardsPerTrainingSession] >= 4");
                 });
 
             migrationBuilder.CreateTable(

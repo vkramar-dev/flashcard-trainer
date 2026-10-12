@@ -9,4 +9,6 @@ public static class Constants
     public const int LearntThreshold = 2;
 
     public const string RateLimiterName = "auth";
+
+    public const int MinCardsPerTrainingSession = 4;
 }

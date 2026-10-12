@@ -168,6 +168,11 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
                     b.Property<bool>("HideKnownCards")
                         .HasColumnType("bit");
 
+                    b.Property<int>("MaxCardsPerTrainingSession")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(20);
+
                     b.Property<string>("UserName")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -178,7 +183,10 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
                     b.HasIndex("UserName")
                         .IsUnique();
 
-                    b.ToTable("Settings");
+                    b.ToTable("Settings", t =>
+                        {
+                            t.HasCheckConstraint("CK_Settings_MaxCardsPerTrainingSession", "[MaxCardsPerTrainingSession] >= 4");
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

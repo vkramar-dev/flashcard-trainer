@@ -47,6 +47,14 @@ public class FlashcardsDbContext : IdentityDbContext<IdentityUser>
                 .HasMaxLength(ModelConstraints.ColorSchemeMaxLength)
                 .IsRequired();
 
+            entity.Property(e => e.MaxCardsPerTrainingSession)
+                .HasDefaultValue(20)
+                .IsRequired();
+
+            entity.ToTable(t => t.HasCheckConstraint(
+                "CK_Settings_MaxCardsPerTrainingSession",
+                $"[MaxCardsPerTrainingSession] >= {Constants.MinCardsPerTrainingSession}"));
+
             entity.HasIndex(e => e.UserName)
                 .IsUnique();
         });

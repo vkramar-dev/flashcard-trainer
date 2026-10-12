@@ -6,8 +6,7 @@ public sealed class TrainingService(FlashcardsDbContext dbContext) : ITrainingSe
 {
     readonly FlashcardsDbContext _ctx = dbContext;
 
-    const int MaxCardsPerTraining = 50;
-    const int MinCardsPerTraining = 4;
+    const int MaxCardsPerTraining = 20;
 
     public async Task AnswerAsync(string userName, int cardId, bool isKnown, CT cancellationToken)
     {
@@ -59,7 +58,7 @@ public sealed class TrainingService(FlashcardsDbContext dbContext) : ITrainingSe
         {
             throw new Http404NotFoundException("No cards available for training.");
         }
-        else if (cards.Count < MinCardsPerTraining)
+        else if (cards.Count < Constants.MinCardsPerTrainingSession)
         {
             CardModel[] allCards = (from card in cards
                                     select new CardModel
@@ -83,7 +82,7 @@ public sealed class TrainingService(FlashcardsDbContext dbContext) : ITrainingSe
                                          Back = card.BackSide
                                      }).ToArray();
 
-        if (selectedCards.Length < MinCardsPerTraining)
+        if (selectedCards.Length < Constants.MinCardsPerTrainingSession)
         {
             CardModel[] addingCards = (from card in cards
                                        where !selectedCards.Any(sc => sc.Id == card.Id)
@@ -93,7 +92,7 @@ public sealed class TrainingService(FlashcardsDbContext dbContext) : ITrainingSe
                                            Front = card.FrontSide,
                                            Back = card.BackSide
                                        })
-                           .Take(MinCardsPerTraining - selectedCards.Length)
+                           .Take(Constants.MinCardsPerTrainingSession - selectedCards.Length)
                            .ToArray();
 
             selectedCards = selectedCards.Concat(addingCards).ToArray();

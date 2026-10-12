@@ -9,4 +9,6 @@ public class Settings
     public string ColorScheme { get; set; }
 
     public bool HideKnownCards { get; set; }
+
+    public int MaxCardsPerTrainingSession { get; set; }
 }
