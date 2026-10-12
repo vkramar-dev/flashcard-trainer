@@ -14,4 +14,6 @@ public interface ISetsService
         int setId, bool append, CardModel[] cards, CT cancellationToken);
 
     Task<ExportDataModel> ExportAsync(string userName, int setId, CT cancellationToken);
+
+    Task<CardModel> UpdateCardSideAsync(string userName, int cardId, UpdateCardSideModel model, CT cancellationToken);
 }

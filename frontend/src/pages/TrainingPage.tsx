@@ -11,7 +11,7 @@ import {
   Typography,
 } from "@mui/material";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { PageContainer } from "../components/PageContainer";
 import { ErrorState } from "../components/StateViews";
@@ -23,7 +23,10 @@ import {
   answerAsync,
   restoreState,
   startTrainingAsync,
+  updateTrainingCardAsync,
 } from "../features/training/trainingSlice";
+import { ProjectConstants } from "../utils/ProjectConstants";
+import type { CardSide } from "../types";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { AppStorage } from "@/utils/AppStorage";
 import { fetchSetsAsync } from "@/features/sets/setsSlice";
@@ -47,6 +50,23 @@ const answerLabelStyles = {
   alignItems: "flex-start",
   lineHeight: 1.2,
 };
+
+function sideTextError(side: CardSide, value: string, otherFronts: string[]): string | null {
+  if (side === "front") {
+    const front = value.trim();
+    if (!front) return "Enter a front value.";
+    if (front.length > ProjectConstants.cardFrontMaxLength) {
+      return `Front text cannot be longer than ${ProjectConstants.cardFrontMaxLength} characters.`;
+    }
+    if (otherFronts.includes(front)) return "A card with this front already exists in this set.";
+    return null;
+  }
+
+  if (value.length > ProjectConstants.cardBackMaxLength) {
+    return `Back text cannot be longer than ${ProjectConstants.cardBackMaxLength} characters.`;
+  }
+  return null;
+}
 
 const answerHintStyles = {
   fontSize: "0.75rem",
@@ -85,6 +105,67 @@ export default function TrainingPage() {
 
   const userName = useAppSelector((state) => state.auth.user?.email);
 
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const [fieldError, setFieldError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const closeEditor = () => {
+    setEditing(false);
+    setFieldError(null);
+    setSaveError(null);
+  };
+
+  const startEdit = () => {
+    if (!currentCard || saving) return;
+    setDraft(side === "front" ? currentCard.front : currentCard.back);
+    setFieldError(null);
+    setSaveError(null);
+    setEditing(true);
+  };
+
+  const saveEdit = async () => {
+    if (!currentCard || saving) return;
+    const original = side === "front" ? currentCard.front : currentCard.back;
+    const nextText = side === "front" ? draft.trim() : draft.trim();
+    const otherFronts = cards
+      .filter((card) => card.id !== currentCard.id)
+      .map((card) => card.front);
+    const validationError = sideTextError(side, nextText, otherFronts);
+    if (validationError) {
+      setFieldError(validationError);
+      return;
+    }
+
+    if (nextText === original) {
+      closeEditor();
+      return;
+    }
+
+    setSaving(true);
+    setFieldError(null);
+    setSaveError(null);
+    try {
+      await dispatch(
+        updateTrainingCardAsync({
+          cardId: currentCard.id,
+          side,
+          text: nextText,
+        }),
+      ).unwrap();
+      closeEditor();
+    } catch (saveFailure) {
+      setSaveError(
+        typeof saveFailure === "string"
+          ? saveFailure
+          : "Could not save this card.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
   useEffect(() => {
     if (!userName || !Number.isFinite(setId) || setId <= 0) return;
     if (status === "loading") return;
@@ -122,7 +203,7 @@ export default function TrainingPage() {
   ]);
 
   const handleAnswer = async (isKnown: boolean) => {
-    if (!currentCard || !userName) return;
+    if (!currentCard || !userName || editing || saving) return;
 
     try {
       await dispatch(
@@ -342,7 +423,21 @@ export default function TrainingPage() {
             front={currentCard.front}
             back={currentCard.back}
             side={side}
-            onFlip={() => dispatch(flipCard())}
+            editing={editing}
+            draft={draft}
+            fieldError={fieldError}
+            saveError={saveError}
+            saving={saving}
+            onFlip={() => {
+              if (!editing) dispatch(flipCard());
+            }}
+            onDraftChange={(value) => {
+              setDraft(value);
+              setFieldError(null);
+            }}
+            onStartEdit={startEdit}
+            onSave={() => void saveEdit()}
+            onCancel={closeEditor}
           />
         ) : (
           <Paper
@@ -376,7 +471,7 @@ export default function TrainingPage() {
               color="warning"
               startIcon={<HelpOutlineIcon />}
               onClick={() => handleAnswer(false)}
-              disabled={!currentCard || status === "loading"}
+              disabled={!currentCard || status === "loading" || editing || saving}
               sx={answerButtonStyles}
             >
               <Box component="span" sx={answerLabelStyles}>
@@ -396,7 +491,7 @@ export default function TrainingPage() {
               color="success"
               startIcon={<CheckCircleOutlineIcon />}
               onClick={() => handleAnswer(true)}
-              disabled={!currentCard || status === "loading"}
+              disabled={!currentCard || status === "loading" || editing || saving}
               sx={answerButtonStyles}
             >
               <Box component="span" sx={answerLabelStyles}>

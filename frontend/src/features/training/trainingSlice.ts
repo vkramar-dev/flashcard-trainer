@@ -1,7 +1,8 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit"
 import { toErrorMessage } from "../../api/client"
+import { setsApi } from "../../api/setsApi"
 import { trainingApi } from "../../api/trainingApi"
-import type { CardData, CardSide, RequestStatus, StoredTrainingProgress } from "../../types"
+import type { CardData, CardModel, CardSide, RequestStatus, StoredTrainingProgress } from "../../types"
 import { markLastTrained } from "../sets/setsSlice"
 import { AppStorage } from "@/utils/AppStorage"
 
@@ -14,6 +15,11 @@ interface TrainingState {
   error: string | null
   finished: boolean
   cards: CardData[]
+}
+
+interface UpdateCardState {
+  training: TrainingState
+  auth: { user: { email: string } | null }
 }
 
 const initialState: TrainingState = {
@@ -49,6 +55,34 @@ export const startTrainingAsync = createAsyncThunk<CardData[], { userName: strin
       return cards
     } catch (error) {
       return rejectWithValue(toErrorMessage(error, "Could not start training for this set."))
+    }
+  },
+)
+
+export const updateTrainingCardAsync = createAsyncThunk<
+  CardModel,
+  { cardId: number; side: CardSide; text: string },
+  { state: UpdateCardState; rejectValue: string }
+>(
+  "training/updateCard",
+  async ({ cardId, side, text }, { getState, rejectWithValue }) => {
+    try {
+      const updated = await setsApi.updateCardSide(cardId, side, text)
+      const { training, auth } = getState()
+      const userName = auth.user?.email
+      if (userName) {
+        AppStorage.setTrainingProgressNoException({
+          userName,
+          setId: training.setId,
+          cards: training.cards.map((card) =>
+            card.id === cardId ? { ...card, front: updated.front, back: updated.back ?? "" } : card,
+          ),
+          currentIndex: training.currentIndex,
+        })
+      }
+      return updated
+    } catch (error) {
+      return rejectWithValue(toErrorMessage(error, "Could not save this card."))
     }
   },
 )
@@ -136,6 +170,19 @@ const trainingSlice = createSlice({
       .addCase(answerAsync.rejected, (state, action) => {
         state.status = state.cards.length > 0 ? "succeeded" : "failed"
         state.error = action.payload ?? "Could not answer the card."
+      })
+      .addCase(updateTrainingCardAsync.fulfilled, (state, action) => {
+        const updated = action.payload
+        if (updated.id == null) return
+        const cardId = updated.id
+        const front = updated.front
+        const back = updated.back ?? ""
+        state.cards = state.cards.map((card) =>
+          card.id === cardId ? { ...card, front, back } : card,
+        )
+        if (state.currentCard?.id === cardId) {
+          state.currentCard = { ...state.currentCard, front, back }
+        }
       })
     }
 })

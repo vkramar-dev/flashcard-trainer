@@ -1,5 +1,5 @@
 import { apiClient } from "./client"
-import type { ExportDataModel, ImportPayload, ImportResultModel, SetWithCardsModel, FullSetModel } from "../types"
+import type { CardModel, CardSide, ExportDataModel, ImportPayload, ImportResultModel, SetWithCardsModel, FullSetModel } from "../types"
 
 export const setsApi = {
   async fetchAll(): Promise<FullSetModel[]> {
@@ -24,6 +24,14 @@ export const setsApi = {
   async importCards({ setId, mode, cards }: ImportPayload): Promise<ImportResultModel> {
     const { data } = await apiClient.post<ImportResultModel>(
       `/sets/${setId}/import`, { append: mode === "append", cards })
+    return data
+  },
+
+  async updateCardSide(cardId: number, side: CardSide, text: string): Promise<CardModel> {
+    const { data } = await apiClient.patch<CardModel>(`/sets/cards/${cardId}`, {
+      isFrontSide: side === "front",
+      text,
+    })
     return data
   },
 

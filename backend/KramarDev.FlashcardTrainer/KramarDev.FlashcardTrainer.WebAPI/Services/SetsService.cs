@@ -41,6 +41,73 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
         return new ExportDataModel { Name = set.Name, Cards = cards };
     }
 
+    public async Task<CardModel> UpdateCardSideAsync(string userName, int cardId, UpdateCardSideModel model, CT cancellationToken)
+    {
+        if (model.Text is null)
+        {
+            throw new Http400BadRequestException("Text is required.");
+        }
+
+        string text = model.Text;
+
+        if (model.IsFrontSide)
+        {
+            text = text.Trim();
+            if (text.Length == 0)
+            {
+                throw new Http400BadRequestException("Enter a front value.");
+            }
+
+            if (text.Length > ModelConstraints.CardFrontMaxLength)
+            {
+                throw new Http400BadRequestException(
+                    $"Front text cannot be longer than {ModelConstraints.CardFrontMaxLength} characters.");
+            }
+        }
+        else if (text.Length > ModelConstraints.CardBackMaxLength)
+        {
+            throw new Http400BadRequestException(
+                $"Back text cannot be longer than {ModelConstraints.CardBackMaxLength} characters.");
+        }
+
+        try
+        {
+            DB.Card card = await _ctx.Cards
+                .Include(c => c.ParentSet)
+                .FirstOrDefaultAsync(c => c.Id == cardId && c.ParentSet.UserName == userName, cancellationToken);
+
+            if (card == null)
+            {
+                throw new Http404NotFoundException(
+                    $"Card with Id {cardId} not found or does not belong to user {userName}");
+            }
+
+            if (model.IsFrontSide)
+            {
+                card.FrontSide = text;
+            }
+            else
+            {
+                card.BackSide = text;
+            }
+
+            card.ParentSet.Modified = DateTime.UtcNow;
+            await _ctx.SaveChangesAsync(cancellationToken);
+
+            return new CardModel
+            {
+                Id = card.Id,
+                Front = card.FrontSide,
+                Back = card.BackSide ?? ""
+            };
+        }
+        catch (Exception ex) when (ex is not Http404NotFoundException and not Http400BadRequestException)
+        {
+            ExceptionHelper.ThrowIfDuplicateCard(ex);
+            throw;
+        }
+    }
+
     public async Task<FullSetModel> CreateOrUpdateAsync(string userName, SetWithCardsModel set, CT cancellationToken)
     {
         try

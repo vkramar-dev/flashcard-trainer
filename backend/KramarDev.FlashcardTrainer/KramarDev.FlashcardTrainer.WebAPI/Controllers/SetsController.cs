@@ -37,6 +37,14 @@ public sealed class SetsController(ISetsService setsService) : BaseController
     }
 
     [Authorize]
+    [HttpPatch("cards/{cardId:int}")]
+    public async Task<ActionResult<CardModel>> UpdateCardSide(
+        int cardId, UpdateCardSideModel model, CT cancellationToken)
+    {
+        return Ok(await _setsService.UpdateCardSideAsync(UserName, cardId, model, cancellationToken));
+    }
+
+    [Authorize]
     [HttpDelete("{setId:int}")]
     public async Task<ActionResult<int>> Delete(int setId, CT cancellationToken)
     {
