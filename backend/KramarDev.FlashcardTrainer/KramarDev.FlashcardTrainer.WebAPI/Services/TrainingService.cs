@@ -6,7 +6,6 @@ public sealed class TrainingService(FlashcardsDbContext dbContext) : ITrainingSe
 {
     readonly FlashcardsDbContext _ctx = dbContext;
 
-    const int MaxCardsPerTraining = 20;
 
     public async Task AnswerAsync(string userName, int cardId, bool isKnown, CT cancellationToken)
     {
@@ -42,7 +41,10 @@ public sealed class TrainingService(FlashcardsDbContext dbContext) : ITrainingSe
                          where s.Id == setId && s.UserName == userName
                          select s).SingleAsync(cancellationToken);
 
-        CardModel[] cards = ShapeCards(set.Cards, shouldHide);
+        int maxCards = await _ctx.Settings.Where(s => s.UserName == userName)
+            .Select(s => (int?)s.MaxCardsPerTrainingSession)
+            .SingleOrDefaultAsync(cancellationToken) ?? Constants.MaxCardsPerTrainingSessionDefault;
+        CardModel[] cards = ShapeCards(set.Cards, shouldHide, maxCards);
         if (cards.Length > 0)
         {
             set.LastTrained = DateTime.UtcNow;
@@ -52,7 +54,7 @@ public sealed class TrainingService(FlashcardsDbContext dbContext) : ITrainingSe
         return cards;
     }
 
-    private CardModel[] ShapeCards(ICollection<Card> cards, bool shouldHide)
+    private CardModel[] ShapeCards(ICollection<Card> cards, bool shouldHide, int maxCards)
     {
         if (cards.Count < 1)
         {
@@ -100,7 +102,7 @@ public sealed class TrainingService(FlashcardsDbContext dbContext) : ITrainingSe
 
         Random.Shared.Shuffle(selectedCards);
 
-        return MaxCardsPerTraining < 1 ? selectedCards : selectedCards.Take(MaxCardsPerTraining).ToArray();
+        return maxCards == 0 ? selectedCards : selectedCards.Take(maxCards).ToArray();
     }
 
     private bool IsCardSelected(Card card)

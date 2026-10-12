@@ -48,12 +48,12 @@ public class FlashcardsDbContext : IdentityDbContext<IdentityUser>
                 .IsRequired();
 
             entity.Property(e => e.MaxCardsPerTrainingSession)
-                .HasDefaultValue(20)
+                .HasDefaultValue(Constants.MaxCardsPerTrainingSessionDefault)
                 .IsRequired();
 
             entity.ToTable(t => t.HasCheckConstraint(
                 "CK_Settings_MaxCardsPerTrainingSession",
-                $"[MaxCardsPerTrainingSession] >= {Constants.MinCardsPerTrainingSession}"));
+                $"[MaxCardsPerTrainingSession] = 0 OR [MaxCardsPerTrainingSession] >= {Constants.MinCardsPerTrainingSession}"));
 
             entity.HasIndex(e => e.UserName)
                 .IsUnique();

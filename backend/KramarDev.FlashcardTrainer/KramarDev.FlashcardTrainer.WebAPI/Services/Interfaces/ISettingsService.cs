@@ -8,5 +8,7 @@ public interface ISettingsService
 
     Task SetColorSchemeAsync(string userName, string schemeName, CT cancellationToken);
 
+    Task SetMaxCardsPerTrainingSessionAsync(string userName, int maxCardsPerTrainingSession, CT cancellationToken);
+
     Task SetHideKnownCardsAsync(string userName, bool hideKnownCards, CT cancellationToken);
 }

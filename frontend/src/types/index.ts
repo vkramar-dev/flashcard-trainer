@@ -104,6 +104,7 @@ export interface SetStatisticsModel {
 export interface SettingsModel {
   colorScheme: string
   hideKnownCards: boolean
+  maxCardsPerTrainingSession: number
 }
 
 export interface AppStateModel {

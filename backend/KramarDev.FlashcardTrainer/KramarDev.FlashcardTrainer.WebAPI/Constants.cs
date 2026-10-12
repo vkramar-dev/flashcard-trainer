@@ -11,4 +11,6 @@ public static class Constants
     public const string RateLimiterName = "auth";
 
     public const int MinCardsPerTrainingSession = 4;
+
+    public const int MaxCardsPerTrainingSessionDefault = 20;
 }

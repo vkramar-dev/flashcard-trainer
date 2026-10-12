@@ -20,7 +20,8 @@ public sealed class SettingsService(FlashcardsDbContext dbContext) : ISettingsSe
             {
                 UserName = userName,
                 ColorScheme = DefaultColorScheme,
-                HideKnownCards = DefaultHideKnownCards
+                HideKnownCards = DefaultHideKnownCards,
+                MaxCardsPerTrainingSession = Constants.MaxCardsPerTrainingSessionDefault
             };
 
             _ctx.Settings.Add(newSettings);
@@ -29,14 +30,16 @@ public sealed class SettingsService(FlashcardsDbContext dbContext) : ISettingsSe
             return new SettingsModel
             {
                 ColorScheme = newSettings.ColorScheme,
-                HideKnownCards = newSettings.HideKnownCards
+                HideKnownCards = newSettings.HideKnownCards,
+                MaxCardsPerTrainingSession = newSettings.MaxCardsPerTrainingSession
             };
         }
 
         return new SettingsModel
         {
             ColorScheme = settings.ColorScheme,
-            HideKnownCards = settings.HideKnownCards
+            HideKnownCards = settings.HideKnownCards,
+            MaxCardsPerTrainingSession = settings.MaxCardsPerTrainingSession
         };
     }
 
@@ -46,7 +49,8 @@ public sealed class SettingsService(FlashcardsDbContext dbContext) : ISettingsSe
         {
             UserName = userName,
             ColorScheme = DefaultColorScheme,
-            HideKnownCards = DefaultHideKnownCards
+            HideKnownCards = DefaultHideKnownCards,
+            MaxCardsPerTrainingSession = Constants.MaxCardsPerTrainingSessionDefault
         };
         _ctx.Settings.Add(newSettings);
         return _ctx.SaveChangesAsync(cancellationToken);
@@ -77,6 +81,20 @@ public sealed class SettingsService(FlashcardsDbContext dbContext) : ISettingsSe
         {
             throw new Http404NotFoundException(
                 $"HideKnown settings for user '{userName}' were not found.");
+        }
+    }
+
+    public async Task SetMaxCardsPerTrainingSessionAsync(string userName, int maxCardsPerTrainingSession, CT cancellationToken)
+    {
+        int rows = await _ctx.Settings
+            .Where(s => s.UserName == userName)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(s => s.MaxCardsPerTrainingSession, maxCardsPerTrainingSession),
+                cancellationToken);
+
+        if (rows == 0)
+        {
+            throw new Http404NotFoundException($"Training settings for user '{userName}' were not found.");
         }
     }
 }

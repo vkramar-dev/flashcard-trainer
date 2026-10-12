@@ -185,7 +185,7 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
 
                     b.ToTable("Settings", t =>
                         {
-                            t.HasCheckConstraint("CK_Settings_MaxCardsPerTrainingSession", "[MaxCardsPerTrainingSession] >= 4");
+                            t.HasCheckConstraint("CK_Settings_MaxCardsPerTrainingSession", "[MaxCardsPerTrainingSession] = 0 OR [MaxCardsPerTrainingSession] >= 4");
                         });
                 });
 

@@ -114,7 +114,7 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Settings", x => x.Id);
-                    table.CheckConstraint("CK_Settings_MaxCardsPerTrainingSession", "[MaxCardsPerTrainingSession] >= 4");
+                    table.CheckConstraint("CK_Settings_MaxCardsPerTrainingSession", "[MaxCardsPerTrainingSession] = 0 OR [MaxCardsPerTrainingSession] >= 4");
                 });
 
             migrationBuilder.CreateTable(

@@ -16,6 +16,14 @@ public sealed class SettingsController(ISettingsService settingsService) : BaseC
     }
 
     [Authorize]
+    [HttpPut("max-cards-per-training-session")]
+    public async Task<ActionResult> MaxCardsPerTrainingSession([FromQuery] int maxCardsPerTrainingSession, CT cancellationToken)
+    {
+        await _settingsService.SetMaxCardsPerTrainingSessionAsync(UserName, maxCardsPerTrainingSession, cancellationToken);
+        return NoContent();
+    }
+
+    [Authorize]
     [HttpPut("hide-known-cards")]
     public async Task<ActionResult> HideKnownCards(bool hideKnownCards, CT cancellationToken)
     {

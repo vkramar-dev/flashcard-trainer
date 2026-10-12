@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
 {
     [DbContext(typeof(FlashcardsDbContext))]
-    [Migration("20261012140457_InitialCreate")]
+    [Migration("20261012153216_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -188,7 +188,7 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
 
                     b.ToTable("Settings", t =>
                         {
-                            t.HasCheckConstraint("CK_Settings_MaxCardsPerTrainingSession", "[MaxCardsPerTrainingSession] >= 4");
+                            t.HasCheckConstraint("CK_Settings_MaxCardsPerTrainingSession", "[MaxCardsPerTrainingSession] = 0 OR [MaxCardsPerTrainingSession] >= 4");
                         });
                 });
 

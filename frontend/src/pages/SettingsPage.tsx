@@ -6,6 +6,8 @@ import {
   Card,
   CardActionArea,
   Stack,
+  TextField,
+  MenuItem,
   Switch,
   Typography,
 } from "@mui/material";
@@ -16,6 +18,7 @@ import {
   clearSettingsError,
   updateColorSchemeAsync,
   updateHideKnownCardsAsync,
+  updateMaxCardsPerTrainingSessionAsync,
 } from "../features/settings/settingsSlice";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { colorSchemeLabels, colorSchemes } from "../theme";
@@ -48,7 +51,7 @@ function SchemeSwatch({ scheme }: { scheme: ColorSchemeName }) {
 export default function SettingsPage() {
   const dispatch = useAppDispatch();
 
-  const { colorScheme, availableColorSchemes, error, hideKnownCards } =
+  const { colorScheme, availableColorSchemes, error, hideKnownCards, maxCardsPerTrainingSession } =
     useAppSelector((state) => state.settings);
 
   const { isAuthenticated, sessionChecked } = useAppSelector(
@@ -119,6 +122,26 @@ export default function SettingsPage() {
             </Box>
           </Card>
         </Box>
+
+        <Card variant="outlined" sx={{ p: 2.5, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 3, flexWrap: "wrap" }}>
+          <Box>
+            <Typography variant="subtitle1">Maximum cards per training session</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
+              Limit the number of cards in new sessions.
+            </Typography>
+          </Box>
+          <TextField
+            select
+            SelectProps={{ inputProps: { "aria-label": "Cards per session" } }}
+            value={maxCardsPerTrainingSession}
+            onChange={(event) => dispatch(updateMaxCardsPerTrainingSessionAsync(Number(event.target.value)))}
+            sx={{ width: 90, ml: "auto" }}
+          >
+            {[10, 20, 50, 100, 200, 0].map((value) => (
+              <MenuItem key={value} value={value}>{value === 0 ? "All" : value}</MenuItem>
+            ))}
+          </TextField>
+        </Card>
 
         <Box>
           <Typography variant="h5" sx={{ mb: 1.6 }}>

@@ -23,6 +23,7 @@ interface SettingsState {
   colorScheme: ColorSchemeName
   availableColorSchemes: ColorSchemeName[]
   hideKnownCards: boolean
+  maxCardsPerTrainingSession: number
   status: RequestStatus
   error: string | null
 }
@@ -31,6 +32,7 @@ const initialState: SettingsState = {
   colorScheme: readCachedScheme(),
   availableColorSchemes: KNOWN_SCHEMES,
   hideKnownCards: true,
+  maxCardsPerTrainingSession: 20,
   status: "idle",
   error: null,
 }
@@ -58,6 +60,17 @@ export const updateHideKnownCardsAsync = createAsyncThunk<void, boolean, { rejec
   },
 )
 
+export const updateMaxCardsPerTrainingSessionAsync = createAsyncThunk<void, number, { rejectValue: string }>(
+  "settings/updateMaxCardsPerTrainingSession",
+  async (maxCards, { rejectWithValue }) => {
+    try {
+      await settingsApi.updateMaxCardsPerTrainingSession(maxCards)
+    } catch (error) {
+      return rejectWithValue(toErrorMessage(error, "Could not save your training session limit."))
+    }
+  },
+)
+
 const settingsSlice = createSlice({
   name: "settings",
   initialState,
@@ -69,16 +82,27 @@ const settingsSlice = createSlice({
       const scheme = action.payload.colorScheme as ColorSchemeName
       state.colorScheme = scheme
       state.hideKnownCards = action.payload.hideKnownCards
+      state.maxCardsPerTrainingSession = action.payload.maxCardsPerTrainingSession
     },
     cleanSettingsSlice(state) {
       state.availableColorSchemes = KNOWN_SCHEMES
       state.hideKnownCards = true
+      state.maxCardsPerTrainingSession = 20
       state.status = "idle"
       state.error = null
     }
   },
   extraReducers: (builder) => {
     builder
+      .addCase(updateMaxCardsPerTrainingSessionAsync.pending, (state) => {
+        state.error = null
+      })
+      .addCase(updateMaxCardsPerTrainingSessionAsync.fulfilled, (state, action) => {
+        state.maxCardsPerTrainingSession = action.meta.arg
+      })
+      .addCase(updateMaxCardsPerTrainingSessionAsync.rejected, (state, action) => {
+        state.error = action.payload ?? "Could not save your training session limit."
+      })
       .addCase(updateColorSchemeAsync.pending, (state, action) => {
         // Applied straight away so switching schemes feels instant.
         state.colorScheme = action.meta.arg
