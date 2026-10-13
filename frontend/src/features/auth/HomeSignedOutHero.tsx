@@ -1,21 +1,21 @@
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline"
-import { Box, Button, Stack, Typography } from "@mui/material"
-import { alpha, useTheme } from "@mui/material/styles"
-import { FlashcardsIllustration } from "../../components/FlashcardsIllustration"
-import { openAuthDialog } from "./authSlice"
-import { useAppDispatch } from "../../store/hooks"
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import { Box, Button, Stack, Typography } from "@mui/material";
+import { alpha, useTheme } from "@mui/material/styles";
+import { FlashcardsIllustration } from "../../components/FlashcardsIllustration";
+import { openAuthDialog } from "./authSlice";
+import { useAppDispatch } from "../../store/hooks";
 
 export function HomeSignedOutHero() {
-  const dispatch = useAppDispatch()
-  const theme = useTheme()
+  const dispatch = useAppDispatch();
+  const theme = useTheme();
 
-  const primary = theme.palette.primary.main
+  const primary = theme.palette.primary.main;
 
   const highlights = [
     "Create cards or import them from a CSV file",
     "Track what you know and what still needs practice",
-    "Continue your training from any device",
-  ]
+    "Pick up where you left off, anytime",
+  ];
 
   return (
     <Box
@@ -40,7 +40,7 @@ export function HomeSignedOutHero() {
           borderRadius: "50%",
           background: `radial-gradient(
             circle,
-            ${alpha(primary, 0.10)} 0%,
+            ${alpha(primary, 0.1)} 0%,
             ${alpha(primary, 0.035)} 42%,
             transparent 72%
           )`,
@@ -88,11 +88,26 @@ export function HomeSignedOutHero() {
               xs: "0.95rem",
               md: "1.05rem",
             },
-            lineHeight: 1.6,
-            mb: 3,
+            lineHeight: 1.5,
+            mb: 1.5,
           }}
         >
           Create sets, train with cards and continue learning from any device.
+        </Typography>
+
+        <Typography
+          sx={{
+            color: "primary.main",
+            fontSize: {
+              xs: "0.7rem",
+              sm: "0.8rem",
+            },
+            fontWeight: 600,
+            letterSpacing: "0.015em",
+            mb: 3,
+          }}
+        >
+          100% Free · No Ads · No Subscriptions
         </Typography>
 
         <Stack
@@ -176,5 +191,5 @@ export function HomeSignedOutHero() {
         </Stack>
       </Stack>
     </Box>
-  )
+  );
 }
