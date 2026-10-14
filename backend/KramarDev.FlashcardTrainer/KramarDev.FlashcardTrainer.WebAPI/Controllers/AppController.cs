@@ -37,4 +37,25 @@ public class AppController(IDbContextFactory<FlashcardsDbContext> factory) : Bas
     {
         return Ok(IpAddress);
     }
+
+    [HttpGet("test-logging")]
+    public async Task<IActionResult> TestLogging(
+    [FromServices] KramarDev.LogPlatform.LogClient.ILogger logger)
+    {
+        try
+        {
+            throw new InvalidOperationException(
+                "Test exception from controller.");
+        }
+        catch (Exception ex)
+        {
+            await logger.LogAspNetExceptionAsync(
+                ex,
+                "Exception logged in controller",
+                Severity.Medium,
+                SourceType.Backend);
+
+            throw;
+        }
+    }
 }

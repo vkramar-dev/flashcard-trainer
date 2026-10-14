@@ -38,11 +38,7 @@ public static class StartupExtensions
             errorApp.Run(async context =>
             {
                 var logger = context.RequestServices
-                    .GetRequiredService<ILoggerFactory>()
-                    .CreateLogger("GlobalExceptionHandler");
-
-                var env = context.RequestServices
-                    .GetRequiredService<IHostEnvironment>();
+                    .GetRequiredService<KramarDev.LogPlatform.LogClient.ILogger>();
 
                 var exceptionFeature = context.Features
                     .Get<IExceptionHandlerFeature>();
@@ -51,12 +47,11 @@ public static class StartupExtensions
 
                 if (exception is not null)
                 {
-                    logger.LogError(exception, "Unhandled exception occurred.");
+                    await logger.LogAspNetExceptionAsync(exception, "Global Handler", Severity.Medium, SourceType.Backend);
                 }
                 else
                 {
-                    logger.LogError(
-                        "Global exception handler was invoked, but no exception was available.");
+                    await logger.LogAspNetInfoAsync("Global Handler", Severity.Low, SourceType.Backend);
                 }
 
                 ProblemDetails problem = ProcessException(exception);
@@ -154,6 +149,25 @@ public static class StartupExtensions
 
             options.RejectionStatusCode =
                 StatusCodes.Status429TooManyRequests;
+        });
+
+        return services;
+    }
+
+    public static IServiceCollection AddLogger(this IServiceCollection services, IConfiguration configuration)
+    {
+        var logapiSecret = configuration["LogApi:Secret"]
+            ?? throw new InvalidOperationException("LogApi:Secret was not found.");
+
+        services.AddSingleton<LogPlatform.LogClient.ILogger>(sp =>
+        {
+            var env = sp.GetRequiredService<IHostEnvironment>();
+
+            return new LogPlatform.LogClient.Logger(
+                sp.GetRequiredService<IHttpContextAccessor>(),
+                Product.FlashcardTrainer,
+                logapiSecret,
+                env.IsDevelopment() ? "https://localhost:7011" : null);
         });
 
         return services;

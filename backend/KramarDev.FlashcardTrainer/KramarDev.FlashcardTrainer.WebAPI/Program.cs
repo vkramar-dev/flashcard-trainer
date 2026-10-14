@@ -57,7 +57,12 @@ builder.Services.AddScoped<ITrainingService, TrainingService>();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<ISettingsService, SettingsService>();
 builder.Services.AddScoped<IStatisticsService, StatisticsService>();
+builder.Services.AddLogger(builder.Configuration);
+
+
 builder.Services.AddAppRateLimiting(Constants.RateLimiterName);
+
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 

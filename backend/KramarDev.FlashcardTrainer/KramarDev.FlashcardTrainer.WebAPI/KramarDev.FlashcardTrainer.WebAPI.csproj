@@ -23,6 +23,19 @@
 
   <ItemGroup>
     <Folder Include="Database\Migrations\" />
+    <Folder Include="Lib\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="KramarDev.LogPlatform.LogClient">
+      <HintPath>Lib\KramarDev.LogPlatform.LogClient.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Lib\KramarDev.LogPlatform.LogClient.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
