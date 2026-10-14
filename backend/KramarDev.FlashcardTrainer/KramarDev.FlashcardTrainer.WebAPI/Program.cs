@@ -2,6 +2,7 @@ using KramarDev.FlashcardTrainer.WebAPI;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Resend;
+using System.Runtime.InteropServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -86,6 +87,10 @@ app.UseAuthorization();
 app.UseRateLimiter();
 app.MapControllers();
 app.MapGet("/", () => Results.Ok("Flashcard API"));
+
+var logger = app.Services.GetRequiredService<KramarDev.LogPlatform.LogClient.ILogger>();
+await logger.LogAspNetInfoAsync(
+    "Flashcard API started", Severity.Low, SourceType.Backend, null, null, null, null, true);
 
 using (var scope = app.Services.CreateScope())
 {
