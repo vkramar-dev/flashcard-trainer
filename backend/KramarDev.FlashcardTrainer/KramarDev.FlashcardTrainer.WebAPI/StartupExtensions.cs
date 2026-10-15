@@ -47,11 +47,13 @@ public static class StartupExtensions
 
                 if (exception is not null)
                 {
-                    await logger.LogAspNetExceptionAsync(exception, "Global Handler", Severity.Medium, SourceType.Backend);
+                    await logger.LogAspNetExceptionAsync(exception, "Global Handler",
+                        Severity.Medium, SourceType.Backend);
                 }
                 else
                 {
-                    await logger.LogAspNetInfoAsync("Global Handler", Severity.Low, SourceType.Backend);
+                    await logger.LogAspNetInfoAsync("Global Handler",
+                        Severity.Low, SourceType.Backend);
                 }
 
                 ProblemDetails problem = ProcessException(exception);

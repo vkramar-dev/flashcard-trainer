@@ -2,7 +2,6 @@ using KramarDev.FlashcardTrainer.WebAPI;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Resend;
-using System.Runtime.InteropServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
