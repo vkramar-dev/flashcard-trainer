@@ -2,12 +2,14 @@ import AddIcon from "@mui/icons-material/Add";
 import { FlashcardsIllustration } from "../../components/FlashcardsIllustration"
 import { Box, Button, Stack, Typography } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
+import { useTranslation } from "react-i18next";
 
 type SetsEmptyHeroProps = {
   onCreate: () => void;
 };
 
 export function SetsEmptyHero({ onCreate }: SetsEmptyHeroProps) {
+  const { t } = useTranslation();
   const theme = useTheme();
 
   const primary = theme.palette.primary.main;
@@ -70,7 +72,7 @@ export function SetsEmptyHero({ onCreate }: SetsEmptyHeroProps) {
             mb: 1.5,
           }}
         >
-          Create your first set
+          {t("home.emptyTitle")}
         </Typography>
 
         <Typography
@@ -85,7 +87,7 @@ export function SetsEmptyHero({ onCreate }: SetsEmptyHeroProps) {
             mb: 3,
           }}
         >
-          Add flashcards and start training in minutes.
+          {t("home.emptyDescription")}
         </Typography>
 
         <Button
@@ -111,7 +113,7 @@ export function SetsEmptyHero({ onCreate }: SetsEmptyHeroProps) {
             },
           }}
         >
-          Create first set
+          {t("home.createFirst")}
         </Button>
 
         <Typography
@@ -123,7 +125,7 @@ export function SetsEmptyHero({ onCreate }: SetsEmptyHeroProps) {
             opacity: 0.8,
           }}
         >
-          You can import cards after creating a set.
+          {t("home.importLater")}
         </Typography>
       </Stack>
     </Box>

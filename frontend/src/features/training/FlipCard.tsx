@@ -11,7 +11,10 @@ import {
   Typography,
 } from "@mui/material";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { text as translate } from "../../i18n";
 import type { CardSide } from "../../types";
+import { ProjectConstants } from "../../utils/ProjectConstants";
 
 const MAX_HINT_CHARACTERS = 3;
 
@@ -114,15 +117,16 @@ function CardFace({
   onCancel: () => void;
   letterHint: LetterHint | null;
 }) {
+  const { t } = useTranslation();
   const showEditor = visible && editing;
   const showHint = letterHint != null && !showEditor;
   const hintExhausted = showHint && letterHint.revealed >= letterHint.limit;
   const hintLabel =
     !showHint || letterHint.revealed === 0
-      ? "Hint"
+      ? t("hint.hint")
       : hintExhausted
-        ? `${letterHint.revealed} / ${letterHint.limit}`
-        : "Next letter";
+        ? t("hint.progress", { revealed: letterHint.revealed, limit: letterHint.limit })
+        : t("hint.nextLetter");
 
   return (
     <Paper
@@ -171,9 +175,18 @@ function CardFace({
             fullWidth
             value={draft}
             error={Boolean(fieldError)}
-            helperText={fieldError ?? " "}
+            helperText={
+              fieldError
+                ? translate(fieldError, {
+                    max:
+                      side === "front"
+                        ? ProjectConstants.cardFrontMaxLength
+                        : ProjectConstants.cardBackMaxLength,
+                  })
+                : " "
+            }
             disabled={saving}
-            label={side === "front" ? "Front" : "Back"}
+            label={side === "front" ? t("common.front") : t("common.backSide")}
             onChange={(event) => onDraftChange(event.target.value)}
             sx={{
               flex: 1,
@@ -189,15 +202,15 @@ function CardFace({
           />
           {saveError && (
             <Typography variant="body2" color={colored ? "inherit" : "error"}>
-              {saveError}
+              {translate(saveError)}
             </Typography>
           )}
           <Stack direction="row" gap={1} justifyContent="flex-end">
             <Button color="inherit" onClick={onCancel} disabled={saving}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button variant="contained" onClick={onSave} disabled={saving}>
-              {saving ? <CircularProgress size={18} color="inherit" /> : "Save"}
+              {saving ? <CircularProgress size={18} color="inherit" /> : t("common.save")}
             </Button>
           </Stack>
         </Stack>
@@ -266,10 +279,13 @@ function CardFace({
                     startIcon={<LightbulbOutlinedIcon sx={{ fontSize: 16 }} />}
                     aria-label={
                       letterHint.revealed === 0
-                        ? "Reveal the first letter of the answer"
+                        ? t("hint.first")
                         : hintExhausted
-                          ? `Revealed ${letterHint.revealed} of ${letterHint.limit} letters`
-                          : "Reveal the next letter of the answer"
+                          ? t("hint.done", {
+                              revealed: letterHint.revealed,
+                              limit: letterHint.limit,
+                            })
+                          : t("hint.next")
                     }
                     onClick={(event) => {
                       event.stopPropagation();
@@ -304,7 +320,10 @@ function CardFace({
                       fontVariantNumeric: "tabular-nums",
                     }}
                   >
-                    {letterHint.revealed} / {letterHint.limit}
+                    {t("hint.progress", {
+                      revealed: letterHint.revealed,
+                      limit: letterHint.limit,
+                    })}
                   </Typography>
                 )}
               </Box>
@@ -330,7 +349,9 @@ function CardFace({
       )}
       {visible && !showEditor && (
         <IconButton
-          aria-label={`Edit ${side}`}
+          aria-label={t("training.editSide", {
+            side: t(side === "front" ? "training.sideFront" : "training.sideBack"),
+          })}
           size="small"
           onClick={(event) => {
             event.stopPropagation();
@@ -361,6 +382,7 @@ export function FlipCard({
   onSave,
   onCancel,
 }: FlipCardProps) {
+  const { t } = useTranslation();
   const flipped = side === "back";
   const [revealed, setRevealed] = useState(0);
   const [hintBack, setHintBack] = useState(back);
@@ -407,7 +429,9 @@ export function FlipCard({
       aria-label={
         editing
           ? undefined
-          : `Flashcard, showing the ${side}. Activate to flip.`
+          : t("training.flashcardLabel", {
+              side: t(side === "front" ? "training.sideFront" : "training.sideBack"),
+            })
       }
       onClick={() => {
         if (!editing) onFlip();

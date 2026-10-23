@@ -12,7 +12,9 @@ import {
 } from "@mui/material";
 
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
+import { text } from "../i18n";
 import { PageContainer } from "../components/PageContainer";
 import { ErrorState } from "../components/StateViews";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
@@ -54,17 +56,13 @@ const answerLabelStyles = {
 function sideTextError(side: CardSide, value: string, otherFronts: string[]): string | null {
   if (side === "front") {
     const front = value.trim();
-    if (!front) return "Enter a front value.";
-    if (front.length > ProjectConstants.cardFrontMaxLength) {
-      return `Front text cannot be longer than ${ProjectConstants.cardFrontMaxLength} characters.`;
-    }
-    if (otherFronts.includes(front)) return "A card with this front already exists in this set.";
+    if (!front) return "edit.frontRequired";
+    if (front.length > ProjectConstants.cardFrontMaxLength) return "edit.frontTooLong";
+    if (otherFronts.includes(front)) return "edit.duplicateFront";
     return null;
   }
 
-  if (value.length > ProjectConstants.cardBackMaxLength) {
-    return `Back text cannot be longer than ${ProjectConstants.cardBackMaxLength} characters.`;
-  }
+  if (value.length > ProjectConstants.cardBackMaxLength) return "edit.backTooLong";
   return null;
 }
 
@@ -76,6 +74,7 @@ const answerHintStyles = {
 };
 
 export default function TrainingPage() {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { setId: setIdParam } = useParams<{ setId: string }>();
@@ -159,7 +158,7 @@ export default function TrainingPage() {
       setSaveError(
         typeof saveFailure === "string"
           ? saveFailure
-          : "Could not save this card.",
+          : "errors.saveCard",
       );
     } finally {
       setSaving(false);
@@ -234,10 +233,10 @@ export default function TrainingPage() {
 
   if (!Number.isFinite(setId) || setId <= 0) {
     return (
-      <PageContainer title="Training" maxWidth="sm">
-        <ErrorState message="This training link is not valid." />
+      <PageContainer title={t("training.title")} maxWidth="sm">
+        <ErrorState message="training.invalidLink" />
         <Box sx={{ mt: 3 }}>
-          <Button onClick={() => navigate("/")}>Back to sets</Button>
+          <Button onClick={() => navigate("/")}>{t("common.backToSets")}</Button>
         </Box>
       </PageContainer>
     );
@@ -245,10 +244,10 @@ export default function TrainingPage() {
 
   if (status === "failed") {
     return (
-      <PageContainer title="Training" maxWidth="sm">
-        <ErrorState message={error ?? "Could not start training."} />
+      <PageContainer title={t("training.title")} maxWidth="sm">
+        <ErrorState message={error ?? "training.couldNotStart"} />
         <Box sx={{ mt: 3 }}>
-          <Button onClick={() => navigate("/")}>Back to sets</Button>
+          <Button onClick={() => navigate("/")}>{t("common.backToSets")}</Button>
         </Box>
       </PageContainer>
     );
@@ -298,7 +297,7 @@ export default function TrainingPage() {
               },
             }}
           >
-            Training complete
+            {t("training.complete")}
           </Typography>
 
           <Typography
@@ -310,7 +309,7 @@ export default function TrainingPage() {
               fontWeight: 750,
             }}
           >
-            {setName || "Training set"}
+            {setName || t("training.fallbackSet")}
           </Typography>
 
           <Typography
@@ -320,8 +319,7 @@ export default function TrainingPage() {
               lineHeight: 1.6,
             }}
           >
-            All {total} card{total === 1 ? "" : "s"} in this set have been
-            reviewed and your answers are saved.
+            {t("training.reviewed", { count: total })}
           </Typography>
 
           <Stack
@@ -343,7 +341,7 @@ export default function TrainingPage() {
                 ).unwrap()
               }
             >
-              Train again
+              {t("training.trainAgain")}
             </Button>
 
             <Button
@@ -351,7 +349,7 @@ export default function TrainingPage() {
               size="large"
               onClick={() => navigate(`/statistics?setId=${setId}`)}
             >
-              View statistics
+              {t("training.viewStatistics")}
             </Button>
 
             <Button
@@ -362,7 +360,7 @@ export default function TrainingPage() {
                 navigate("/");
               }}
             >
-              Back to sets
+              {t("common.backToSets")}
             </Button>
           </Stack>
         </Stack>
@@ -372,8 +370,8 @@ export default function TrainingPage() {
 
   return (
     <PageContainer
-      title={setName || "Training"}
-      description="Tap to flip, then choose if you knew the answer."
+      title={setName || t("training.title")}
+      description={t("training.description")}
       maxWidth="sm"
       actions={
         <Button
@@ -389,7 +387,7 @@ export default function TrainingPage() {
             navigate("/");
           }}
         >
-          End session
+          {t("training.endSession")}
         </Button>
       }
     >
@@ -406,14 +404,14 @@ export default function TrainingPage() {
               color="text.secondary"
               sx={{ fontVariantNumeric: "tabular-nums" }}
             >
-              Card {position} of {total}
+              {t("training.cardPosition", { position, total })}
             </Typography>
-            <Chip size="small" label={side === "front" ? "Front" : "Back"} />
+            <Chip size="small" label={side === "front" ? t("common.front") : t("common.backSide")} />
           </Stack>
           <LinearProgress
             variant="determinate"
             value={total > 0 ? (position / total) * 100 : 0}
-            aria-label="Training progress"
+            aria-label={t("training.progress")}
             sx={{ height: 6, borderRadius: 3 }}
           />
         </Box>
@@ -454,7 +452,7 @@ export default function TrainingPage() {
           </Paper>
         )}
 
-        {error && <Alert severity="error">{error}</Alert>}
+        {error && <Alert severity="error">{text(error)}</Alert>}
 
         <Box>
           <Stack
@@ -465,7 +463,7 @@ export default function TrainingPage() {
               justifyContent: "center",
             }}
             role="group"
-            aria-label="Did you know this card? Either answer saves your result and moves to the next card."
+            aria-label={t("training.answerGroup")}
           >
             <Button
               variant="contained"
@@ -480,10 +478,10 @@ export default function TrainingPage() {
                   component="span"
                   sx={{ fontSize: "1rem", fontWeight: 600 }}
                 >
-                  Next
+                  {t("common.next")}
                 </Box>
                 <Box component="span" sx={answerHintStyles}>
-                  {"I don't know this"}
+                  {t("training.dontKnow")}
                 </Box>
               </Box>
             </Button>
@@ -500,10 +498,10 @@ export default function TrainingPage() {
                   component="span"
                   sx={{ fontSize: "1rem", fontWeight: 600 }}
                 >
-                  Next
+                  {t("common.next")}
                 </Box>
                 <Box component="span" sx={answerHintStyles}>
-                  I know this
+                  {t("training.know")}
                 </Box>
               </Box>
             </Button>

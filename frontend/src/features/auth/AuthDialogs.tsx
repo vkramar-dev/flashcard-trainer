@@ -12,6 +12,8 @@ import {
   Typography,
 } from "@mui/material"
 import { useEffect, useRef, useState, type FormEvent } from "react"
+import { useTranslation } from "react-i18next"
+import { text } from "../../i18n"
 import { useAppDispatch, useAppSelector } from "../../store/hooks"
 import {
   clearAuthError,
@@ -41,6 +43,7 @@ function formatRemaining(milliseconds: number): string {
 }
 
 export function AuthDialogs() {
+  const { t } = useTranslation()
   const dispatch = useAppDispatch()
   const view = useAppSelector((state) => state.auth.dialog)
   const status = useAppSelector((state) => state.auth.status)
@@ -75,7 +78,7 @@ export function AuthDialogs() {
   let alertMessage: string | null = null
   if (failureCode !== "IpBlocked" && failureCode !== "InvalidCode") alertMessage = serverError
   if (!alertMessage && expiredLocally && failureCode !== "TooManyAttempts") {
-    alertMessage = "This code has expired. Request a new code."
+    alertMessage = "auth.codeExpired"
   }
 
   // Reset the form whenever the dialog is opened, closed, or switched.
@@ -104,28 +107,28 @@ export function AuthDialogs() {
     const next: FieldErrors = {}
 
     const address = email.trim()
-    if (!address) next.email = "Email is required."
+    if (!address) next.email = "auth.emailRequired"
     else if (address.length < ProjectConstants.userNameMinLength) {
-      next.email = `Email must be at least ${ProjectConstants.userNameMinLength} characters.`
+      next.email = "auth.emailTooShort"
     } else if (address.length > ProjectConstants.userNameMaxLength) {
-      next.email = `Email cannot be longer than ${ProjectConstants.userNameMaxLength} characters.`
-    } else if (!emailPattern.test(address)) next.email = "Enter a valid email address."
+      next.email = "auth.emailTooLong"
+    } else if (!emailPattern.test(address)) next.email = "auth.emailInvalid"
 
-    if (!password) next.password = "Password is required."
+    if (!password) next.password = "auth.passwordRequired"
     else if (password.length < ProjectConstants.passwordMinLength) {
-      next.password = `Use at least ${ProjectConstants.passwordMinLength} characters.`
+      next.password = "auth.passwordTooShort"
     } else if (password.length > ProjectConstants.passwordMaxLength) {
-      next.password = `Password cannot be longer than ${ProjectConstants.passwordMaxLength} characters.`
+      next.password = "auth.passwordTooLong"
     }
 
     if (isSignUp) {
-      if (!confirmPassword) next.confirmPassword = "Please confirm your password."
-      else if (confirmPassword !== password) next.confirmPassword = "Passwords do not match."
+      if (!confirmPassword) next.confirmPassword = "auth.confirmRequired"
+      else if (confirmPassword !== password) next.confirmPassword = "auth.passwordMismatch"
     }
 
     if (includeCode) {
-      if (!code.trim()) next.code = "Enter the verification code."
-      else if (!codePattern.test(code.trim())) next.code = "Enter the 3-digit code."
+      if (!code.trim()) next.code = "auth.codeRequired"
+      else if (!codePattern.test(code.trim())) next.code = "auth.codeDigits"
     }
 
     setErrors(next)
@@ -191,27 +194,45 @@ export function AuthDialogs() {
     }
   }
 
-  const codeHelperText =
-    errors.code ??
-    (failureCode === "InvalidCode" && !verificationLocked ? registrationFailure?.message : undefined)
+  const fieldText = (key: string | undefined) =>
+    key
+      ? t(key, {
+          min: ProjectConstants.userNameMinLength,
+          max: ProjectConstants.userNameMaxLength,
+        })
+      : undefined
+
+  const passwordText = (key: string | undefined) =>
+    key
+      ? t(key, {
+          min: ProjectConstants.passwordMinLength,
+          max: ProjectConstants.passwordMaxLength,
+        })
+      : undefined
+
+  const codeHelperText = errors.code
+    ? t(errors.code)
+    : failureCode === "InvalidCode" && !verificationLocked
+      ? registrationFailure?.message
+      : undefined
 
   return (
     <>
       <Dialog open={view !== null} onClose={handleClose} fullWidth maxWidth="xs">
         <form onSubmit={handleSubmit} noValidate>
-          <DialogTitle sx={{ pb: 1 }}>{isSignUp ? "Sign Up" : "Sign In"}</DialogTitle>
+          <DialogTitle sx={{ pb: 1 }}>{isSignUp ? t("auth.signUpTitle") : t("auth.signInTitle")}</DialogTitle>
           <DialogContent>
             <Stack gap={2} sx={{ pt: 0.5 }}>
-              {alertMessage && <Alert severity="error">{alertMessage}</Alert>}
+              {alertMessage && <Alert severity="error">{text(alertMessage)}</Alert>}
 
               <TextField
-                label="Email"
+                label={t("auth.email")}
                 type="email"
                 autoComplete="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 error={Boolean(errors.email)}
-                helperText={errors.email}
+                helperText={fieldText(errors.email)}
                 required
                 fullWidth
                 autoFocus={!codeSent}
@@ -220,13 +241,13 @@ export function AuthDialogs() {
               />
 
               <TextField
-                label="Password"
+                label={t("auth.password")}
                 type="password"
                 autoComplete={isSignUp ? "new-password" : "current-password"}
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 error={Boolean(errors.password)}
-                helperText={errors.password}
+                helperText={passwordText(errors.password)}
                 required
                 fullWidth
                 slotProps={{ htmlInput: { maxLength: ProjectConstants.passwordMaxLength } }}
@@ -234,13 +255,13 @@ export function AuthDialogs() {
 
               {isSignUp && (
                 <TextField
-                  label="Confirm Password"
+                  label={t("auth.confirmPassword")}
                   type="password"
                   autoComplete="new-password"
                   value={confirmPassword}
                   onChange={(event) => setConfirmPassword(event.target.value)}
                   error={Boolean(errors.confirmPassword)}
-                  helperText={errors.confirmPassword}
+                  helperText={passwordText(errors.confirmPassword)}
                   required
                   fullWidth
                   slotProps={{ htmlInput: { maxLength: ProjectConstants.passwordMaxLength } }}
@@ -250,11 +271,11 @@ export function AuthDialogs() {
               {isSignUp && codeSent && (
                 <>
                   <TextField
-                    label="Verification code"
+                    label={t("auth.verificationCode")}
                     value={code}
                     onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 3))}
                     error={Boolean(codeHelperText)}
-                    helperText={codeHelperText ?? "Enter the 3-digit code from your email."}
+                    helperText={codeHelperText ?? t("auth.codeHelper")}
                     required
                     fullWidth
                     autoFocus
@@ -263,14 +284,14 @@ export function AuthDialogs() {
                   />
                   {!verificationLocked && (
                     <Typography variant="body2" color="text.secondary">
-                      Code expires in {formatRemaining(remainingMs)}.
+                      {t("auth.codeExpires", { time: formatRemaining(remainingMs) })}
                     </Typography>
                   )}
                 </>
               )}
 
               <Typography variant="body2" color="text.secondary">
-                {isSignUp ? "Already have an account? " : "Don't have an account? "}
+                {isSignUp ? `${t("auth.alreadyHave")} ` : `${t("auth.dontHave")} `}
                 <Link
                   component="button"
                   type="button"
@@ -280,14 +301,14 @@ export function AuthDialogs() {
                     dispatch(openAuthDialog(isSignUp ? "signIn" : "signUp"))
                   }}
                 >
-                  {isSignUp ? "Sign In" : "Sign Up"}
+                  {isSignUp ? t("auth.signInTitle") : t("auth.signUpTitle")}
                 </Link>
               </Typography>
             </Stack>
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 2.5 }}>
             <Button onClick={handleClose} disabled={isSubmitting} color="inherit">
-              Cancel
+              {t("common.cancel")}
             </Button>
             {isSignUp && codeSent && (
               <Button
@@ -296,7 +317,7 @@ export function AuthDialogs() {
                 disabled={isSubmitting}
                 startIcon={pendingAction === "resend" ? <CircularProgress size={16} color="inherit" /> : undefined}
               >
-                Resend code
+                {t("auth.resendCode")}
               </Button>
             )}
             <Button
@@ -309,7 +330,7 @@ export function AuthDialogs() {
                 ) : undefined
               }
             >
-              {isSignUp ? (codeSent ? "Sign Up" : "Send code") : "Sign In"}
+              {isSignUp ? (codeSent ? t("auth.signUpTitle") : t("auth.sendCode")) : t("auth.signInTitle")}
             </Button>
           </DialogActions>
         </form>
@@ -321,13 +342,13 @@ export function AuthDialogs() {
         fullWidth
         maxWidth="xs"
       >
-        <DialogTitle>Registration blocked</DialogTitle>
+        <DialogTitle>{t("auth.blockedTitle")}</DialogTitle>
         <DialogContent>
           <Typography>{registrationFailure?.message}</Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2.5 }}>
           <Button onClick={() => dispatch(clearAuthError())} variant="contained">
-            OK
+            {t("common.ok")}
           </Button>
         </DialogActions>
       </Dialog>

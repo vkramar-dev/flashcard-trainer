@@ -3,6 +3,7 @@ import GridViewIcon from "@mui/icons-material/GridView"
 import ViewListIcon from "@mui/icons-material/ViewList"
 import { Box, Button, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material"
 import { useCallback, useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router-dom"
 import { setsApi } from "../api/setsApi"
 import { toErrorMessage } from "../api/client"
@@ -12,19 +13,19 @@ import type { SetWithCardsModel } from "../types"
 
 type CardsViewMode = "tiles" | "list"
 
-function cardCountLabel(count: number) {
-  return `${count} ${count === 1 ? "card" : "cards"}`
-}
-
 function BackLink({ onClick }: { onClick: () => void }) {
+  const { t } = useTranslation()
+
   return (
     <Button color="inherit" startIcon={<ArrowBackIcon />} onClick={onClick} sx={{ ml: -1, mb: 1 }}>
-      Back
+      {t("common.back")}
     </Button>
   )
 }
 
 function BackToSetsButton({ onClick }: { onClick: () => void }) {
+  const { t } = useTranslation()
+
   return (
     <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
       <Button
@@ -34,13 +35,14 @@ function BackToSetsButton({ onClick }: { onClick: () => void }) {
         onClick={onClick}
         sx={{ borderRadius: 999, px: 2.5 }}
       >
-        Back to sets
+        {t("common.backToSets")}
       </Button>
     </Box>
   )
 }
 
 export default function ViewCardsPage() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { setId: setIdParam } = useParams<{ setId: string }>()
   const setId = setIdParam ? Number(setIdParam) : Number.NaN
@@ -53,7 +55,7 @@ export default function ViewCardsPage() {
   const load = useCallback(async () => {
     if (!Number.isFinite(setId)) {
       setStatus("failed")
-      setError("This set could not be found.")
+      setError("sets.setNotFound")
       return
     }
 
@@ -66,7 +68,7 @@ export default function ViewCardsPage() {
     } catch (loadError) {
       setSet(null)
       setStatus("failed")
-      setError(toErrorMessage(loadError, "Could not load this flashcard set."))
+      setError(toErrorMessage(loadError, "errors.loadSet"))
     }
   }, [setId])
 
@@ -79,18 +81,18 @@ export default function ViewCardsPage() {
       exclusive
       size="small"
       value={mode}
-      aria-label="Card view"
+      aria-label={t("sets.viewAria")}
       onChange={(_, next: CardsViewMode | null) => {
         if (next) setMode(next)
       }}
     >
-      <ToggleButton value="tiles" aria-label="Tiles">
+      <ToggleButton value="tiles" aria-label={t("sets.tiles")}>
         <GridViewIcon fontSize="small" sx={{ mr: 0.75 }} />
-        Tiles
+        {t("sets.tiles")}
       </ToggleButton>
-      <ToggleButton value="list" aria-label="List">
+      <ToggleButton value="list" aria-label={t("sets.list")}>
         <ViewListIcon fontSize="small" sx={{ mr: 0.75 }} />
-        List
+        {t("sets.list")}
       </ToggleButton>
     </ToggleButtonGroup>
   )
@@ -101,7 +103,7 @@ export default function ViewCardsPage() {
     return (
       <PageContainer maxWidth="xl">
         <BackLink onClick={goBack} />
-        <LoadingState label="Loading cards..." />
+        <LoadingState label="sets.loadingCards" />
       </PageContainer>
     )
   }
@@ -110,7 +112,7 @@ export default function ViewCardsPage() {
     return (
       <PageContainer maxWidth="xl">
         <BackLink onClick={goBack} />
-        <ErrorState message={error ?? "Could not load this flashcard set."} onRetry={() => void load()} />
+        <ErrorState message={error ?? "errors.loadSet"} onRetry={() => void load()} />
         <BackToSetsButton onClick={goBack} />
       </PageContainer>
     )
@@ -131,14 +133,14 @@ export default function ViewCardsPage() {
               {set.name}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              {cardCountLabel(set.cards.length)}
+              {t("sets.cardCount", { count: set.cards.length })}
             </Typography>
           </Box>
           {viewToggle}
         </Stack>
       </Paper>
       {set.cards.length === 0 ? (
-        <EmptyState title="This set has no cards yet." description="Cards you add while editing this set will appear here." />
+        <EmptyState title={t("sets.noCardsTitle")} description={t("sets.noCardsDescription")} />
       ) : mode === "tiles" ? (
         <Box
           sx={{
@@ -162,7 +164,7 @@ export default function ViewCardsPage() {
             >
               <Box sx={{ px: 1.5, py: 1.25 }}>
                 <Typography variant="caption" color="text.secondary" display="block">
-                  Front
+                  {t("common.front")}
                 </Typography>
                 <Typography variant="body2" sx={{ mt: 0.25, whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
                   {card.front}
@@ -170,7 +172,7 @@ export default function ViewCardsPage() {
               </Box>
               <Box sx={{ px: 1.5, py: 1.25, bgcolor: "action.hover" }}>
                 <Typography variant="caption" color="text.secondary" display="block">
-                  Back
+                  {t("common.backSide")}
                 </Typography>
                 <Typography variant="body2" sx={{ mt: 0.25, whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
                   {card.back}
@@ -185,8 +187,8 @@ export default function ViewCardsPage() {
             <TableHead>
               <TableRow>
                 <TableCell sx={{ width: { xs: 40, sm: 56 }, fontWeight: 600 }}>#</TableCell>
-                <TableCell sx={{ width: "46%", fontWeight: 600 }}>Front</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Back</TableCell>
+                <TableCell sx={{ width: "46%", fontWeight: 600 }}>{t("common.front")}</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>{t("common.backSide")}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>

@@ -1,6 +1,7 @@
 import ShuffleIcon from "@mui/icons-material/Shuffle"
 import ShuffleOnIcon from "@mui/icons-material/ShuffleOn"
 import { IconButton, Tooltip } from "@mui/material"
+import { useTranslation } from "react-i18next"
 
 interface ShuffleToggleProps {
   enabled: boolean
@@ -14,13 +15,14 @@ interface ShuffleToggleProps {
  * Muted means cards stay in the order they were created.
  */
 export function ShuffleToggle({ enabled, setName, onToggle }: ShuffleToggleProps) {
+  const { t } = useTranslation()
   const Icon = enabled ? ShuffleOnIcon : ShuffleIcon
 
   return (
-    <Tooltip title={enabled ? "Shuffle on - click to turn off" : "Shuffle off - click to turn on"}>
+    <Tooltip title={enabled ? t("shuffle.on") : t("shuffle.off")}>
       <IconButton
         onClick={onToggle}
-        aria-label={enabled ? `Shuffle is on for ${setName}` : `Shuffle is off for ${setName}`}
+        aria-label={enabled ? t("shuffle.onFor", { name: setName }) : t("shuffle.offFor", { name: setName })}
         aria-pressed={enabled}
         size="small"
         sx={{

@@ -47,7 +47,7 @@ export const sendRegistrationCodeAsync = createAsyncThunk<
     return await authApi.sendRegistrationCode(email);
   } catch (error) {
     return rejectWithValue(
-      readRegistrationFailure(error, "Could not send the verification email."),
+      readRegistrationFailure(error, "errors.sendCode"),
     );
   }
 });
@@ -63,7 +63,7 @@ export const signUpAsync = createAsyncThunk<
     return result;
   } catch (error) {
     return rejectWithValue(
-      readRegistrationFailure(error, "Could not create the account."),
+      readRegistrationFailure(error, "errors.createAccount"),
     );
   }
 });
@@ -78,7 +78,7 @@ export const signInAsync = createAsyncThunk<
     AppStorage.setAuthToken(result.token);
     return result;
   } catch (error) {
-    return rejectWithValue(toErrorMessage(error, "Could not sign in."));
+    return rejectWithValue(toErrorMessage(error, "errors.signIn"));
   }
 });
 
@@ -173,7 +173,7 @@ const authSlice = createSlice({
         applyRegistrationFailure(
           state,
           action.payload,
-          "Could not send the verification email.",
+          "errors.sendCode",
         );
       })
       .addCase(signInAsync.pending, (state) => {
@@ -190,7 +190,7 @@ const authSlice = createSlice({
       })
       .addCase(signInAsync.rejected, (state, action) => {
         state.status = "failed";
-        state.error = action.payload ?? "Authentication failed.";
+        state.error = action.payload ?? "errors.authenticationFailed";
         state.registrationFailure = null;
       })
       .addCase(signUpAsync.pending, (state) => {
@@ -209,7 +209,7 @@ const authSlice = createSlice({
         applyRegistrationFailure(
           state,
           action.payload,
-          "Could not create the account.",
+          "errors.createAccount",
         );
       });
   },

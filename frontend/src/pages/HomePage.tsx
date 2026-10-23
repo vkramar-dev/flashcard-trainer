@@ -1,7 +1,9 @@
 import AddIcon from "@mui/icons-material/Add";
 import { Box, Button, Snackbar, Alert } from "@mui/material";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { text } from "../i18n";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { PageContainer } from "../components/PageContainer";
 import { HomeSignedOutHero } from "../features/auth/HomeSignedOutHero";
@@ -29,6 +31,7 @@ import { startTrainingAsync } from "@/features/training/trainingSlice";
 import { SetsEmptyHero } from "../features/sets/SetsEmptyHero";
 
 export default function HomePage() {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { items, status, error, saveStatus, saveError, importSetId, notice } =
@@ -49,7 +52,7 @@ export default function HomePage() {
         {sessionChecked ? (
           <HomeSignedOutHero />
         ) : (
-          <LoadingState label="Checking your session..." />
+          <LoadingState label="home.checkingSession" />
         )}
       </PageContainer>
     );
@@ -84,7 +87,7 @@ export default function HomePage() {
           navigate(`/set/${set.id}/train`);
         } catch (error) {
           setActionError(
-            typeof error === "string" ? error : "Could not start training.",
+            typeof error === "string" ? error : "home.couldNotStart",
           );
         }
         break;
@@ -126,7 +129,7 @@ export default function HomePage() {
       startIcon={<AddIcon />}
       onClick={() => navigate("/set/new")}
     >
-      New set
+      {t("home.newSet")}
     </Button>
   );
 
@@ -134,25 +137,25 @@ export default function HomePage() {
 
   return (
     <PageContainer
-      title={isEmpty ? undefined : "Your sets"}
+      title={isEmpty ? undefined : t("home.yourSets")}
       description={
-        isEmpty ? undefined : "Start training with a set, or create one."
+        isEmpty ? undefined : t("home.startOrCreate")
       }
       actions={items.length > 0 ? newSetButton : undefined}
     >
       {actionError && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setActionError(null)}>
-          {actionError}
+          {text(actionError)}
         </Alert>
       )}
 
       {status === "loading" && items.length === 0 && (
-        <LoadingState label="Loading your sets..." />
+        <LoadingState label="home.loadingSets" />
       )}
 
       {status === "failed" && items.length === 0 && (
         <ErrorState
-          message={error ?? "Could not load your sets."}
+          message={error ?? "home.couldNotLoad"}
           onRetry={() => dispatch(loadAppStateAsync())}
         />
       )}
@@ -194,13 +197,16 @@ export default function HomePage() {
 
       <ConfirmDialog
         open={pendingRemoval !== null}
-        title="Remove this set?"
+        title={t("home.removeTitle")}
         description={
           pendingRemoval
-            ? `"${pendingRemoval.name}" and all ${pendingRemoval.totalCards} of its cards will be permanently deleted, including your learning progress.`
+            ? t("home.removeDescription", {
+                count: pendingRemoval.totalCards,
+                name: pendingRemoval.name,
+              })
             : ""
         }
-        confirmLabel="Remove"
+        confirmLabel="common.remove"
         destructive
         busy={saveStatus === "loading"}
         onCancel={() => setPendingRemoval(null)}
@@ -218,7 +224,7 @@ export default function HomePage() {
           variant="filled"
           onClose={() => dispatch(clearSetsNotice())}
         >
-          {notice}
+          {notice ? t(notice.key, { count: notice.count ?? 0 }) : null}
         </Alert>
       </Snackbar>
     </PageContainer>

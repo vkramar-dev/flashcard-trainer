@@ -1,7 +1,6 @@
 import { Box, LinearProgress, Stack, Tooltip, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { useAppSelector } from "../store/hooks";
-
-const usageFormat = new Intl.NumberFormat("en-US");
 
 function formatPercent(used: number, limit: number): string {
   if (limit <= 0) return "0%";
@@ -9,6 +8,8 @@ function formatPercent(used: number, limit: number): string {
 }
 
 export function Footer() {
+  const { t, i18n } = useTranslation();
+  const usageFormat = new Intl.NumberFormat(i18n.language);
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
   const storage = useAppSelector((state) => state.sets.storage);
   const year = new Date().getFullYear();
@@ -59,18 +60,21 @@ export function Footer() {
           color="text.secondary"
           sx={{ gridColumn: showUsage ? "2" : "1", justifySelf: "center", textAlign: "center" }}
         >
-          © {year} Flashcard Trainer
+          © {year} {t("app.name")}
         </Typography>
         {showUsage && (
           <Tooltip
-            title={`Used ${usageFormat.format(used)} of ${usageFormat.format(limit)} characters`}
+            title={t("footer.usedCharacters", {
+              used: usageFormat.format(used),
+              limit: usageFormat.format(limit),
+            })}
             enterTouchDelay={0}
             leaveTouchDelay={4000}
           >
             <Box className="footer-storage" sx={{ gridColumn: "3", justifySelf: "end", width: "max-content", maxWidth: "100%" }}>
               <Stack direction="row" alignItems="baseline" gap="8px">
                 <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.2 }}>
-                  Storage used:
+                  {t("footer.storageUsed")}
                 </Typography>
                 <Typography variant="caption" sx={{ fontWeight: 600, lineHeight: 1.2 }}>
                   {percentLabel}
@@ -79,7 +83,7 @@ export function Footer() {
               <LinearProgress
                 variant="determinate"
                 value={barValue}
-                aria-label="Storage used"
+                aria-label={t("footer.storageUsedAria")}
                 sx={{
                   mt: 0.25,
                   width: "100%",

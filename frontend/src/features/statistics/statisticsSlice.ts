@@ -25,7 +25,7 @@ export const fetchStatisticsAsync = createAsyncThunk<SetStatisticsModel[], void,
     try {
       return await statisticsApi.getStatistics()
     } catch (error) {
-      return rejectWithValue(toErrorMessage(error, "Could not load your statistics."))
+      return rejectWithValue(toErrorMessage(error, "errors.loadStatistics"))
     }
   },
 )
@@ -56,7 +56,7 @@ const statisticsSlice = createSlice({
       })
       .addCase(fetchStatisticsAsync.rejected, (state, action) => {
         state.status = "failed"
-        state.error = action.payload ?? "Could not load your statistics."
+        state.error = action.payload ?? "errors.loadStatistics"
       })
   },
 })

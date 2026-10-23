@@ -1,20 +1,22 @@
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import { Box, Button, Stack, Typography } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
+import { useTranslation } from "react-i18next";
 import { FlashcardsIllustration } from "../../components/FlashcardsIllustration";
 import { openAuthDialog } from "./authSlice";
 import { useAppDispatch } from "../../store/hooks";
 
 export function HomeSignedOutHero() {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const theme = useTheme();
 
   const primary = theme.palette.primary.main;
 
   const highlights = [
-    "Create cards or import them from a CSV file",
-    "Track what you know and what still needs practice",
-    "Pick up where you left off, anytime",
+    t("home.highlightCreate"),
+    t("home.highlightTrack"),
+    t("home.highlightResume"),
   ];
 
   return (
@@ -75,7 +77,7 @@ export function HomeSignedOutHero() {
             mb: 1.5,
           }}
         >
-          Learn with Flashcards.
+          {t("home.heroTitle")}
           {/* <br />
           Keep your progress. */}
         </Typography>
@@ -92,7 +94,7 @@ export function HomeSignedOutHero() {
             mb: 1.5,
           }}
         >
-          Create sets, train with cards and continue learning from any device.
+          {t("home.heroSubtitle")}
         </Typography>
 
         <Typography
@@ -107,7 +109,7 @@ export function HomeSignedOutHero() {
             mb: 3,
           }}
         >
-          100% Free · No Ads · No Subscriptions
+          {t("home.heroFree")}
         </Typography>
 
         <Stack
@@ -133,7 +135,7 @@ export function HomeSignedOutHero() {
               transition: "transform 160ms ease, box-shadow 160ms ease",
             }}
           >
-            Create account
+            {t("home.createAccount")}
           </Button>
 
           <Button
@@ -147,7 +149,7 @@ export function HomeSignedOutHero() {
               fontWeight: 600,
             }}
           >
-            Sign in
+            {t("home.signIn")}
           </Button>
         </Stack>
 

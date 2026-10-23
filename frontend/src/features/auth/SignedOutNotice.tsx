@@ -1,5 +1,6 @@
 import { Box, Button, Card, CardContent, Typography } from "@mui/material"
 import type { ReactNode } from "react"
+import { useTranslation } from "react-i18next"
 import { openAuthDialog } from "./authSlice"
 import { useAppDispatch } from "../../store/hooks"
 
@@ -14,6 +15,7 @@ export function SignedOutNotice({
   title,
   description,
 }: SignedOutNoticeProps) {
+  const { t } = useTranslation()
   const dispatch = useAppDispatch()
 
   return (
@@ -78,7 +80,7 @@ export function SignedOutNotice({
             px: 3.5,
           }}
         >
-          Sign in
+          {t("home.signIn")}
         </Button>
 
         <Typography
@@ -86,7 +88,7 @@ export function SignedOutNotice({
           color="text.secondary"
           sx={{ mt: 2 }}
         >
-          New here?{" "}
+          {t("home.newHere")}{" "}
           <Button
             variant="text"
             size="small"
@@ -100,7 +102,7 @@ export function SignedOutNotice({
               ml: 1,
             }}
           >
-            Create account
+            {t("home.createAccount")}
           </Button>
         </Typography>
       </CardContent>

@@ -1,5 +1,7 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material"
 import type { ReactNode } from "react"
+import { useTranslation } from "react-i18next"
+import { text } from "../i18n"
 
 interface ConfirmDialogProps {
   open: boolean
@@ -18,13 +20,17 @@ export function ConfirmDialog({
   open,
   title,
   description,
-  cancelLabel = "Cancel",
-  confirmLabel = "Confirm",
+  cancelLabel = "common.cancel",
+  confirmLabel = "common.confirm",
   destructive = false,
   busy = false,
   onCancel,
   onConfirm,
 }: ConfirmDialogProps) {
+  useTranslation()
+  const cancelText = typeof cancelLabel === "string" ? text(cancelLabel) : cancelLabel
+  const confirmText = typeof confirmLabel === "string" ? text(confirmLabel) : confirmLabel
+
   return (
     <Dialog open={open} onClose={busy ? undefined : onCancel} fullWidth maxWidth="xs">
       <DialogTitle sx={{ pb: 1 }}>{title}</DialogTitle>
@@ -35,10 +41,10 @@ export function ConfirmDialog({
       )}
       <DialogActions sx={{ px: 3, pb: 2.5 }}>
         <Button onClick={onCancel} color="inherit" disabled={busy}>
-          {cancelLabel}
+          {cancelText}
         </Button>
         <Button onClick={onConfirm} variant="contained" color={destructive ? "error" : "primary"} disabled={busy}>
-          {confirmLabel}
+          {confirmText}
         </Button>
       </DialogActions>
     </Dialog>

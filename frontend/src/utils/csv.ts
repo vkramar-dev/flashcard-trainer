@@ -10,7 +10,15 @@ export interface CsvCard {
   back: string
 }
 
-export class CsvParseError extends Error {}
+export class CsvParseError extends Error {
+  readonly values?: Record<string, string | number>
+
+  constructor(key: string, values?: Record<string, string | number>) {
+    super(key)
+    this.name = "CsvParseError"
+    this.values = values
+  }
+}
 
 /** Splits CSV text into rows of fields, honouring quoted fields. */
 function parseRows(text: string): string[][] {
@@ -55,7 +63,7 @@ function parseRows(text: string): string[][] {
 
     if (char === '"') {
       if (field.trim().length > 0) {
-        throw new CsvParseError("A quoted value must start at the beginning of a column.")
+        throw new CsvParseError("import.quoteStart")
       }
       field = ""
       inQuotes = true
@@ -76,7 +84,7 @@ function parseRows(text: string): string[][] {
     field += char
   }
 
-  if (inQuotes) throw new CsvParseError("The file contains an unclosed quoted value.")
+  if (inQuotes) throw new CsvParseError("import.unclosed")
   pushRow()
 
   return rows
@@ -88,7 +96,7 @@ function parseRows(text: string): string[][] {
  */
 export function parseCardsCsv(text: string): CsvCard[] {
   const rows = parseRows(text)
-  if (rows.length === 0) throw new CsvParseError("The file does not contain any cards.")
+  if (rows.length === 0) throw new CsvParseError("import.emptyFile")
 
   const cards: CsvCard[] = []
   const invalidLines: number[] = []
@@ -104,18 +112,23 @@ export function parseCardsCsv(text: string): CsvCard[] {
     cards.push({ front, back })
   })
 
+  const limits = {
+    frontMax: ProjectConstants.cardFrontMaxLength,
+    backMax: ProjectConstants.cardBackMaxLength,
+  }
+
   if (cards.length === 0) {
-    throw new CsvParseError(`No valid rows were found. Each row needs a front value of at most ${ProjectConstants.cardFrontMaxLength} characters. The back value can be empty and must be at most ${ProjectConstants.cardBackMaxLength} characters.`)
+    throw new CsvParseError("import.noValidRows", limits)
   }
 
   if (invalidLines.length > 0) {
     const shown = invalidLines.slice(0, 5).join(", ")
     const suffix = invalidLines.length > 5 ? ", ..." : ""
-    throw new CsvParseError(
-      `Row${invalidLines.length === 1 ? "" : "s"} ${shown}${suffix} ${
-        invalidLines.length === 1 ? "needs" : "need"
-      } a front value of at most ${ProjectConstants.cardFrontMaxLength} characters. The back value can be empty and must be at most ${ProjectConstants.cardBackMaxLength} characters.`,
-    )
+    throw new CsvParseError("import.invalidRows", {
+      count: invalidLines.length,
+      rows: `${shown}${suffix}`,
+      ...limits,
+    })
   }
 
   return cards

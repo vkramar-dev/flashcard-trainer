@@ -1,12 +1,15 @@
 import { Box, Card, CardContent, Link, Stack, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { PageContainer } from "../components/PageContainer";
 import StyleIcon from "@mui/icons-material/Style";
 
 export default function AboutPage() {
+  const { t } = useTranslation();
+
   return (
     <PageContainer
-      title="About"
-      description="A simple way to practise what you want to remember."
+      title={t("about.title")}
+      description={t("about.description")}
       maxWidth="md"
       actions={
         <Box
@@ -33,25 +36,20 @@ export default function AboutPage() {
         <Card>
           <CardContent sx={{ p: { xs: 2.5, md: 4 } }}>
             <Typography variant="h5" component="h2" sx={{ mb: 1.5 }}>
-              Learn by active recall
+              {t("about.recallTitle")}
             </Typography>
 
             <Stack gap={2}>
               <Typography variant="body1" color="text.secondary">
-                Flashcard Trainer is built around active recall: instead of
-                repeatedly rereading information, you try to retrieve it from
-                memory.
+                {t("about.recall1")}
               </Typography>
 
               <Typography variant="body1" color="text.secondary">
-                Create your own card sets, practise them at your own pace, and
-                use the statistics to focus on what still needs more attention.
+                {t("about.recall2")}
               </Typography>
 
               <Typography variant="body1" color="text.secondary">
-                The application supports shuffled training, optional hiding of
-                learned cards, CSV import and export, and persistent user
-                accounts with saved settings and progress.
+                {t("about.recall3")}
               </Typography>
             </Stack>
           </CardContent>
@@ -60,14 +58,11 @@ export default function AboutPage() {
         <Card>
           <CardContent sx={{ p: { xs: 2.5, md: 4 } }}>
             <Typography variant="h6" component="h2" sx={{ mb: 1.5 }}>
-              Technology
+              {t("about.technology")}
             </Typography>
 
             <Typography variant="body2" color="text.secondary">
-              Flashcard Trainer is a web application built with React,
-              TypeScript, Redux Toolkit and Material UI on the frontend, with an
-              ASP.NET Core Web API, Entity Framework Core, ASP.NET Core Identity
-              and SQL Server on the backend.
+              {t("about.technologyBody")}
             </Typography>
           </CardContent>
         </Card>
@@ -75,7 +70,7 @@ export default function AboutPage() {
         <Card>
           <CardContent sx={{ p: { xs: 2.5, md: 4 } }}>
             <Typography variant="h6" component="h2" sx={{ mb: 1.5 }}>
-              Contact
+              {t("about.contact")}
             </Typography>
 
             <Stack gap={0.75}>
@@ -95,7 +90,7 @@ export default function AboutPage() {
               </Typography> */}
 
               <Typography variant="body2" color="text.secondary">
-                Email:{" "}
+                {t("about.email")}{" "}
                 <Link href="mailto:vkramar.biz@gmail.com">
                   vkramar.biz@gmail.com
                 </Link>

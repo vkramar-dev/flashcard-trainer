@@ -1,31 +1,37 @@
 import { Alert, AlertTitle, Box, Button, CircularProgress, Stack, Typography } from "@mui/material"
 import type { ReactNode } from "react"
+import { useTranslation } from "react-i18next"
+import { text } from "../i18n"
 
-export function LoadingState({ label = "Loading..." }: { label?: string }) {
+export function LoadingState({ label = "common.loading" }: { label?: string }) {
+  const { t } = useTranslation()
+
   return (
     <Stack alignItems="center" justifyContent="center" gap={2} sx={{ py: 8 }}>
       <CircularProgress />
       <Typography variant="body2" color="text.secondary">
-        {label}
+        {text(label) || t("common.loading")}
       </Typography>
     </Stack>
   )
 }
 
 export function ErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
+  const { t } = useTranslation()
+
   return (
     <Alert
       severity="error"
       action={
         onRetry ? (
           <Button color="inherit" size="small" onClick={onRetry}>
-            Retry
+            {t("common.retry")}
           </Button>
         ) : undefined
       }
     >
-      <AlertTitle>Something went wrong</AlertTitle>
-      {message}
+      <AlertTitle>{t("common.somethingWentWrong")}</AlertTitle>
+      {text(message)}
     </Alert>
   )
 }

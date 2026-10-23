@@ -2,6 +2,8 @@ import AddIcon from "@mui/icons-material/Add"
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline"
 import { Alert, Box, Button, Chip, Divider, IconButton, Paper, Stack, TextField, Typography } from "@mui/material"
 import { useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { text } from "../i18n"
 import { useNavigate, useParams } from "react-router-dom"
 import { ConfirmDialog } from "../components/ConfirmDialog"
 import { PageContainer } from "../components/PageContainer"
@@ -30,33 +32,26 @@ function frontFieldError(card: DraftCard): string | null {
   const front = card.front.trim()
   const back = card.back.trim()
   if (!front && !back) return null
-  if (!front) return "Enter a front value."
-  if (front.length > ProjectConstants.cardFrontMaxLength) {
-    return `Front text cannot be longer than ${ProjectConstants.cardFrontMaxLength} characters.`
-  }
+  if (!front) return "edit.frontRequired"
+  if (front.length > ProjectConstants.cardFrontMaxLength) return "edit.frontTooLong"
   return null
 }
 
 function backFieldError(card: DraftCard): string | null {
   const back = card.back.trim()
-  if (back.length > ProjectConstants.cardBackMaxLength) {
-    return `Back text cannot be longer than ${ProjectConstants.cardBackMaxLength} characters.`
-  }
+  if (back.length > ProjectConstants.cardBackMaxLength) return "edit.backTooLong"
   return null
 }
 
 function cardListError(cards: DraftCard[]): string | null {
-  if (cards.some((card) => !card.front.trim())) return "Every card needs a front value."
-  if (cards.some((card) => card.front.trim().length > ProjectConstants.cardFrontMaxLength)) {
-    return `Front text cannot be longer than ${ProjectConstants.cardFrontMaxLength} characters.`
-  }
-  if (cards.some((card) => card.back.trim().length > ProjectConstants.cardBackMaxLength)) {
-    return `Back text cannot be longer than ${ProjectConstants.cardBackMaxLength} characters.`
-  }
+  if (cards.some((card) => !card.front.trim())) return "edit.everyCardNeedsFront"
+  if (cards.some((card) => card.front.trim().length > ProjectConstants.cardFrontMaxLength)) return "edit.frontTooLong"
+  if (cards.some((card) => card.back.trim().length > ProjectConstants.cardBackMaxLength)) return "edit.backTooLong"
   return null
 }
 
 export default function EditSetPage() {
+  const { t } = useTranslation()
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const { setId: setIdParam } = useParams<{ setId: string }>()
@@ -123,10 +118,13 @@ export default function EditSetPage() {
 
   const nameError =
     name.trim().length === 0
-      ? "Please enter a name for this set."
+      ? "edit.nameRequired"
       : name.trim().length > ProjectConstants.setNameMaxLength
-        ? `Set name cannot be longer than ${ProjectConstants.setNameMaxLength} characters.`
+        ? "edit.nameTooLong"
         : null
+
+  const explain = (key: string | null, max = ProjectConstants.cardFrontMaxLength) =>
+    key ? t(key, { max }) : null
   const cardsError = cardListError(filledCards)
 
   const updateCard = (key: string, patch: Partial<Pick<DraftCard, "front" | "back">>) => {
@@ -184,16 +182,16 @@ export default function EditSetPage() {
 
   if (!isNew && status === "loading" && !selectedSet) {
     return (
-      <PageContainer title="Edit set" maxWidth="md">
-        <LoadingState label="Loading this set..." />
+      <PageContainer title={t("edit.titleEdit")} maxWidth="md">
+        <LoadingState label="edit.loading" />
       </PageContainer>
     )
   }
 
   if (!isNew && status === "failed" && !selectedSet) {
     return (
-      <PageContainer title="Edit set" maxWidth="md">
-        <ErrorState message={error ?? "Could not load this set."} onRetry={() => setId && dispatch(fetchSetAsync(setId))} />
+      <PageContainer title={t("edit.titleEdit")} maxWidth="md">
+        <ErrorState message={error ?? "errors.loadSet"} onRetry={() => setId && dispatch(fetchSetAsync(setId))} />
       </PageContainer>
     )
   }
@@ -203,28 +201,28 @@ export default function EditSetPage() {
   const formActions = (
     <Stack direction="row" gap={1.5}>
       <Button color="inherit" onClick={requestLeave} disabled={saving}>
-        Cancel
+        {t("common.cancel")}
       </Button>
       <Button variant="contained" onClick={handleSave} disabled={saving}>
-        {saving ? "Saving..." : "Save"}
+        {saving ? t("common.saving") : t("common.save")}
       </Button>
     </Stack>
   )
 
   return (
     <PageContainer
-      title={isNew ? "New set" : "Edit set"}
-      description="Cards are only stored once you save. Empty rows are ignored."
+      title={isNew ? t("edit.titleNew") : t("edit.titleEdit")}
+      description={t("edit.description")}
       maxWidth="md"
       actions={formActions}
     >
       <Stack gap={3}>
         <TextField
-          label="Set name"
+          label={t("edit.setName")}
           value={name}
           onChange={(event) => setName(event.target.value)}
           error={showErrors && Boolean(nameError)}
-          helperText={showErrors && nameError ? nameError : " "}
+          helperText={showErrors && nameError ? explain(nameError, ProjectConstants.setNameMaxLength) : " "}
           disabled={saving}
           fullWidth
           slotProps={{ htmlInput: { maxLength: ProjectConstants.setNameMaxLength } }}
@@ -234,12 +232,12 @@ export default function EditSetPage() {
           <Stack direction="row" alignItems="center" justifyContent="space-between" gap={2} sx={{ mb: 1.5 }}>
             <Stack direction="row" alignItems="center" gap={1.5}>
               <Typography variant="h6" component="h2">
-                Cards
+                {t("common.cards")}
               </Typography>
               <Chip label={filledCards.length} size="small" />
             </Stack>
             <Button startIcon={<AddIcon />} onClick={addCard} disabled={saving}>
-              Add card
+              {t("common.addCard")}
             </Button>
           </Stack>
 
@@ -262,11 +260,11 @@ export default function EditSetPage() {
                     {index + 1}
                   </Typography>
                   <TextField
-                    label="Front"
+                    label={t("common.front")}
                     value={card.front}
                     onChange={(event) => updateCard(card.key, { front: event.target.value })}
                     error={showErrors && Boolean(frontFieldError(card))}
-                    helperText={showErrors ? frontFieldError(card) ?? undefined : undefined}
+                    helperText={showErrors ? explain(frontFieldError(card)) ?? undefined : undefined}
                     disabled={saving}
                     fullWidth
                     size="small"
@@ -275,11 +273,15 @@ export default function EditSetPage() {
                     slotProps={{ htmlInput: { maxLength: ProjectConstants.cardFrontMaxLength } }}
                   />
                   <TextField
-                    label="Back"
+                    label={t("common.backSide")}
                     value={card.back}
                     onChange={(event) => updateCard(card.key, { back: event.target.value })}
                     error={showErrors && Boolean(backFieldError(card))}
-                    helperText={showErrors ? backFieldError(card) ?? undefined : undefined}
+                    helperText={
+                      showErrors
+                        ? explain(backFieldError(card), ProjectConstants.cardBackMaxLength) ?? undefined
+                        : undefined
+                    }
                     disabled={saving}
                     fullWidth
                     size="small"
@@ -288,7 +290,7 @@ export default function EditSetPage() {
                     slotProps={{ htmlInput: { maxLength: ProjectConstants.cardBackMaxLength } }}
                   />
                   <IconButton
-                    aria-label={`Remove card ${index + 1}`}
+                    aria-label={t("edit.removeCard", { number: index + 1 })}
                     onClick={() => removeCard(card.key)}
                     disabled={saving}
                     sx={{ alignSelf: { xs: "flex-end", sm: "center" } }}
@@ -302,18 +304,23 @@ export default function EditSetPage() {
 
           <Stack direction="row" justifyContent="flex-end" sx={{ mt: 1.5 }}>
             <Button startIcon={<AddIcon />} onClick={addCard} disabled={saving}>
-              Add card
+              {t("common.addCard")}
             </Button>
           </Stack>
 
           {showErrors && cardsError && (
             <Alert severity="error" sx={{ mt: 2 }}>
-              {cardsError}
+              {explain(
+                cardsError,
+                cardsError === "edit.backTooLong"
+                  ? ProjectConstants.cardBackMaxLength
+                  : ProjectConstants.cardFrontMaxLength,
+              )}
             </Alert>
           )}
         </Box>
 
-        {saveError && <Alert severity="error">{saveError}</Alert>}
+        {saveError && <Alert severity="error">{text(saveError)}</Alert>}
 
         <Stack direction="row" justifyContent="flex-end">
           {formActions}
@@ -322,9 +329,9 @@ export default function EditSetPage() {
 
       <ConfirmDialog
         open={leaveConfirmOpen}
-        title="Discard unsaved changes?"
-        description="You have edits on this set that have not been saved yet. Leaving now discards them."
-        confirmLabel="Discard"
+        title={t("edit.discardTitle")}
+        description={t("edit.discardDescription")}
+        confirmLabel="common.discard"
         destructive
         onCancel={() => setLeaveConfirmOpen(false)}
         onConfirm={() => {

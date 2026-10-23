@@ -1,20 +1,25 @@
 import MoreVertIcon from "@mui/icons-material/MoreVert"
 import { Box, Card, CardActionArea, Divider, IconButton, Menu, MenuItem, Stack, Typography } from "@mui/material"
 import { useState, type MouseEvent } from "react"
+import { useTranslation } from "react-i18next"
 import type { FullSetModel } from "../../types"
 import { formatDate } from "../../utils/date"
 
 export type SetTileAction = "start" | "view" | "edit" | "import" | "export" | "statistics" | "remove"
 
-const menuItems: Array<{ action: SetTileAction; label: string; destructive?: boolean }> = [
-  { action: "start", label: "Start" },
-  { action: "view", label: "View cards" },
-  { action: "edit", label: "Add/Edit" },
-  { action: "import", label: "Import" },
-  { action: "export", label: "Export" },
-  { action: "statistics", label: "Statistics" },
-  { action: "remove", label: "Remove", destructive: true },
+const menuItems: Array<{ action: SetTileAction; labelKey: string; destructive?: boolean }> = [
+  { action: "start", labelKey: "sets.start" },
+  { action: "view", labelKey: "sets.viewCards" },
+  { action: "edit", labelKey: "sets.addEdit" },
+  { action: "import", labelKey: "sets.import" },
+  { action: "export", labelKey: "sets.export" },
+  { action: "statistics", labelKey: "sets.statistics" },
+  { action: "remove", labelKey: "sets.remove", destructive: true },
 ]
+
+function shownDate(value: string, unknownLabel: string) {
+  return value === "unknown" ? unknownLabel : value
+}
 
 interface SetTileProps {
   set: FullSetModel
@@ -22,7 +27,9 @@ interface SetTileProps {
 }
 
 export function SetTile({ set, onAction }: SetTileProps) {
+  const { t } = useTranslation()
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
+  const unknown = t("common.unknown")
 
   const openMenu = (event: MouseEvent<HTMLElement>) => {
     event.stopPropagation()
@@ -56,7 +63,7 @@ export function SetTile({ set, onAction }: SetTileProps) {
     >
       <Box sx={{ position: "absolute", top: 6, right: 6, zIndex: 2 }}>
         <IconButton
-          aria-label={`Actions for ${set.name}`}
+          aria-label={t("sets.actionsFor", { name: set.name })}
           aria-haspopup="menu"
           aria-expanded={anchorEl ? true : undefined}
           onClick={openMenu}
@@ -68,7 +75,7 @@ export function SetTile({ set, onAction }: SetTileProps) {
 
       <CardActionArea
         onClick={() => onAction("start", set)}
-        aria-label={`Start training ${set.name}`}
+        aria-label={t("sets.startTraining", { name: set.name })}
         sx={{
           flex: 1,
           px: 3,
@@ -98,10 +105,10 @@ export function SetTile({ set, onAction }: SetTileProps) {
       <Stack direction="row" alignItems="flex-end" justifyContent="space-between" gap={1} sx={{ px: 2, py: 1.25 }}>
         <Box>
           <Typography variant="caption" color="text.secondary" display="block">
-            Modified: {formatDate(set.modified)}
+            {t("sets.modified", { date: shownDate(formatDate(set.modified), unknown) })}
           </Typography>
           <Typography variant="caption" color="text.secondary" display="block">
-            Last trained: {formatDate(set.lastTrained)}
+            {t("sets.lastTrained", { date: shownDate(formatDate(set.lastTrained), unknown) })}
           </Typography>
         </Box>
       </Stack>
@@ -120,7 +127,7 @@ export function SetTile({ set, onAction }: SetTileProps) {
               onClick={() => handleSelect(item.action)}
               sx={item.destructive ? { color: "error.main" } : undefined}
             >
-              {item.label}
+              {t(item.labelKey)}
             </MenuItem>
           )
           return item.destructive ? [<Divider key={`${item.action}-divider`} />, menuItem] : [menuItem]

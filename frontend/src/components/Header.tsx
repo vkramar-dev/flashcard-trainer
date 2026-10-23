@@ -17,7 +17,9 @@ import {
   useTheme,
 } from "@mui/material";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { LanguagePicker } from "./LanguagePicker";
 import { openAuthDialog, signOut } from "../features/auth/authSlice";
 import { cleanTrainingSlice } from "../features/training/trainingSlice";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
@@ -27,10 +29,10 @@ import { cleanSetsSlice } from "@/features/sets/setsSlice";
 import { cleanStatisticsSlice } from "@/features/statistics/statisticsSlice";
 
 const navItems = [
-  { label: "Home", to: "/" },
-  { label: "Statistics", to: "/statistics" },
-  { label: "Settings", to: "/settings" },
-  { label: "About", to: "/about" },
+  { labelKey: "nav.home", to: "/" },
+  { labelKey: "nav.statistics", to: "/statistics" },
+  { labelKey: "nav.settings", to: "/settings" },
+  { labelKey: "nav.about", to: "/about" },
 ];
 
 export function Header() {
@@ -40,6 +42,7 @@ export function Header() {
   const theme = useTheme();
   const isCompact = useMediaQuery(theme.breakpoints.down("md"));
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const { t } = useTranslation();
 
   const { isAuthenticated, user } = useAppSelector((state) => state.auth);
 
@@ -70,7 +73,7 @@ export function Header() {
         </Typography>
       )}
       <Button color="inherit" size="small" onClick={() => performSignOut()}>
-        Sign Out
+        {t("nav.signOut")}
       </Button>
     </Stack>
   ) : (
@@ -80,14 +83,14 @@ export function Header() {
         variant="outlined"
         onClick={() => dispatch(openAuthDialog("signUp"))}
       >
-        Sign Up
+        {t("nav.signUp")}
       </Button>
       <Button
         color="inherit"
         variant="outlined"
         onClick={() => dispatch(openAuthDialog("signIn"))}
       >
-        Sign In
+        {t("nav.signIn")}
       </Button>
     </>
   );
@@ -130,29 +133,32 @@ export function Header() {
               component="span"
               sx={{ letterSpacing: "-0.01em" }}
             >
-              Flashcard Trainer
+              {t("app.name")}
             </Typography>
           </Stack>
 
           {isCompact ? (
-            <>
+            <Stack direction="row" alignItems="center">
+              <LanguagePicker />
               {!isAuthenticated && (
                 <Button
                   variant="outlined"
                   size="small"
                   onClick={() => dispatch(openAuthDialog("signIn"))}
+                  sx={{ ml: "30px" }}
                 >
-                  Sign In
+                  {t("nav.signIn")}
                 </Button>
               )}
               <IconButton
                 edge="end"
-                aria-label="Open navigation menu"
+                aria-label={t("nav.openMenu")}
                 onClick={() => setDrawerOpen(true)}
+                sx={{ ml: 2 }}
               >
                 <MenuIcon />
               </IconButton>
-            </>
+            </Stack>
           ) : (
             <>
               {/* Absolutely centered so the nav stays in the middle of the toolbar
@@ -161,7 +167,7 @@ export function Header() {
                 component="nav"
                 direction="row"
                 gap={0.5}
-                aria-label="Main navigation"
+                aria-label={t("nav.main")}
                 sx={{
                   position: "absolute",
                   left: "50%",
@@ -180,7 +186,7 @@ export function Header() {
                       sx={{ fontWeight: active ? 700 : 500 }}
                       aria-current={active ? "page" : undefined}
                     >
-                      {item.label}
+                      {t(item.labelKey)}
                     </Button>
                   );
                 })}
@@ -189,10 +195,12 @@ export function Header() {
                 direction="row"
                 alignItems="center"
                 justifyContent="flex-end"
-                gap={2}
                 sx={{ flex: "1 1 0", minWidth: 0 }}
               >
-                {authButtons}
+                <LanguagePicker />
+                <Stack direction="row" alignItems="center" gap={1.5} sx={{ ml: "30px" }}>
+                  {authButtons}
+                </Stack>
               </Stack>
             </>
           )}
@@ -201,7 +209,7 @@ export function Header() {
 
       <Drawer anchor="right" open={drawerOpen} onClose={closeDrawer}>
         <Box sx={{ width: 260, pt: 1 }} role="presentation">
-          <List component="nav" aria-label="Main navigation">
+          <List component="nav" aria-label={t("nav.main")}>
             {navItems.map((item) => (
               <ListItemButton
                 key={item.to}
@@ -211,7 +219,7 @@ export function Header() {
                   closeDrawer();
                 }}
               >
-                <ListItemText primary={item.label} />
+                <ListItemText primary={t(item.labelKey)} />
               </ListItemButton>
             ))}
           </List>
@@ -232,7 +240,7 @@ export function Header() {
                     closeDrawer();
                   }}
                 >
-                  Sign Out
+                  {t("nav.signOut")}
                 </Button>
               </Stack>
             ) : (
@@ -245,7 +253,7 @@ export function Header() {
                     closeDrawer();
                   }}
                 >
-                  Sign In
+                  {t("nav.signIn")}
                 </Button>
                 <Button
                   fullWidth
@@ -255,7 +263,7 @@ export function Header() {
                     closeDrawer();
                   }}
                 >
-                  Sign Up
+                  {t("nav.signUp")}
                 </Button>
               </Stack>
             )}

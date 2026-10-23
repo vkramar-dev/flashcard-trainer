@@ -44,7 +44,7 @@ export const updateColorSchemeAsync = createAsyncThunk<void, ColorSchemeName, { 
       await settingsApi.update(colorScheme)
       AppStorage.cacheScheme(colorScheme)
     } catch (error) {
-      return rejectWithValue(toErrorMessage(error, "Could not save your color scheme."))
+      return rejectWithValue(toErrorMessage(error, "errors.saveScheme"))
     }
   },
 )
@@ -55,7 +55,7 @@ export const updateHideKnownCardsAsync = createAsyncThunk<void, boolean, { rejec
     try {
       await settingsApi.updateHideKnownCards(hide)
     } catch (error) {
-      return rejectWithValue(toErrorMessage(error, "Could not save your training preferences."))
+      return rejectWithValue(toErrorMessage(error, "errors.savePreferences"))
     }
   },
 )
@@ -66,7 +66,7 @@ export const updateMaxCardsPerTrainingSessionAsync = createAsyncThunk<void, numb
     try {
       await settingsApi.updateMaxCardsPerTrainingSession(maxCards)
     } catch (error) {
-      return rejectWithValue(toErrorMessage(error, "Could not save your training session limit."))
+      return rejectWithValue(toErrorMessage(error, "errors.saveSessionLimit"))
     }
   },
 )
@@ -101,7 +101,7 @@ const settingsSlice = createSlice({
         state.maxCardsPerTrainingSession = action.meta.arg
       })
       .addCase(updateMaxCardsPerTrainingSessionAsync.rejected, (state, action) => {
-        state.error = action.payload ?? "Could not save your training session limit."
+        state.error = action.payload ?? "errors.saveSessionLimit"
       })
       .addCase(updateColorSchemeAsync.pending, (state, action) => {
         // Applied straight away so switching schemes feels instant.
@@ -114,7 +114,7 @@ const settingsSlice = createSlice({
         // state.availableColorSchemes = action.payload.availableColorSchemes
       })
       .addCase(updateColorSchemeAsync.rejected, (state, action) => {
-        state.error = action.payload ?? "Could not save your color scheme."
+        state.error = action.payload ?? "errors.saveScheme"
       })
 
       .addCase(updateHideKnownCardsAsync.pending, (state) => {
@@ -125,7 +125,7 @@ const settingsSlice = createSlice({
         state.hideKnownCards = action.meta.arg
       })
       .addCase(updateHideKnownCardsAsync.rejected, (state, action) => {
-        state.error = action.payload ?? "Could not save your settings."
+        state.error = action.payload ?? "errors.saveSettings"
       })
   },
 })

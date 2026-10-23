@@ -40,7 +40,7 @@ export const startTrainingAsync = createAsyncThunk<CardData[], { userName: strin
       const cards = await trainingApi.start(setId, shouldHide)
 
       if (cards.length === 0) {
-        return rejectWithValue("This set has no cards yet. Add some cards before training.")
+        return rejectWithValue("errors.noCards")
       }
 
       AppStorage.setTrainingProgressNoException({
@@ -54,7 +54,7 @@ export const startTrainingAsync = createAsyncThunk<CardData[], { userName: strin
 
       return cards
     } catch (error) {
-      return rejectWithValue(toErrorMessage(error, "Could not start training for this set."))
+      return rejectWithValue(toErrorMessage(error, "errors.startTraining"))
     }
   },
 )
@@ -83,7 +83,7 @@ export const updateTrainingCardAsync = createAsyncThunk<
       }
       return updated
     } catch (error) {
-      return rejectWithValue(toErrorMessage(error, "Could not save this card."))
+      return rejectWithValue(toErrorMessage(error, "errors.saveCard"))
     }
   },
 )
@@ -94,7 +94,7 @@ export const answerAsync = createAsyncThunk<void, { cardId: number; isKnown: boo
     try {
       await trainingApi.answer(cardId, isKnown)
     } catch (error) {
-      return rejectWithValue(toErrorMessage(error, `Could not answer the card ${cardId}.`))
+      return rejectWithValue(toErrorMessage(error, "errors.answerCard"))
     }
   },
 )
@@ -148,7 +148,7 @@ const trainingSlice = createSlice({
       })
       .addCase(startTrainingAsync.rejected, (state, action) => {
         state.status = "failed"
-        state.error = action.payload ?? "Could not start training."
+        state.error = action.payload ?? "errors.startTraining"
       })
 
       builder
@@ -170,7 +170,7 @@ const trainingSlice = createSlice({
       })
       .addCase(answerAsync.rejected, (state, action) => {
         state.status = state.cards.length > 0 ? "succeeded" : "failed"
-        state.error = action.payload ?? "Could not answer the card."
+        state.error = action.payload ?? "errors.answerCard"
       })
       .addCase(updateTrainingCardAsync.fulfilled, (state, action) => {
         const updated = action.payload

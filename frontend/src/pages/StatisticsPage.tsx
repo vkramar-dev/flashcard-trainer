@@ -14,6 +14,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import InsightsOutlinedIcon from "@mui/icons-material/InsightsOutlined";
 import { useSearchParams } from "react-router-dom";
 import { PageContainer } from "../components/PageContainer";
@@ -47,6 +48,7 @@ function SetStatisticsCard({
   stats: SetStatisticsModel;
   highlighted: boolean;
 }) {
+  const { t } = useTranslation();
   const percent =
     stats.totalCards > 0
       ? Math.round((stats.learntCards / stats.totalCards) * 100)
@@ -77,7 +79,7 @@ function SetStatisticsCard({
             {stats.setName}
           </Typography>
           <Chip
-            label={`${percent}% learnt`}
+            label={t("statistics.learntPercent", { percent })}
             color={percent === 100 ? "success" : "default"}
             size="small"
           />
@@ -86,7 +88,7 @@ function SetStatisticsCard({
         <LinearProgress
           variant="determinate"
           value={percent}
-          aria-label={`${stats.setName} progress`}
+          aria-label={t("statistics.progressAria", { name: stats.setName })}
           sx={{ height: 8, borderRadius: 4, mb: 3 }}
         />
 
@@ -96,29 +98,27 @@ function SetStatisticsCard({
           gap={4}
           sx={{ mb: stats.hardestCards.length > 0 ? 3 : 0 }}
         >
-          <Metric label="Cards in set" value={stats.totalCards} />
-          <Metric label="Cards learnt" value={stats.learntCards} />
-          <Metric label="Total cards shown" value={stats.totalCardsShown} />
+          <Metric label={t("statistics.cardsInSet")} value={stats.totalCards} />
+          <Metric label={t("statistics.cardsLearnt")} value={stats.learntCards} />
+          <Metric label={t("statistics.cardsShown")} value={stats.totalCardsShown} />
         </Stack>
 
         {stats.hardestCards.length > 0 && (
           <>
             <Divider sx={{ mb: 2 }} />
             <Typography variant="subtitle1" component="h3" sx={{ mb: 1 }}>
-              Hardest cards
+              {t("statistics.hardest")}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-              {
-                'Ranked by how often you answered "I don\'t know" relative to how often the card was shown.'
-              }
+              {t("statistics.hardestHelp")}
             </Typography>
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell>Side A</TableCell>
-                  <TableCell>Side B</TableCell>
-                  <TableCell align="right">Missed</TableCell>
-                  <TableCell align="right">Miss rate</TableCell>
+                  <TableCell>{t("statistics.sideA")}</TableCell>
+                  <TableCell>{t("statistics.sideB")}</TableCell>
+                  <TableCell align="right">{t("statistics.missed")}</TableCell>
+                  <TableCell align="right">{t("statistics.missRate")}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -157,6 +157,7 @@ function SetStatisticsCard({
 }
 
 export default function StatisticsPage() {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const [searchParams] = useSearchParams();
   const { bySet, status, error } = useAppSelector((state) => state.statistics);
@@ -195,18 +196,18 @@ export default function StatisticsPage() {
   if (!isAuthenticated) {
     return (
       <PageContainer
-        title="Statistics"
-        description="See how your training is progressing."
+        title={t("statistics.title")}
+        description={t("statistics.signedOutDescription")}
         maxWidth="md"
       >
         {sessionChecked ? (
           <SignedOutNotice
             icon={<InsightsOutlinedIcon />}
-            title="Sign in to see your progress"
-            description="Your training statistics are saved with your account."
+            title={t("statistics.signedOutTitle")}
+            description={t("statistics.signedOutBody")}
           />
         ) : (
-          <LoadingState label="Checking your session..." />
+          <LoadingState label="home.checkingSession" />
         )}
       </PageContainer>
     );
@@ -214,25 +215,25 @@ export default function StatisticsPage() {
 
   return (
     <PageContainer
-      title="Statistics"
-      description="Progress for every set, including how often each card has been shown and which ones you miss most."
+      title={t("statistics.title")}
+      description={t("statistics.description")}
       maxWidth="md"
     >
       {status === "loading" && bySet.length === 0 && (
-        <LoadingState label="Loading your statistics..." />
+        <LoadingState label="statistics.loading" />
       )}
 
       {status === "failed" && bySet.length === 0 && (
         <ErrorState
-          message={error ?? "Could not load your statistics."}
+          message={error ?? "statistics.couldNotLoad"}
           onRetry={() => dispatch(fetchStatisticsAsync())}
         />
       )}
 
       {status === "succeeded" && bySet.length === 0 && (
         <EmptyState
-          title="No statistics yet"
-          description="Once you create a set and train with it, your progress will show up here."
+          title={t("statistics.emptyTitle")}
+          description={t("statistics.emptyDescription")}
         />
       )}
 

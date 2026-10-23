@@ -27,7 +27,7 @@ interface SetsState {
   saveError: string | null
   /** Id of the set whose import dialog is open, if any. */
   importSetId: number | null
-  notice: string | null
+  notice: { key: string; count?: number } | null
   storage: StorageUsageModel | null
 }
 
@@ -55,7 +55,7 @@ export const loadAppStateAsync = createAsyncThunk<void, void, { rejectValue: str
       }
       AppStorage.cacheScheme(data.settings.colorScheme as ColorSchemeName)
     } catch (error) {
-      return rejectWithValue(toErrorMessage(error, "Could not load your account."))
+      return rejectWithValue(toErrorMessage(error, "errors.loadAccount"))
     }
   },
 )
@@ -66,7 +66,7 @@ export const fetchSetsAsync = createAsyncThunk<FullSetModel[], void, { rejectVal
     try {
       return await setsApi.fetchAll()
     } catch (error) {
-      return rejectWithValue(toErrorMessage(error, "Could not load your flashcard sets."))
+      return rejectWithValue(toErrorMessage(error, "errors.loadSets"))
     }
   },
 )
@@ -77,7 +77,7 @@ export const fetchSetAsync = createAsyncThunk<SetWithCardsModel, number, { rejec
     try {
       return await setsApi.fetchOne(setId)
     } catch (error) {
-      return rejectWithValue(toErrorMessage(error, "Could not load this flashcard set."))
+      return rejectWithValue(toErrorMessage(error, "errors.loadSet"))
     }
   },
 )
@@ -90,7 +90,7 @@ export const createSetAsync = createAsyncThunk<FullSetModel, SetWithCardsModel, 
       void dispatch(refreshStorageAsync())
       return created
     } catch (error) {
-      return rejectWithValue(toErrorMessage(error, "Could not create the set."))
+      return rejectWithValue(toErrorMessage(error, "errors.createSet"))
     }
   },
 )
@@ -103,7 +103,7 @@ export const updateSetAsync = createAsyncThunk<FullSetModel, SetWithCardsModel, 
       void dispatch(refreshStorageAsync())
       return updated
     } catch (error) {
-      return rejectWithValue(toErrorMessage(error, "Could not update the set."))
+      return rejectWithValue(toErrorMessage(error, "errors.updateSet"))
     }
   },
 )
@@ -115,7 +115,7 @@ export const deleteSetAsync = createAsyncThunk<void, number, { rejectValue: stri
       await setsApi.delete(setId)
       void dispatch(refreshStorageAsync())
     } catch (error) {
-      return rejectWithValue(toErrorMessage(error, "Could not remove the set."))
+      return rejectWithValue(toErrorMessage(error, "errors.removeSet"))
     }
   },
 )
@@ -128,7 +128,7 @@ export const importCardsAsync = createAsyncThunk<ImportResultModel, ImportPayloa
       void dispatch(refreshStorageAsync())
       return imported
     } catch (error) {
-      return rejectWithValue(toErrorMessage(error, "Could not import the cards."))
+      return rejectWithValue(toErrorMessage(error, "errors.importCards"))
     }
   },
 )
@@ -139,7 +139,7 @@ export const refreshStorageAsync = createAsyncThunk<StorageUsageModel, void, { r
     try {
       return await appApi.getStorage()
     } catch (error) {
-      return rejectWithValue(toErrorMessage(error, "Could not refresh storage usage."))
+      return rejectWithValue(toErrorMessage(error, "errors.refreshStorage"))
     }
   },
 )
@@ -150,7 +150,7 @@ export const exportSetAsync = createAsyncThunk<ExportDataModel, number, { reject
     try {
       return await setsApi.exportSet(setId)
     } catch (error) {
-      return rejectWithValue(toErrorMessage(error, "Could not export the set."))
+      return rejectWithValue(toErrorMessage(error, "errors.exportSet"))
     }
   },
 )
@@ -232,7 +232,7 @@ const setsSlice = createSlice({
       })
       .addCase(loadAppStateAsync.rejected, (state, action) => {
         state.status = "failed"
-        state.error = action.payload ?? "Could not load your account."
+        state.error = action.payload ?? "errors.loadAccount"
       })
       .addCase(fetchSetsAsync.pending, (state) => {
         state.status = "loading"
@@ -244,7 +244,7 @@ const setsSlice = createSlice({
       })
       .addCase(fetchSetsAsync.rejected, (state, action) => {
         state.status = "failed"
-        state.error = action.payload ?? "Could not load your flashcard sets."
+        state.error = action.payload ?? "errors.loadSets"
       })
 
       .addCase(fetchSetAsync.pending, (state) => {
@@ -258,7 +258,7 @@ const setsSlice = createSlice({
       })
       .addCase(fetchSetAsync.rejected, (state, action) => {
         state.status = "failed"
-        state.error = action.payload ?? "Could not load this flashcard set."
+        state.error = action.payload ?? "errors.loadSet"
       })
 
       .addCase(createSetAsync.pending, (state) => {
@@ -279,11 +279,11 @@ const setsSlice = createSlice({
         if (!isFound) {
           state.items = state.items.concat(action.payload)
         }
-        state.notice = "Set saved."
+        state.notice = { key: "notices.setSaved" }
       })
       .addCase(createSetAsync.rejected, (state, action) => {
         state.saveStatus = "failed"
-        state.saveError = action.payload ?? "Could not create the set."
+        state.saveError = action.payload ?? "errors.createSet"
       })
 
       .addCase(updateSetAsync.pending, (state) => {
@@ -305,11 +305,11 @@ const setsSlice = createSlice({
         if (!isFound) {
           state.items = state.items.concat(action.payload)
         }
-        state.notice = "Changes saved."
+        state.notice = { key: "notices.changesSaved" }
       })
       .addCase(updateSetAsync.rejected, (state, action) => {
         state.saveStatus = "failed"
-        state.saveError = action.payload ?? "Could not save the set."
+        state.saveError = action.payload ?? "errors.saveSet"
       })
 
       .addCase(deleteSetAsync.pending, (state) => {
@@ -319,11 +319,11 @@ const setsSlice = createSlice({
       .addCase(deleteSetAsync.fulfilled, (state, action) => {
         state.saveStatus = "succeeded"
         state.items = state.items.filter((item) => item.id !== action.meta.arg)
-        state.notice = "Set removed."
+        state.notice = { key: "notices.setRemoved" }
       })
       .addCase(deleteSetAsync.rejected, (state, action) => {
         state.saveStatus = "failed"
-        state.saveError = action.payload ?? "Could not remove the set."
+        state.saveError = action.payload ?? "errors.removeSet"
       })
 
       .addCase(importCardsAsync.pending, (state) => {
@@ -334,15 +334,15 @@ const setsSlice = createSlice({
         state.saveStatus = "succeeded"
         state.items = upsertSummary(state.items, toSummary(action.payload.set))
         state.importSetId = null
-        state.notice = `Imported ${action.payload.imported} card${action.payload.imported === 1 ? "" : "s"}.`
+        state.notice = { key: "notices.imported", count: action.payload.imported }
       })
       .addCase(importCardsAsync.rejected, (state, action) => {
         state.saveStatus = "failed"
-        state.saveError = action.payload ?? "Could not import the cards."
+        state.saveError = action.payload ?? "errors.importCards"
       })
 
       .addCase(exportSetAsync.rejected, (state, action) => {
-        state.saveError = action.payload ?? "Could not export the set."
+        state.saveError = action.payload ?? "errors.exportSet"
       })
       .addCase(refreshStorageAsync.fulfilled, (state, action) => {
         state.storage = action.payload

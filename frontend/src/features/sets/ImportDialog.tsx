@@ -16,8 +16,15 @@ import {
   Typography,
 } from "@mui/material"
 import { useEffect, useRef, useState, type ChangeEvent } from "react"
+import { useTranslation } from "react-i18next"
+import { text } from "../../i18n"
 import type { ImportMode, FullSetModel } from "../../types"
 import { CsvParseError, parseCardsCsv, type CsvCard } from "../../utils/csv"
+
+interface FileError {
+  key: string
+  values?: Record<string, string | number>
+}
 
 interface ImportDialogProps {
   set: FullSetModel | null
@@ -28,11 +35,12 @@ interface ImportDialogProps {
 }
 
 export function ImportDialog({ set, submitting, serverError, onClose, onConfirm }: ImportDialogProps) {
+  const { t } = useTranslation()
   const inputRef = useRef<HTMLInputElement>(null)
   const [mode, setMode] = useState<ImportMode>("append")
   const [fileName, setFileName] = useState<string | null>(null)
   const [cards, setCards] = useState<CsvCard[] | null>(null)
-  const [fileError, setFileError] = useState<string | null>(null)
+  const [fileError, setFileError] = useState<FileError | null>(null)
 
   const open = set !== null
 
@@ -61,20 +69,24 @@ export function ImportDialog({ set, submitting, serverError, onClose, onConfirm 
       setCards(parsed)
     } catch (error) {
       setFileError(
-        error instanceof CsvParseError ? error.message : "The file could not be read. Please choose a valid CSV file.",
+        error instanceof CsvParseError
+          ? { key: error.message, values: error.values }
+          : { key: "import.unreadable" },
       )
     }
   }
 
   return (
     <Dialog open={open} onClose={submitting ? undefined : onClose} fullWidth maxWidth="sm">
-      <DialogTitle>Import cards{set ? ` into ${set.name}` : ""}</DialogTitle>
+      <DialogTitle>
+        {set ? t("import.title", { name: set.name }) : t("import.titlePlain")}
+      </DialogTitle>
       <DialogContent dividers>
         <Stack gap={3}>
           <Typography variant="body2" color="text.secondary">
-            {'Choose a CSV file with one card per row: the first column is the front, the second is the back. The back can be empty. Example: '}
+            {t("import.help")}{" "}
             <Box component="code" sx={{ fontFamily: "monospace" }}>
-              {'Haus,house'}
+              {"Haus,house"}
             </Box>
           </Typography>
 
@@ -85,7 +97,7 @@ export function ImportDialog({ set, submitting, serverError, onClose, onConfirm 
               onClick={() => inputRef.current?.click()}
               disabled={submitting}
             >
-              Choose CSV file
+              {t("import.chooseFile")}
             </Button>
             <input
               ref={inputRef}
@@ -99,38 +111,40 @@ export function ImportDialog({ set, submitting, serverError, onClose, onConfirm 
             {fileName && (
               <Typography variant="body2" sx={{ mt: 1.5, overflowWrap: "anywhere" }}>
                 {fileName}
-                {cards ? ` — ${cards.length} card${cards.length === 1 ? "" : "s"} ready to import` : ""}
+                {cards ? ` ${t("import.ready", { count: cards.length })}` : ""}
               </Typography>
             )}
           </Box>
 
           <FormControl disabled={submitting}>
-            <FormLabel id="import-mode-label">How should the cards be added?</FormLabel>
+            <FormLabel id="import-mode-label">{t("import.how")}</FormLabel>
             <RadioGroup
               aria-labelledby="import-mode-label"
               value={mode}
               onChange={(event) => setMode(event.target.value as ImportMode)}
             >
-              <FormControlLabel value="append" control={<Radio />} label="Append to the existing cards" />
-              <FormControlLabel value="replace" control={<Radio />} label="Replace all existing cards" />
+              <FormControlLabel value="append" control={<Radio />} label={t("import.append")} />
+              <FormControlLabel value="replace" control={<Radio />} label={t("import.replace")} />
             </RadioGroup>
           </FormControl>
 
           {mode === "replace" && cards && (
             <Alert severity="warning">
-              {`All ${set?.totalCards ?? 0} existing card${
-                (set?.totalCards ?? 0) === 1 ? "" : "s"
-              } in this set will be deleted, along with their learning progress.`}
+              {t("import.replaceWarning", { count: set?.totalCards ?? 0 })}
             </Alert>
           )}
 
-          {fileError && <Alert severity="error">{fileError}</Alert>}
-          {serverError && <Alert severity="error">{serverError}</Alert>}
+          {fileError && (
+            <Alert severity="error">
+              {t(fileError.key, { count: Number(fileError.values?.count ?? 0), ...fileError.values })}
+            </Alert>
+          )}
+          {serverError && <Alert severity="error">{text(serverError)}</Alert>}
         </Stack>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="inherit" disabled={submitting}>
-          Cancel
+          {t("common.cancel")}
         </Button>
         <Button
           variant="contained"
@@ -138,7 +152,7 @@ export function ImportDialog({ set, submitting, serverError, onClose, onConfirm 
           disabled={!cards || submitting}
           color={mode === "replace" ? "error" : "primary"}
         >
-          {submitting ? "Importing..." : "Import"}
+          {submitting ? t("import.importing") : t("import.import")}
         </Button>
       </DialogActions>
     </Dialog>

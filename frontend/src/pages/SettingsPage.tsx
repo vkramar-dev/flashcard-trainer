@@ -11,6 +11,8 @@ import {
   Switch,
   Typography,
 } from "@mui/material";
+import { useTranslation } from "react-i18next";
+import { text } from "../i18n";
 import { PageContainer } from "../components/PageContainer";
 import { LoadingState } from "../components/StateViews";
 import { SignedOutNotice } from "../features/auth/SignedOutNotice";
@@ -21,7 +23,7 @@ import {
   updateMaxCardsPerTrainingSessionAsync,
 } from "../features/settings/settingsSlice";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { colorSchemeLabels, colorSchemes } from "../theme";
+import { colorSchemes } from "../theme";
 import type { ColorSchemeName } from "../types";
 
 function SchemeSwatch({ scheme }: { scheme: ColorSchemeName }) {
@@ -49,6 +51,7 @@ function SchemeSwatch({ scheme }: { scheme: ColorSchemeName }) {
 }
 
 export default function SettingsPage() {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
   const { colorScheme, availableColorSchemes, error, hideKnownCards, maxCardsPerTrainingSession } =
@@ -61,18 +64,18 @@ export default function SettingsPage() {
   if (!isAuthenticated) {
     return (
       <PageContainer
-        title="Settings"
-        description="Manage your training preferences."
+        title={t("settings.title")}
+        description={t("settings.description")}
         maxWidth="md"
       >
         {sessionChecked ? (
           <SignedOutNotice
             icon={<SettingsOutlinedIcon />}
-            title="Sign in to manage settings"
-            description="Your preferences are saved with your account and follow you across devices."
+            title={t("settings.signedOutTitle")}
+            description={t("settings.signedOutBody")}
           />
         ) : (
-          <LoadingState label="Checking your session..." />
+          <LoadingState label="home.checkingSession" />
         )}
       </PageContainer>
     );
@@ -86,7 +89,7 @@ export default function SettingsPage() {
             severity="error"
             onClose={() => dispatch(clearSettingsError())}
           >
-            {error}
+            {text(error)}
           </Alert>
         )}
 
@@ -102,14 +105,14 @@ export default function SettingsPage() {
               }}
             >
               <Box>
-                <Typography variant="subtitle1">Hide learned words</Typography>
+                <Typography variant="subtitle1">{t("settings.hideLearned")}</Typography>
 
                 <Typography
                   variant="body2"
                   color="text.secondary"
                   sx={{ mt: 0.25 }}
                 >
-                  Exclude learned words from future training sessions.
+                  {t("settings.hideLearnedHelp")}
                 </Typography>
               </Box>
 
@@ -125,32 +128,32 @@ export default function SettingsPage() {
 
         <Card variant="outlined" sx={{ p: 2.5, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 3, flexWrap: "wrap" }}>
           <Box>
-            <Typography variant="subtitle1">Maximum cards per training session</Typography>
+            <Typography variant="subtitle1">{t("settings.maxCards")}</Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
-              Limit the number of cards in new sessions.
+              {t("settings.maxCardsHelp")}
             </Typography>
           </Box>
           <TextField
             select
-            SelectProps={{ inputProps: { "aria-label": "Cards per session" } }}
+            SelectProps={{ inputProps: { "aria-label": t("settings.cardsPerSession") } }}
             value={maxCardsPerTrainingSession}
             onChange={(event) => dispatch(updateMaxCardsPerTrainingSessionAsync(Number(event.target.value)))}
             sx={{ width: 90, ml: "auto" }}
           >
             {[10, 20, 50, 100, 200, 0].map((value) => (
-              <MenuItem key={value} value={value}>{value === 0 ? "All" : value}</MenuItem>
+              <MenuItem key={value} value={value}>{value === 0 ? t("common.all") : value}</MenuItem>
             ))}
           </TextField>
         </Card>
 
         <Box>
           <Typography variant="h5" sx={{ mb: 1.6 }}>
-            Color Settings
+            {t("settings.colorSettings")}
           </Typography>
 
           <Box
             role="radiogroup"
-            aria-label="Color scheme"
+            aria-label={t("settings.colorScheme")}
             sx={{
               display: "grid",
               gap: 2,
@@ -189,7 +192,7 @@ export default function SettingsPage() {
                         <SchemeSwatch scheme={scheme} />
 
                         <Typography variant="subtitle1" component="p">
-                          {colorSchemeLabels[scheme]}
+                          {t(`themes.${scheme}`)}
                         </Typography>
                       </Stack>
 
