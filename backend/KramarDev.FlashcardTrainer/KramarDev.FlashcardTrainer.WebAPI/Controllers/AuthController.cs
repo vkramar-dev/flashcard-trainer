@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -68,8 +67,6 @@ public sealed class AuthController(IAuthService authService) : BaseController
 
         if (user == null)
             return Unauthorized();
-
-        user.Token = await HttpContext.GetTokenAsync("access_token");
 
         return user;
     }

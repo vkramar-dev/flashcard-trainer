@@ -38,10 +38,8 @@ public sealed class AuthService(
         if (user == null)
             return null;
 
-        return new AuthResponseModel
-        {
-            Email = user.Email
-        };
+        // A still-valid token is replaced, so the session runs for another day from this visit.
+        return await CreateUserModelAsync(user);
     }
 
     public async Task<AuthResponseModel> LoginAsync(AuthModel login)

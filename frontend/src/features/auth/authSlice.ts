@@ -88,7 +88,9 @@ export const restoreSessionAsync = createAsyncThunk<AuthResponseModel | null, vo
     if (!AppStorage.getAuthToken()) return null;
 
     try {
-      return await authApi.currentUser();
+      const user = await authApi.currentUser();
+      if (user.token) AppStorage.setAuthToken(user.token);
+      return user;
     } catch {
       AppStorage.setAuthToken(null);
       return null;
