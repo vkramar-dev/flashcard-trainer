@@ -72,6 +72,8 @@ export default function EditSetPage() {
   /** Snapshot of the loaded state, used to detect unsaved changes. */
   const baseline = useRef<string>("")
   const savedRef = useRef(false)
+  /** Key of a card row that should be scrolled into view after it is rendered. */
+  const [addedCardKey, setAddedCardKey] = useState<string | null>(null)
 
   const snapshot = (currentName: string, currentCards: DraftCard[]) =>
     JSON.stringify({
@@ -139,7 +141,20 @@ export default function EditSetPage() {
     })
   }
 
-  const addCard = () => setCards((current) => [...current, emptyCard()])
+  const addCard = () => {
+    const card = emptyCard()
+    setAddedCardKey(card.key)
+    setCards((current) => [...current, card])
+  }
+
+  useEffect(() => {
+    if (!addedCardKey) return
+    const row = document.getElementById(`draft-card-${addedCardKey}`)
+    if (!row) return
+    row.scrollIntoView({ behavior: "smooth", block: "center" })
+    row.querySelector<HTMLTextAreaElement>("textarea")?.focus({ preventScroll: true })
+    setAddedCardKey(null)
+  }, [addedCardKey])
 
   const handleSave = async () => {
     setShowErrors(true)
@@ -233,6 +248,7 @@ export default function EditSetPage() {
               {cards.map((card, index) => (
                 <Stack
                   key={card.key}
+                  id={`draft-card-${card.key}`}
                   direction={{ xs: "column", sm: "row" }}
                   gap={2}
                   alignItems={{ xs: "stretch", sm: "flex-start" }}
