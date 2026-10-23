@@ -16,4 +16,6 @@ public interface ISetsService
     Task<ExportDataModel> ExportAsync(string userName, int setId, CT cancellationToken);
 
     Task<CardModel> UpdateCardSideAsync(string userName, int cardId, UpdateCardSideModel model, CT cancellationToken);
+
+    Task<StorageUsageModel> GetStorageUsageAsync(string userName, CT cancellationToken);
 }

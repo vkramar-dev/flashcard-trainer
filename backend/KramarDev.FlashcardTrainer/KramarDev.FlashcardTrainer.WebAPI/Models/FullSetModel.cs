@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace KramarDev.FlashcardTrainer.WebAPI.Models;
 
@@ -19,4 +20,7 @@ public record FullSetModel
     public DateTime Modified { get; set; }
 
     public DateTime? LastTrained { get; set; }
+
+    [JsonIgnore]
+    public long UsedCharacters { get; set; }
 }

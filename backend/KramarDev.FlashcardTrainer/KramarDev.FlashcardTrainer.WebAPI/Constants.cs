@@ -13,4 +13,6 @@ public static class Constants
     public const int MinCardsPerTrainingSession = 4;
 
     public const int MaxCardsPerTrainingSessionDefault = 20;
+
+    public const long AccountCharacterLimit = 1_000_000;
 }

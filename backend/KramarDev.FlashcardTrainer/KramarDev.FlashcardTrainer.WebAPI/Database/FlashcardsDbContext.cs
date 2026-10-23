@@ -28,6 +28,10 @@ public class FlashcardsDbContext : IdentityDbContext<IdentityUser>
                 .HasMaxLength(ModelConstraints.SetNameMaxLength)
                 .IsRequired();
 
+            entity.Property(e => e.UsedCharacters)
+                .IsRequired()
+                .HasDefaultValue(0L);
+
             entity.HasIndex(e => e.UserName);
 
             entity.HasMany(e => e.Cards)

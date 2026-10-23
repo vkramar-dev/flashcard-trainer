@@ -7,4 +7,6 @@ public sealed record AppStateModel
     public string UserName { get; set; }
 
     public SettingsModel Settings { get; set; }
+
+    public StorageUsageModel Storage { get; set; }
 }

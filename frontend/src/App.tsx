@@ -1,6 +1,7 @@
 import { Box } from "@mui/material"
 import { useEffect } from "react"
 import { AuthDialogs } from "./features/auth/AuthDialogs"
+import { Footer } from "./components/Footer"
 import { Header } from "./components/Header"
 import { AppRoutes } from "./routes/AppRoutes"
 import { useAppDispatch, useAppSelector } from "./store/hooks"
@@ -39,6 +40,7 @@ export default function App() {
       <Box component="main" sx={{ flex: 1, width: "100%" }}>
         <AppRoutes />
       </Box>
+      <Footer />
       <AuthDialogs />
     </Box>
   )

@@ -14,5 +14,7 @@ public class Set
 
     public DateTime? LastTrained { get; set; }
 
+    public long UsedCharacters { get; set; }
+
     public ICollection<Card> Cards { get; set; }
 }

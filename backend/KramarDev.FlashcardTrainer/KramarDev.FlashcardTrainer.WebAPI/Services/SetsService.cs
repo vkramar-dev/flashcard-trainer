@@ -1,3 +1,4 @@
+using System.Globalization;
 using KramarDev.FlashcardTrainer.WebAPI.Utils;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,7 +22,8 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
                     LearntCards = s.Cards.Count(card => card.KnowCounter > card.NotKnowCounter + Constants.LearntThreshold),
                     Created = s.Created,
                     Modified = s.Modified,
-                    LastTrained = s.LastTrained
+                    LastTrained = s.LastTrained,
+                    UsedCharacters = s.UsedCharacters
                 }).ToArrayAsync(cancellationToken);
     }
 
@@ -72,6 +74,9 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
 
         try
         {
+            await using var transaction = await _ctx.Database.BeginTransactionAsync(cancellationToken);
+            long accountUsedBefore = await LockAccountAndSumUsedCharactersAsync(userName, cancellationToken);
+
             DB.Card card = await _ctx.Cards
                 .Include(c => c.ParentSet)
                 .FirstOrDefaultAsync(c => c.Id == cardId && c.ParentSet.UserName == userName, cancellationToken);
@@ -82,6 +87,9 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
                     $"Card with Id {cardId} not found or does not belong to user {userName}");
             }
 
+            long setUsedBefore = card.ParentSet.UsedCharacters;
+            long oldLength = CardCharacters(card);
+
             if (model.IsFrontSide)
             {
                 card.FrontSide = text;
@@ -91,8 +99,12 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
                 card.BackSide = text;
             }
 
+            card.ParentSet.UsedCharacters += CardCharacters(card) - oldLength;
+            EnsureWithinAccountLimit(accountUsedBefore, setUsedBefore, card.ParentSet.UsedCharacters);
+
             card.ParentSet.Modified = DateTime.UtcNow;
             await _ctx.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
 
             return new CardModel
             {
@@ -156,6 +168,19 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
             .ExecuteDeleteAsync(cancellationToken);
     }
 
+    public async Task<StorageUsageModel> GetStorageUsageAsync(string userName, CT cancellationToken)
+    {
+        long used = await _ctx.Sets
+            .Where(s => s.UserName == userName)
+            .SumAsync(s => (long?)s.UsedCharacters, cancellationToken) ?? 0;
+
+        return new StorageUsageModel
+        {
+            UsedCharacters = used,
+            CharacterLimit = Constants.AccountCharacterLimit
+        };
+    }
+
     public async Task<ImportResultModel> ImportAsync(string userName,
         int setId, bool append, CardModel[] cards, CT ct)
     {
@@ -167,6 +192,7 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
         try
         {
             await using var transaction = await _ctx.Database.BeginTransactionAsync(ct);
+            long accountUsedBefore = await LockAccountAndSumUsedCharactersAsync(userName, ct);
 
             var existingSet = await ReadSetWithUpdateLockAsync(_ctx, setId, userName, ct);
 
@@ -175,7 +201,13 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
                 throw new Http404NotFoundException($"Set with Id {setId} not found or does not belong to user {userName}");
             }
 
+            long setUsedBefore = existingSet.UsedCharacters;
+            long persistedCharacters = CountCardCharacters(existingSet.Cards);
             ProcessAddingCardsToSet(_ctx, existingSet, cards, append);
+            existingSet.UsedCharacters = append
+                ? persistedCharacters + CountModelCharacters(cards)
+                : CountModelCharacters(cards);
+            EnsureWithinAccountLimit(accountUsedBefore, setUsedBefore, existingSet.UsedCharacters);
 
             await _ctx.SaveChangesAsync(ct);
 
@@ -210,14 +242,22 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
             }).ToList()
         };
 
+        newSet.UsedCharacters = CountCardCharacters(newSet.Cards);
+
+        await using var transaction = await _ctx.Database.BeginTransactionAsync(cancellationToken);
+        long accountUsedBefore = await LockAccountAndSumUsedCharactersAsync(userName, cancellationToken);
+        EnsureWithinAccountLimit(accountUsedBefore, 0, newSet.UsedCharacters);
+
         _ctx.Sets.Add(newSet);
         await _ctx.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
         return await ReadSetAsync(_ctx, newSet.Id, userName, false, cancellationToken);
     }
 
     private async Task<FullSetModel> UpdateAsync(string userName, SetWithCardsModel set, CT ct)
     {
         await using var transaction = await _ctx.Database.BeginTransactionAsync(ct);
+        long accountUsedBefore = await LockAccountAndSumUsedCharactersAsync(userName, ct);
 
         DB.Set existingSet = await ReadSetWithUpdateLockAsync(_ctx, set.Id.Value, userName, ct);
 
@@ -227,7 +267,10 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
                 $"Set with Id {set.Id} not found or does not belong to user {userName}");
         }
 
+        long setUsedBefore = existingSet.UsedCharacters;
         ProcessUpdatingSet(_ctx, existingSet, set);
+        existingSet.UsedCharacters = CountModelCharacters(set.Cards);
+        EnsureWithinAccountLimit(accountUsedBefore, setUsedBefore, existingSet.UsedCharacters);
 
         await _ctx.SaveChangesAsync(ct);
 
@@ -270,14 +313,13 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
 
         ctx.Cards.RemoveRange(cardsToRemove);
 
+        Dictionary<int, DB.Card> existingCards = existingSet.Cards.ToDictionary(c => c.Id);
+
         foreach (CardModel cardModel in set.Cards)
         {
             if (cardModel.Id > 0)
             {
-                DB.Card existingCard = existingSet.Cards
-                    .FirstOrDefault(c => c.Id == cardModel.Id);
-
-                if (existingCard == null)
+                if (!existingCards.TryGetValue(cardModel.Id.Value, out DB.Card existingCard))
                 {
                     throw new Http404NotFoundException(
                         $"Card with Id {cardModel.Id} not found.");
@@ -342,5 +384,71 @@ public sealed class SetsService(FlashcardsDbContext dbContext) : ISetsService
                         Back = c.BackSide
                     }).OrderBy(c => c.Id).ToArray() : null)
                 }).SingleAsync(cancellationToken);
+    }
+
+    private Task<long> LockAccountAndSumUsedCharactersAsync(string userName, CT ct)
+    {
+        // Hold the user's set rows until the transaction commits so two
+        // concurrent writes cannot both pass the account character limit.
+        // An empty sum of a non-nullable long comes back as 0.
+        return _ctx.Sets
+            .FromSqlInterpolated($"""
+                SELECT *
+                FROM [Sets] WITH (UPDLOCK, HOLDLOCK)
+                WHERE [UserName] = {userName}
+                """)
+            .AsNoTracking()
+            .SumAsync(s => s.UsedCharacters, ct);
+    }
+
+    private static void EnsureWithinAccountLimit(long accountUsedBefore, long setUsedBefore, long setUsedAfter)
+    {
+        long accountUsedAfter = accountUsedBefore - setUsedBefore + setUsedAfter;
+        if (setUsedAfter <= setUsedBefore || accountUsedAfter <= Constants.AccountCharacterLimit)
+        {
+            return;
+        }
+
+        string limit = Constants.AccountCharacterLimit.ToString("N0", CultureInfo.InvariantCulture);
+        string used = accountUsedAfter.ToString("N0", CultureInfo.InvariantCulture);
+        throw new Http400BadRequestException(
+            $"This account is limited to {limit} characters. Saving these cards would use {used}.");
+    }
+
+    private static long CountCardCharacters(IEnumerable<DB.Card> cards)
+    {
+        if (cards == null)
+        {
+            return 0;
+        }
+
+        long total = 0;
+        foreach (DB.Card card in cards)
+        {
+            total += CardCharacters(card);
+        }
+
+        return total;
+    }
+
+    private static long CountModelCharacters(IEnumerable<CardModel> cards)
+    {
+        if (cards == null)
+        {
+            return 0;
+        }
+
+        long total = 0;
+        foreach (CardModel card in cards)
+        {
+            total += (card.Front?.Length ?? 0) + (card.Back?.Length ?? 0);
+        }
+
+        return total;
+    }
+
+    private static long CardCharacters(DB.Card card)
+    {
+        return (card.FrontSide?.Length ?? 0) + (card.BackSide?.Length ?? 0);
     }
 }

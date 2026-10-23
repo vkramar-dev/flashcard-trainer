@@ -27,8 +27,22 @@ public class AppController(IDbContextFactory<FlashcardsDbContext> factory) : Bas
 
         stateModel.Sets = await setsTask;
         stateModel.Settings = await settingsTask;
+        stateModel.Storage = new StorageUsageModel
+        {
+            UsedCharacters = stateModel.Sets.Sum(set => set.UsedCharacters),
+            CharacterLimit = Constants.AccountCharacterLimit
+        };
 
         return Ok(stateModel);
+    }
+
+    [Authorize]
+    [HttpGet("storage")]
+    public async Task<ActionResult<StorageUsageModel>> Storage(CT cancellationToken)
+    {
+        using var setsCtx = _factory.CreateDbContext();
+        ISetsService setsService = new SetsService(setsCtx);
+        return Ok(await setsService.GetStorageUsageAsync(UserName, cancellationToken));
     }
 
 

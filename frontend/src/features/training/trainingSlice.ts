@@ -3,7 +3,7 @@ import { toErrorMessage } from "../../api/client"
 import { setsApi } from "../../api/setsApi"
 import { trainingApi } from "../../api/trainingApi"
 import type { CardData, CardModel, CardSide, RequestStatus, StoredTrainingProgress } from "../../types"
-import { markLastTrained } from "../sets/setsSlice"
+import { markLastTrained, refreshStorageAsync } from "../sets/setsSlice"
 import { AppStorage } from "@/utils/AppStorage"
 
 interface TrainingState {
@@ -65,9 +65,10 @@ export const updateTrainingCardAsync = createAsyncThunk<
   { state: UpdateCardState; rejectValue: string }
 >(
   "training/updateCard",
-  async ({ cardId, side, text }, { getState, rejectWithValue }) => {
+  async ({ cardId, side, text }, { dispatch, getState, rejectWithValue }) => {
     try {
       const updated = await setsApi.updateCardSide(cardId, side, text)
+      void dispatch(refreshStorageAsync())
       const { training, auth } = getState()
       const userName = auth.user?.email
       if (userName) {

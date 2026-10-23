@@ -13,6 +13,7 @@ import type {
   SetDetail,
   SetWithCardsModel,
   FullSetModel,
+  StorageUsageModel,
 } from "../../types"
 
 interface SetsState {
@@ -27,6 +28,7 @@ interface SetsState {
   /** Id of the set whose import dialog is open, if any. */
   importSetId: number | null
   notice: string | null
+  storage: StorageUsageModel | null
 }
 
 const initialState: SetsState = {
@@ -38,6 +40,7 @@ const initialState: SetsState = {
   saveError: null,
   importSetId: null,
   notice: null,
+  storage: null,
 }
 
 export const loadAppStateAsync = createAsyncThunk<void, void, { rejectValue: string }>(
@@ -47,6 +50,9 @@ export const loadAppStateAsync = createAsyncThunk<void, void, { rejectValue: str
       const data = await appApi.getState()
       dispatch(initState(data.sets))
       dispatch(setSettings(data.settings))
+      if (data.storage) {
+        dispatch(setStorage(data.storage))
+      }
       AppStorage.cacheScheme(data.settings.colorScheme as ColorSchemeName)
     } catch (error) {
       return rejectWithValue(toErrorMessage(error, "Could not load your account."))
@@ -78,9 +84,11 @@ export const fetchSetAsync = createAsyncThunk<SetWithCardsModel, number, { rejec
 
 export const createSetAsync = createAsyncThunk<FullSetModel, SetWithCardsModel, { rejectValue: string }>(
   "sets/create",
-  async (payload, { rejectWithValue }) => {
+  async (payload, { dispatch, rejectWithValue }) => {
     try {
-      return await setsApi.create(payload)
+      const created = await setsApi.create(payload)
+      void dispatch(refreshStorageAsync())
+      return created
     } catch (error) {
       return rejectWithValue(toErrorMessage(error, "Could not create the set."))
     }
@@ -89,9 +97,11 @@ export const createSetAsync = createAsyncThunk<FullSetModel, SetWithCardsModel, 
 
 export const updateSetAsync = createAsyncThunk<FullSetModel, SetWithCardsModel, { rejectValue: string }>(
   "sets/update",
-  async (payload, { rejectWithValue }) => {
+  async (payload, { dispatch, rejectWithValue }) => {
     try {
-      return await setsApi.create(payload)
+      const updated = await setsApi.create(payload)
+      void dispatch(refreshStorageAsync())
+      return updated
     } catch (error) {
       return rejectWithValue(toErrorMessage(error, "Could not update the set."))
     }
@@ -100,9 +110,10 @@ export const updateSetAsync = createAsyncThunk<FullSetModel, SetWithCardsModel, 
 
 export const deleteSetAsync = createAsyncThunk<void, number, { rejectValue: string }>(
   "sets/delete",
-  async (setId, { rejectWithValue }) => {
+  async (setId, { dispatch, rejectWithValue }) => {
     try {
       await setsApi.delete(setId)
+      void dispatch(refreshStorageAsync())
     } catch (error) {
       return rejectWithValue(toErrorMessage(error, "Could not remove the set."))
     }
@@ -111,11 +122,24 @@ export const deleteSetAsync = createAsyncThunk<void, number, { rejectValue: stri
 
 export const importCardsAsync = createAsyncThunk<ImportResultModel, ImportPayload, { rejectValue: string }>(
   "sets/importCards",
-  async (payload, { rejectWithValue }) => {
+  async (payload, { dispatch, rejectWithValue }) => {
     try {
-      return await setsApi.importCards(payload)
+      const imported = await setsApi.importCards(payload)
+      void dispatch(refreshStorageAsync())
+      return imported
     } catch (error) {
       return rejectWithValue(toErrorMessage(error, "Could not import the cards."))
+    }
+  },
+)
+
+export const refreshStorageAsync = createAsyncThunk<StorageUsageModel, void, { rejectValue: string }>(
+  "sets/refreshStorage",
+  async (_, { rejectWithValue }) => {
+    try {
+      return await appApi.getStorage()
+    } catch (error) {
+      return rejectWithValue(toErrorMessage(error, "Could not refresh storage usage."))
     }
   },
 )
@@ -169,6 +193,9 @@ const setsSlice = createSlice({
       state.error = null
       state.saveError = null
     },
+    setStorage(state, action: PayloadAction<StorageUsageModel>) {
+      state.storage = action.payload
+    },
     initState(state, action: PayloadAction<FullSetModel[]>) {
       state.items = action.payload
       state.selectedSet = null
@@ -194,6 +221,7 @@ const setsSlice = createSlice({
       state.error = null
       state.saveStatus = "idle"
       state.saveError = null
+      state.storage = null
     }
   },
   extraReducers: (builder) => {
@@ -316,9 +344,12 @@ const setsSlice = createSlice({
       .addCase(exportSetAsync.rejected, (state, action) => {
         state.saveError = action.payload ?? "Could not export the set."
       })
+      .addCase(refreshStorageAsync.fulfilled, (state, action) => {
+        state.storage = action.payload
+      })
   },
 })
 
-export const { clearSelectedSet, openImportDialog, closeImportDialog, clearSetsNotice, clearSetsError, initState, markLastTrained, cleanSetsSlice } =
+export const { clearSelectedSet, openImportDialog, closeImportDialog, clearSetsNotice, clearSetsError, setStorage, initState, markLastTrained, cleanSetsSlice } =
   setsSlice.actions
 export default setsSlice.reducer

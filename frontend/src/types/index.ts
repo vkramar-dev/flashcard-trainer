@@ -107,10 +107,16 @@ export interface SettingsModel {
   maxCardsPerTrainingSession: number
 }
 
+export interface StorageUsageModel {
+  usedCharacters: number
+  characterLimit: number
+}
+
 export interface AppStateModel {
   sets: FullSetModel[]
   userName: string
   settings: SettingsModel
+  storage: StorageUsageModel
 }
 
 export type ColorSchemeName = "coastal" | "porcelain" | "mist" | "slate" | "espresso" | "graphite" | "indigo" | "midnight" | "forest"

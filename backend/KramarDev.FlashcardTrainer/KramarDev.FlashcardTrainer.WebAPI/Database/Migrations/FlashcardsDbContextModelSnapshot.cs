@@ -140,6 +140,11 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<long>("UsedCharacters")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(0L);
+
                     b.Property<string>("UserName")
                         .IsRequired()
                         .HasMaxLength(255)
