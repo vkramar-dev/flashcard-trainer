@@ -41,7 +41,7 @@ export function PageContainer({
 
             {description && (
               <Typography
-                variant="body1"
+                variant="body2"
                 color="text.secondary"
                 sx={{
                   mt: title ? 0.75 : 0,
