@@ -1,4 +1,5 @@
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import LightbulbOutlinedIcon from "@mui/icons-material/LightbulbOutlined";
 import {
   Box,
   Button,
@@ -9,7 +10,28 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { useState } from "react";
 import type { CardSide } from "../../types";
+
+const MAX_HINT_CHARACTERS = 3;
+
+/** Code points, so a UTF-16 surrogate pair stays one character. */
+function codePoints(text: string): string[] {
+  return Array.from(text);
+}
+
+function hintPreview(characters: string[], revealed: number): string {
+  if (revealed <= 0) return "";
+  const prefix = characters.slice(0, revealed).join("");
+  return revealed < characters.length ? `${prefix}...` : prefix;
+}
+
+interface LetterHint {
+  preview: string;
+  revealed: number;
+  limit: number;
+  onReveal: () => void;
+}
 
 interface FlipCardProps {
   front: string;
@@ -75,6 +97,7 @@ function CardFace({
   onStartEdit,
   onSave,
   onCancel,
+  letterHint,
 }: {
   text: string;
   side: CardSide;
@@ -89,8 +112,17 @@ function CardFace({
   onStartEdit: () => void;
   onSave: () => void;
   onCancel: () => void;
+  letterHint: LetterHint | null;
 }) {
   const showEditor = visible && editing;
+  const showHint = letterHint != null && !showEditor;
+  const hintExhausted = showHint && letterHint.revealed >= letterHint.limit;
+  const hintLabel =
+    !showHint || letterHint.revealed === 0
+      ? "Hint"
+      : hintExhausted
+        ? `${letterHint.revealed} / ${letterHint.limit}`
+        : "Next letter";
 
   return (
     <Paper
@@ -113,6 +145,14 @@ function CardFace({
               bgcolor: "background.paper",
               color: "text.primary",
               borderColor: "divider",
+            }
+          : {}),
+        ...(showHint
+          ? {
+              flexDirection: "column",
+              alignItems: "stretch",
+              justifyContent: "flex-start",
+              overflow: "hidden",
             }
           : {}),
       }}
@@ -161,37 +201,145 @@ function CardFace({
             </Button>
           </Stack>
         </Stack>
-      ) : (
+      ) : showHint && letterHint ? (
         <>
-          <Typography
-            component="p"
-            align="center"
+          <Box
             sx={{
+              flex: 1,
+              minHeight: 0,
               width: "100%",
-              maxHeight: "100%",
               overflowY: "auto",
-              whiteSpace: "pre-wrap",
-              overflowWrap: "anywhere",
-              fontSize: getCardFontSize(text),
-              lineHeight: 1.25,
+              display: "flex",
+              alignItems: "safe center",
+              justifyContent: "safe center",
             }}
           >
-            {text}
-          </Typography>
+            <Box sx={{ width: "100%" }}>
+              <Typography
+                component="p"
+                align="center"
+                sx={{
+                  whiteSpace: "pre-wrap",
+                  overflowWrap: "anywhere",
+                  fontSize: getCardFontSize(text),
+                  lineHeight: 1.25,
+                }}
+              >
+                {text}
+              </Typography>
+              <Typography
+                component="p"
+                align="center"
+                aria-live="polite"
+                sx={{
+                  mt: 1.5,
+                  minHeight: "1.4em",
+                  whiteSpace: "pre-wrap",
+                  overflowWrap: "anywhere",
+                  fontSize: { xs: "1rem", sm: "1.125rem" },
+                  fontWeight: 500,
+                  lineHeight: 1.4,
+                  color: "primary.main",
+                }}
+              >
+                {letterHint.preview}
+              </Typography>
+            </Box>
+          </Box>
           {visible && (
-            <IconButton
-              aria-label={`Edit ${side}`}
-              size="small"
-              onClick={(event) => {
-                event.stopPropagation();
-                onStartEdit();
-              }}
-              sx={{ position: "absolute", top: 8, right: 8, color: "inherit" }}
+            <Stack
+              direction="row"
+              justifyContent="center"
+              alignItems="center"
+              onClick={(event) => event.stopPropagation()}
+              onKeyDown={(event) => event.stopPropagation()}
+              sx={{ flexShrink: 0, pt: 1 }}
             >
-              <EditOutlinedIcon fontSize="small" />
-            </IconButton>
+              <Box sx={{ position: "relative", display: "inline-flex" }}>
+                <Box component="span" sx={{ display: "inline-flex" }}>
+                  <Button
+                    type="button"
+                    size="small"
+                    variant="outlined"
+                    color="inherit"
+                    disabled={hintExhausted}
+                    startIcon={<LightbulbOutlinedIcon sx={{ fontSize: 16 }} />}
+                    aria-label={
+                      letterHint.revealed === 0
+                        ? "Reveal the first letter of the answer"
+                        : hintExhausted
+                          ? `Revealed ${letterHint.revealed} of ${letterHint.limit} letters`
+                          : "Reveal the next letter of the answer"
+                    }
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      letterHint.onReveal();
+                    }}
+                    sx={{
+                      px: 1.5,
+                      py: 0.25,
+                      minWidth: 0,
+                      fontSize: "0.8125rem",
+                      fontWeight: 500,
+                      lineHeight: 1.4,
+                      color: "text.secondary",
+                      borderColor: "divider",
+                      "& .MuiButton-startIcon": { mr: 0.75, ml: 0 },
+                    }}
+                  >
+                    {hintLabel}
+                  </Button>
+                </Box>
+                {letterHint.revealed > 0 && (
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                      position: "absolute",
+                      left: "100%",
+                      ml: 1.25,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      whiteSpace: "nowrap",
+                      fontVariantNumeric: "tabular-nums",
+                    }}
+                  >
+                    {letterHint.revealed} / {letterHint.limit}
+                  </Typography>
+                )}
+              </Box>
+            </Stack>
           )}
         </>
+      ) : (
+        <Typography
+          component="p"
+          align="center"
+          sx={{
+            width: "100%",
+            maxHeight: "100%",
+            overflowY: "auto",
+            whiteSpace: "pre-wrap",
+            overflowWrap: "anywhere",
+            fontSize: getCardFontSize(text),
+            lineHeight: 1.25,
+          }}
+        >
+          {text}
+        </Typography>
+      )}
+      {visible && !showEditor && (
+        <IconButton
+          aria-label={`Edit ${side}`}
+          size="small"
+          onClick={(event) => {
+            event.stopPropagation();
+            onStartEdit();
+          }}
+          sx={{ position: "absolute", top: 8, right: 8, color: "inherit" }}
+        >
+          <EditOutlinedIcon fontSize="small" />
+        </IconButton>
       )}
     </Paper>
   );
@@ -214,10 +362,31 @@ export function FlipCard({
   onCancel,
 }: FlipCardProps) {
   const flipped = side === "back";
+  const [revealed, setRevealed] = useState(0);
+  const [hintBack, setHintBack] = useState(back);
 
   if (front == null || back == null) {
     return null;
   }
+
+  // A new answer, including an edit of this card, starts with no letters revealed.
+  if (back !== hintBack) {
+    setHintBack(back);
+    setRevealed(0);
+  }
+
+  const answerCharacters = codePoints(back);
+  const hintLimit = Math.min(MAX_HINT_CHARACTERS, answerCharacters.length);
+  const shown = back === hintBack ? Math.min(revealed, hintLimit) : 0;
+  const letterHint: LetterHint | null =
+    hintLimit > 0
+      ? {
+          preview: hintPreview(answerCharacters, shown),
+          revealed: shown,
+          limit: hintLimit,
+          onReveal: () => setRevealed((count) => Math.min(hintLimit, count + 1)),
+        }
+      : null;
 
   const faceProps = {
     editing,
@@ -290,6 +459,7 @@ export function FlipCard({
           side="front"
           visible={!flipped}
           colored={false}
+          letterHint={flipped ? null : letterHint}
           {...faceProps}
         />
         <CardFace
@@ -297,6 +467,7 @@ export function FlipCard({
           side="back"
           visible={flipped}
           colored
+          letterHint={null}
           {...faceProps}
         />
       </Box>
