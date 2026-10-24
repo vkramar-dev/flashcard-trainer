@@ -18,11 +18,14 @@ import { text } from "../i18n";
 import { PageContainer } from "../components/PageContainer";
 import { ErrorState } from "../components/StateViews";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import ReplayIcon from "@mui/icons-material/Replay";
 import { alpha } from "@mui/material/styles";
 import { FlipCard } from "../features/training/FlipCard";
 import {
   flipCard,
   answerAsync,
+  beginRepeatRound,
+  resetTraining,
   restoreState,
   startTrainingAsync,
   updateTrainingCardAsync,
@@ -89,10 +92,13 @@ export default function TrainingPage() {
     error,
     finished,
     cards,
+    mistakeIds,
+    mode,
   } = useAppSelector((state) => state.training);
   const hideKnownCards = useAppSelector((state) => state.settings.hideKnownCards);
 
   const total = cards.length;
+  const mistakeCount = mistakeIds.length;
   const position = currentIndex + 1;
   const setName = useAppSelector((state) => {
     const listed = state.sets.items.find((set) => set.id === setId);
@@ -211,19 +217,6 @@ export default function TrainingPage() {
           isKnown,
         }),
       ).unwrap();
-
-      const nextIndex = currentIndex + 1;
-
-      if (nextIndex >= cards.length) {
-        AppStorage.clearTrainingProgress();
-      } else {
-        AppStorage.setTrainingProgressNoException({
-          userName,
-          setId,
-          cards,
-          currentIndex: nextIndex,
-        });
-      }
     } catch {
       // answerAsync already keeps the error in Redux state
     }
@@ -322,14 +315,35 @@ export default function TrainingPage() {
             {t("training.reviewed", { count: total })}
           </Typography>
 
+          {mistakeCount > 0 && (
+            <Stack spacing={1.5} alignItems="center" sx={{ pt: 0.5 }}>
+              <Stack direction="row" spacing={0.75} alignItems="center">
+                <ReplayIcon sx={{ fontSize: 18, color: "primary.main" }} />
+                <Typography sx={{ color: "primary.main", fontWeight: 500 }}>
+                  {t("training.mistakes", { count: mistakeCount })}
+                </Typography>
+              </Stack>
+              <Button
+                variant="contained"
+                size="large"
+                startIcon={<ReplayIcon />}
+                onClick={() => {
+                  void dispatch(beginRepeatRound());
+                }}
+              >
+                {t("training.repeatMistakes", { count: mistakeCount })}
+              </Button>
+            </Stack>
+          )}
+
           <Stack
             direction={{ xs: "column", sm: "row" }}
             spacing={1.5}
             justifyContent="center"
-            sx={{ pt: 1.5 }}
+            sx={{ pt: mistakeCount > 0 ? 2 : 1.5 }}
           >
             <Button
-              variant="contained"
+              variant={mistakeCount > 0 ? "outlined" : "contained"}
               size="large"
               onClick={() =>
                 dispatch(
@@ -356,6 +370,7 @@ export default function TrainingPage() {
               variant="outlined"
               size="large"
               onClick={() => {
+                AppStorage.clearTrainingProgress();
                 dispatch(fetchSetsAsync());
                 navigate("/");
               }}
@@ -385,6 +400,7 @@ export default function TrainingPage() {
           onClick={() => {
             AppStorage.clearTrainingProgress();
             navigate("/");
+            if (mode === "repeat") dispatch(resetTraining());
           }}
         >
           {t("training.endSession")}

@@ -51,8 +51,8 @@ namespace KramarDev.FlashcardTrainer.WebAPI.Database.Migrations
 
                     b.Property<string>("FrontSide")
                         .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<int>("KnowCounter")
                         .HasColumnType("int");

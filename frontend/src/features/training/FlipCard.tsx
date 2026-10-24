@@ -10,6 +10,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { text as translate } from "../../i18n";
@@ -142,21 +143,16 @@ function CardFace({
               borderColor: "primary.main",
             }
           : { bgcolor: "background.paper" }),
+        p: 0,
+        flexDirection: "column",
+        alignItems: "stretch",
+        justifyContent: "flex-start",
+        overflow: "hidden",
         ...(showEditor
           ? {
-              alignItems: "stretch",
-              justifyContent: "flex-start",
               bgcolor: "background.paper",
               color: "text.primary",
               borderColor: "divider",
-            }
-          : {}),
-        ...(showHint
-          ? {
-              flexDirection: "column",
-              alignItems: "stretch",
-              justifyContent: "flex-start",
-              overflow: "hidden",
             }
           : {}),
       }}
@@ -214,7 +210,7 @@ function CardFace({
             </Button>
           </Stack>
         </Stack>
-      ) : showHint && letterHint ? (
+      ) : (
         <>
           <Box
             sx={{
@@ -223,53 +219,81 @@ function CardFace({
               width: "100%",
               overflowY: "auto",
               display: "flex",
-              alignItems: "safe center",
-              justifyContent: "safe center",
+              flexDirection: "column",
+              px: { xs: 3, sm: 5 },
             }}
           >
-            <Box sx={{ width: "100%" }}>
-              <Typography
-                component="p"
-                align="center"
-                sx={{
-                  whiteSpace: "pre-wrap",
-                  overflowWrap: "anywhere",
-                  fontSize: getCardFontSize(text),
-                  lineHeight: 1.25,
-                }}
-              >
-                {text}
-              </Typography>
-              <Typography
-                component="p"
-                align="center"
-                aria-live="polite"
-                sx={{
-                  mt: 1.5,
-                  minHeight: "1.4em",
-                  whiteSpace: "pre-wrap",
-                  overflowWrap: "anywhere",
-                  fontSize: { xs: "1rem", sm: "1.125rem" },
-                  fontWeight: 500,
-                  lineHeight: 1.4,
-                  color: "primary.main",
-                }}
-              >
-                {letterHint.preview}
-              </Typography>
-            </Box>
-          </Box>
-          {visible && (
-            <Stack
-              direction="row"
-              justifyContent="center"
-              alignItems="center"
-              onClick={(event) => event.stopPropagation()}
-              onKeyDown={(event) => event.stopPropagation()}
-              sx={{ flexShrink: 0, pt: 1 }}
+            <Box sx={{ flex: 1, minHeight: 0 }} />
+            {/* Same height as the hint slot below, so the word stays centered in the area above the footer. */}
+            <Box sx={{ height: 38, flexShrink: 1, minHeight: 0 }} />
+            <Typography
+              component="p"
+              align="center"
+              sx={{
+                whiteSpace: "pre-wrap",
+                overflowWrap: "anywhere",
+                fontSize: getCardFontSize(text),
+                lineHeight: 1.25,
+              }}
             >
-              <Box sx={{ position: "relative", display: "inline-flex" }}>
-                <Box component="span" sx={{ display: "inline-flex" }}>
+              {text}
+            </Typography>
+            <Box
+              sx={{
+                height: 38,
+                flexShrink: 0,
+                pt: 1.5,
+                display: "flex",
+                alignItems: "flex-start",
+                justifyContent: "center",
+              }}
+            >
+              {showHint && letterHint && (
+                <Typography
+                  component="p"
+                  align="center"
+                  aria-live="polite"
+                  sx={{
+                    width: "100%",
+                    whiteSpace: "pre-wrap",
+                    overflowWrap: "anywhere",
+                    fontSize: { xs: "1rem", sm: "1.125rem" },
+                    fontWeight: 500,
+                    lineHeight: 1.4,
+                    color: "primary.main",
+                  }}
+                >
+                  {letterHint.preview}
+                </Typography>
+              )}
+            </Box>
+            <Box sx={{ flex: 1, minHeight: 0 }} />
+          </Box>
+          <Box sx={{ flexShrink: 0, px: "24px", pb: 1.25 }}>
+            <Box
+              sx={{
+                borderTop: "1px solid",
+                borderColor: (theme) =>
+                  colored
+                    ? alpha(theme.palette.primary.contrastText, 0.28)
+                    : theme.palette.divider,
+              }}
+            />
+            <Box
+              sx={{
+                minHeight: 32,
+                mt: 1.5,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {showHint && visible && letterHint && (
+                <Box
+                  sx={{ position: "relative", display: "inline-flex" }}
+                  onClick={(event) => event.stopPropagation()}
+                  onKeyDown={(event) => event.stopPropagation()}
+                >
                   <Button
                     type="button"
                     size="small"
@@ -305,47 +329,31 @@ function CardFace({
                   >
                     {hintLabel}
                   </Button>
+                  {letterHint.revealed > 0 && (
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{
+                        position: "absolute",
+                        left: "100%",
+                        ml: 1.25,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        whiteSpace: "nowrap",
+                        fontVariantNumeric: "tabular-nums",
+                      }}
+                    >
+                      {t("hint.progress", {
+                        revealed: letterHint.revealed,
+                        limit: letterHint.limit,
+                      })}
+                    </Typography>
+                  )}
                 </Box>
-                {letterHint.revealed > 0 && (
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{
-                      position: "absolute",
-                      left: "100%",
-                      ml: 1.25,
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      whiteSpace: "nowrap",
-                      fontVariantNumeric: "tabular-nums",
-                    }}
-                  >
-                    {t("hint.progress", {
-                      revealed: letterHint.revealed,
-                      limit: letterHint.limit,
-                    })}
-                  </Typography>
-                )}
-              </Box>
-            </Stack>
-          )}
+              )}
+            </Box>
+          </Box>
         </>
-      ) : (
-        <Typography
-          component="p"
-          align="center"
-          sx={{
-            width: "100%",
-            maxHeight: "100%",
-            overflowY: "auto",
-            whiteSpace: "pre-wrap",
-            overflowWrap: "anywhere",
-            fontSize: getCardFontSize(text),
-            lineHeight: 1.25,
-          }}
-        >
-          {text}
-        </Typography>
       )}
       {visible && !showEditor && (
         <IconButton
@@ -470,7 +478,7 @@ export function FlipCard({
       <Box
         sx={{
           position: "relative",
-          height: { xs: editing ? 340 : 260, sm: editing ? 380 : 320 },
+          height: { xs: editing ? 346 : 266, sm: editing ? 386 : 326 },
           transformStyle: "preserve-3d",
           transition: editing
             ? "none"

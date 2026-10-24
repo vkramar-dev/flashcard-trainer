@@ -85,11 +85,17 @@ export interface FullCardModel {
   shownCount: number
 }
 
+export type TrainingRoundMode = "normal" | "repeat"
+
 export interface StoredTrainingProgress {
   userName: string
   setId: number
   cards: CardData[]
   currentIndex: number
+  /** "Don't know" card ids from this round. Omitted by sessions saved before repeat training. */
+  mistakeIds?: number[]
+  mode?: TrainingRoundMode
+  finished?: boolean
 }
 
 export interface SetStatisticsModel {

@@ -8,7 +8,7 @@ public static class ModelConstraints
 
     public const int SetNameMaxLength = 100;
 
-    public const int CardFrontMaxLength = 300;
+    public const int CardFrontMaxLength = 200;
 
     public const int CardBackMaxLength = 500;
 
