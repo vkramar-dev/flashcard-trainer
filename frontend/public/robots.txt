@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://new-words.online/sitemap.xml
+Sitemap: https://flashcard-trainer.online/sitemap.xml
