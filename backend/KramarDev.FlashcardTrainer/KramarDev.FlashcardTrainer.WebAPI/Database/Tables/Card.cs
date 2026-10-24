@@ -1,4 +1,7 @@
-﻿namespace KramarDev.FlashcardTrainer.WebAPI.Database.Tables;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq.Expressions;
+
+namespace KramarDev.FlashcardTrainer.WebAPI.Database.Tables;
 
 public class Card
 {
@@ -15,4 +18,14 @@ public class Card
     public int KnowCounter { get; set; }
 
     public int NotKnowCounter { get; set; }
+
+    [NotMapped]
+    public bool IsLearnt => IsLearntFunc(this);
+
+    public static readonly Expression<Func<Card, bool>> IsLearntExpression =
+    card => card.KnowCounter >
+            card.NotKnowCounter + Constants.LearntThreshold;
+
+    private static readonly Func<Card, bool> IsLearntFunc =
+        IsLearntExpression.Compile();
 }

@@ -16,7 +16,7 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { LanguagePicker } from "./LanguagePicker";
@@ -42,11 +42,62 @@ export function Header() {
   const theme = useTheme();
   const isCompact = useMediaQuery(theme.breakpoints.down("md"));
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const brandRef = useRef<HTMLAnchorElement>(null);
+  const titleRef = useRef<HTMLElement>(null);
+  const signInRef = useRef<HTMLButtonElement>(null);
+  const signInSlotRef = useRef(0);
+  const hideCompactSignInRef = useRef(false);
+  const [hideCompactSignIn, setHideCompactSignIn] = useState(false);
 
   const { isAuthenticated, user } = useAppSelector((state) => state.auth);
 
   const closeDrawer = () => setDrawerOpen(false);
+
+  useLayoutEffect(() => {
+    const setHidden = (hidden: boolean) => {
+      if (hideCompactSignInRef.current === hidden) return;
+      hideCompactSignInRef.current = hidden;
+      setHideCompactSignIn(hidden);
+    };
+
+    if (!isCompact || isAuthenticated) {
+      setHidden(false);
+      return;
+    }
+
+    const brand = brandRef.current;
+    const title = titleRef.current;
+    if (!brand || !title) return;
+
+    const measure = () => {
+      const lineHeight = parseFloat(getComputedStyle(title).lineHeight);
+      const wrapped = Number.isFinite(lineHeight) && title.offsetHeight > lineHeight * 1.4;
+      const button = signInRef.current;
+      if (button && button.offsetWidth > 0) {
+        signInSlotRef.current = button.offsetWidth + 30;
+      }
+
+      // Hide only after a real wrap. Bring the button back only when the
+      // single-line title has room for it, otherwise resize flips forever.
+      if (!hideCompactSignInRef.current) {
+        if (wrapped) setHidden(true);
+        return;
+      }
+      if (wrapped) return;
+
+      const iconWidth = 36;
+      const gap = parseFloat(getComputedStyle(brand).columnGap || getComputedStyle(brand).gap) || 10;
+      const spare = brand.clientWidth - iconWidth - gap - title.scrollWidth;
+      const slot = signInSlotRef.current;
+      if (slot > 0 && spare >= slot + 16) setHidden(false);
+    };
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(brand);
+    return () => observer.disconnect();
+  }, [i18n.language, isAuthenticated, isCompact]);
 
   function performSignOut() {
     AppStorage.setAuthToken(null)
@@ -102,6 +153,7 @@ export function Header() {
           sx={{ gap: 2, minHeight: { xs: 64, md: 72 }, position: "relative" }}
         >
           <Stack
+            ref={brandRef}
             component={NavLink}
             to="/"
             direction="row"
@@ -129,6 +181,7 @@ export function Header() {
               <StyleIcon fontSize="small" />
             </Box>
             <Typography
+              ref={titleRef}
               variant="h6"
               component="span"
               sx={{ letterSpacing: "-0.01em" }}
@@ -140,12 +193,13 @@ export function Header() {
           {isCompact ? (
             <Stack direction="row" alignItems="center">
               <LanguagePicker />
-              {!isAuthenticated && (
+              {!isAuthenticated && !hideCompactSignIn && (
                 <Button
+                  ref={signInRef}
                   variant="outlined"
                   size="small"
                   onClick={() => dispatch(openAuthDialog("signIn"))}
-                  sx={{ ml: "30px" }}
+                  sx={{ ml: "30px", whiteSpace: "nowrap" }}
                 >
                   {t("nav.signIn")}
                 </Button>

@@ -25,8 +25,7 @@ public sealed class TrainingService(FlashcardsDbContext dbContext) : ITrainingSe
         }
 
         // Remember the learned status before normalization.
-        bool wasLearnt = card.KnowCounter >
-            card.NotKnowCounter + Constants.LearntThreshold;
+        bool wasLearnt = card.IsLearnt;
 
         // Gradually reduce the influence of older answers so cards can
         // adapt to the user's current knowledge rather than their entire history.
@@ -117,10 +116,13 @@ public sealed class TrainingService(FlashcardsDbContext dbContext) : ITrainingSe
         return maxCards == 0 ? selectedCards : selectedCards.Take(maxCards).ToArray();
     }
 
-    private bool IsCardSelected(Card card)
+    private static bool IsCardSelected(Card card)
     {
-        int koef = card.KnowCounter / (card.NotKnowCounter + 1);
+        // Learned cards are less likely to be selected.
+        int coefficient = card.IsLearnt ? 2 : 1;
 
-        return Random.Shared.Next(koef) == 0;
+        int selectionRange = (card.KnowCounter * coefficient) / (card.NotKnowCounter + 1);
+
+        return Random.Shared.Next(selectionRange) == 0;
     }
 }
