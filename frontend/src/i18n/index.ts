@@ -1,12 +1,21 @@
 import i18n from "i18next"
 import { initReactI18next } from "react-i18next"
+import bg from "../locales/bg.json"
+import de from "../locales/de.json"
 import en from "../locales/en.json"
+import es from "../locales/es.json"
+import fr from "../locales/fr.json"
+import ja from "../locales/ja.json"
+import pt from "../locales/pt.json"
 import ru from "../locales/ru.json"
+import zhHans from "../locales/zh-hans.json"
 import {
   LANGUAGE_STORAGE_KEY,
   type AppLanguage,
+  documentLanguage,
   normalizeLanguage,
   resolveLanguage,
+  supportedLanguages,
 } from "./language"
 
 const initialLanguage = resolveLanguage({
@@ -21,17 +30,26 @@ void i18n.use(initReactI18next).init({
   resources: {
     en: { translation: en },
     ru: { translation: ru },
+    bg: { translation: bg },
+    es: { translation: es },
+    de: { translation: de },
+    fr: { translation: fr },
+    pt: { translation: pt },
+    ja: { translation: ja },
+    "zh-hans": { translation: zhHans },
   },
   lng: initialLanguage,
   fallbackLng: "en",
-  supportedLngs: ["en", "ru"],
+  supportedLngs: [...supportedLanguages],
+  load: "currentOnly",
+  lowerCaseLng: true,
   interpolation: { escapeValue: false },
   returnNull: false,
 })
 
 function rememberLanguage(language: AppLanguage) {
   window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language)
-  document.documentElement.lang = language
+  document.documentElement.lang = documentLanguage(language)
 }
 
 rememberLanguage(initialLanguage)

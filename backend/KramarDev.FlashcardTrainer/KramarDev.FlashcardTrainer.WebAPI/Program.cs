@@ -35,7 +35,7 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder =>
     {
-        builder.WithOrigins("https://new-words.online", "http://localhost:3000")
+        builder.WithOrigins("https://flashcard-trainer.online", "http://localhost:3000")
                .AllowAnyMethod()
                .AllowAnyHeader();
     });

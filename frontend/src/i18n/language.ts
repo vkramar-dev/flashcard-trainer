@@ -1,16 +1,9 @@
-export const supportedLanguages = ["en", "ru"] as const
+export const supportedLanguages = ["en", "ru", "bg", "es", "de", "fr", "pt", "ja", "zh-hans"] as const
 
 export type AppLanguage = (typeof supportedLanguages)[number]
 
-/** Native names. These stay the same in every dictionary. */
-export const languageNames: Record<AppLanguage, string> = {
-  en: "English",
-  ru: "Русский",
-}
-
 /**
- * Every language the picker shows. Only entries in `supportedLanguages`
- * can be selected; the rest stay visible until their dictionaries exist.
+ * Every language the picker shows.
  * `zh-hans` is the app code for simplified Chinese. `label` is the short code on the button.
  */
 export const languageOptions = [
@@ -27,8 +20,23 @@ export const languageOptions = [
 
 export type LanguageCode = (typeof languageOptions)[number]["code"]
 
+/** Native names. These stay the same in every dictionary. */
+export const languageNames: Record<AppLanguage, string> = {
+  en: "English",
+  ru: "Русский",
+  bg: "Български",
+  es: "Español",
+  de: "Deutsch",
+  fr: "Français",
+  pt: "Português",
+  ja: "日本語",
+  "zh-hans": "简体中文",
+}
+
+const supportedLanguageSet = new Set<string>(supportedLanguages)
+
 export function isLanguageAvailable(code: string): code is AppLanguage {
-  return (supportedLanguages as readonly string[]).includes(code)
+  return supportedLanguageSet.has(code)
 }
 
 export function languageLabel(code: string): string {
@@ -37,11 +45,21 @@ export function languageLabel(code: string): string {
 
 export const LANGUAGE_STORAGE_KEY = "flashcard-trainer.language"
 
-/** `en-US` and `ru-RU` become `en` and `ru`. Anything else is unsupported. */
+/** `en-US` becomes `en`. Simplified Chinese tags such as `zh-CN` become `zh-hans`. */
 export function normalizeLanguage(value: string | null | undefined): AppLanguage | null {
   if (!value) return null
-  const base = value.trim().toLowerCase().split(/[-_]/)[0]
-  return (supportedLanguages as readonly string[]).includes(base) ? (base as AppLanguage) : null
+  const cleaned = value.trim().toLowerCase().replace(/_/g, "-")
+  if (supportedLanguageSet.has(cleaned)) return cleaned as AppLanguage
+  if (cleaned === "zh" || cleaned === "zh-cn" || cleaned === "zh-sg" || cleaned.startsWith("zh-hans")) {
+    return "zh-hans"
+  }
+  const base = cleaned.split("-")[0]
+  return supportedLanguageSet.has(base) ? (base as AppLanguage) : null
+}
+
+/** BCP 47 tag for the document element. The app code `zh-hans` is `zh-Hans` there. */
+export function documentLanguage(language: AppLanguage): string {
+  return language === "zh-hans" ? "zh-Hans" : language
 }
 
 export function resolveLanguage(input: {
