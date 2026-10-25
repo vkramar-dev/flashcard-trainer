@@ -80,6 +80,7 @@ export function AuthDialogs() {
 
   let alertMessage: string | null = null
   if (failureCode !== "IpBlocked" && failureCode !== "InvalidCode") alertMessage = serverError
+  if (failureCode === "EmailQuotaReached") alertMessage = "auth.emailQuotaReached"
   if (!alertMessage && expiredLocally && failureCode !== "TooManyAttempts") {
     alertMessage = "auth.codeExpired"
   }
@@ -235,7 +236,7 @@ export function AuthDialogs() {
 
   return (
     <>
-      <Dialog open={view !== null} onClose={handleClose} fullWidth maxWidth="xs">
+      <Dialog open={view === "signIn" || view === "signUp"} onClose={handleClose} fullWidth maxWidth="xs">
         <form onSubmit={handleSubmit} noValidate>
           <DialogTitle sx={{ pb: 1.5 }}>
             {isSignUp ? t("auth.signUpTitle") : t("auth.signInTitle")}
@@ -317,6 +318,21 @@ export function AuthDialogs() {
                     </Typography>
                   )}
                 </>
+              )}
+
+              {!isSignUp && (
+                <Typography variant="body2" sx={{ textAlign: "right" }}>
+                  <Link
+                    component="button"
+                    type="button"
+                    underline="hover"
+                    onClick={() => {
+                      if (!isSubmitting) dispatch(openAuthDialog("forgotPassword"))
+                    }}
+                  >
+                    {t("auth.forgotPassword")}
+                  </Link>
+                </Typography>
               )}
 
               <Typography variant="body2" color="text.secondary">

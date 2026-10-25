@@ -16,7 +16,6 @@ import { text } from "../i18n";
 import { PageContainer } from "../components/PageContainer";
 import { LoadingState } from "../components/StateViews";
 import { SignedOutNotice } from "../features/auth/SignedOutNotice";
-import { GoogleAccountLink } from "../features/auth/GoogleAccountLink";
 import {
   clearSettingsError,
   updateColorSchemeAsync,
@@ -146,8 +145,6 @@ export default function SettingsPage() {
             ))}
           </TextField>
         </Card>
-
-        <GoogleAccountLink />
 
         <Box>
           <Typography variant="h5" sx={{ mb: 1.6 }}>

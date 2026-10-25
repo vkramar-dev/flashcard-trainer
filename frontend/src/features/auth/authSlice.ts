@@ -14,7 +14,7 @@ import type {
 } from "../../types";
 import { AppStorage } from "@/utils/AppStorage";
 
-export type AuthDialogView = "signIn" | "signUp" | null;
+export type AuthDialogView = "signIn" | "signUp" | "forgotPassword" | null;
 
 interface AuthState {
   user: AuthResponseModel | null;

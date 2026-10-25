@@ -2,6 +2,14 @@ import { apiClient } from "./client"
 import type { AuthResponseModel, AuthModel, RegisterModel, SendRegistrationCodeResponse } from "../types"
 
 export const authApi = {
+  async forgotPassword(email: string): Promise<void> {
+    await apiClient.post("/auth/forgot-password", { email })
+  },
+
+  async resetPassword(email: string, token: string, newPassword: string): Promise<void> {
+    await apiClient.post("/auth/reset-password", { email, token, newPassword })
+  },
+
   async sendRegistrationCode(email: string): Promise<SendRegistrationCodeResponse> {
     const { data } = await apiClient.post<SendRegistrationCodeResponse>("/auth/register/send-code", { email })
     return data

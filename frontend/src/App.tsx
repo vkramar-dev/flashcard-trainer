@@ -2,6 +2,7 @@ import { Box } from "@mui/material"
 import { useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { AuthDialogs } from "./features/auth/AuthDialogs"
+import { PasswordRecoveryDialogs } from "./features/auth/PasswordRecoveryDialogs"
 import { Footer } from "./components/Footer"
 import { Header } from "./components/Header"
 import { AppRoutes } from "./routes/AppRoutes"
@@ -67,6 +68,7 @@ export default function App() {
       </Box>
       <Footer />
       <AuthDialogs />
+      <PasswordRecoveryDialogs />
     </Box>
   )
 }
