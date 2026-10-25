@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -19,6 +19,37 @@ public sealed class AuthController(IAuthService authService) : BaseController
             return Unauthorized();
 
         return user;
+    }
+
+    [HttpPost("google")]
+    [EnableRateLimiting(Constants.RateLimiterName)]
+    [RequestSizeLimit(16 * 1024)]
+    public async Task<ActionResult<AuthResponseModel>> GoogleLogin(
+        GoogleAuthModel model,
+        CT cancellationToken)
+    {
+        var result = await _authService.GoogleLoginAsync(model, cancellationToken);
+
+        if (!result.Succeeded)
+            return GoogleFailure(result.Error);
+
+        return result.Value;
+    }
+
+    [Authorize]
+    [HttpPost("google/link")]
+    [EnableRateLimiting(Constants.RateLimiterName)]
+    [RequestSizeLimit(16 * 1024)]
+    public async Task<ActionResult<AuthResponseModel>> LinkGoogle(
+        GoogleAuthModel model,
+        CT cancellationToken)
+    {
+        var result = await _authService.LinkGoogleAsync(UserName, model, cancellationToken);
+
+        if (!result.Succeeded)
+            return GoogleFailure(result.Error);
+
+        return result.Value;
     }
 
     [HttpPost("register/send-code")]
@@ -69,6 +100,26 @@ public sealed class AuthController(IAuthService authService) : BaseController
             return Unauthorized();
 
         return user;
+    }
+
+    private ActionResult GoogleFailure(RegistrationError error)
+    {
+        var status = error.Code switch
+        {
+            GoogleAuthErrorCodes.InvalidGoogleToken => StatusCodes.Status401Unauthorized,
+            GoogleAuthErrorCodes.EmailAlreadyRegistered => StatusCodes.Status409Conflict,
+            GoogleAuthErrorCodes.AccountAlreadyLinked => StatusCodes.Status409Conflict,
+            GoogleAuthErrorCodes.GoogleAccountInUse => StatusCodes.Status409Conflict,
+            GoogleAuthErrorCodes.EmailMismatch => StatusCodes.Status409Conflict,
+            GoogleAuthErrorCodes.TryAgain => StatusCodes.Status503ServiceUnavailable,
+            _ => StatusCodes.Status400BadRequest
+        };
+
+        return StatusCode(status, new RegistrationErrorResponse
+        {
+            Code = error.Code,
+            Message = error.Message
+        });
     }
 
     private ActionResult RegistrationFailure(RegistrationError error)

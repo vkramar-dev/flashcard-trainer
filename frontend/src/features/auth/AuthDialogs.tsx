@@ -6,6 +6,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
   Link,
   Stack,
   TextField,
@@ -17,12 +18,14 @@ import { text } from "../../i18n"
 import { useAppDispatch, useAppSelector } from "../../store/hooks"
 import {
   clearAuthError,
+  googleSignInAsync,
   closeAuthDialog,
   openAuthDialog,
   sendRegistrationCodeAsync,
   signInAsync,
   signUpAsync,
 } from "./authSlice"
+import { GoogleSignInButton } from "./GoogleSignInButton"
 import { ProjectConstants } from "../../utils/ProjectConstants"
 
 interface FieldErrors {
@@ -58,7 +61,7 @@ export function AuthDialogs() {
   const [codeExpAt, setCodeExpAt] = useState<string | null>(null)
   const [now, setNow] = useState(() => Date.now())
   const [errors, setErrors] = useState<FieldErrors>({})
-  const [pendingAction, setPendingAction] = useState<"send" | "resend" | "verify" | "signIn" | null>(null)
+  const [pendingAction, setPendingAction] = useState<"send" | "resend" | "verify" | "signIn" | "google" | null>(null)
   const requestLock = useRef(false)
   const viewRef = useRef(view)
   viewRef.current = view
@@ -154,6 +157,20 @@ export function AuthDialogs() {
       setErrors((current) => ({ ...current, code: undefined }))
     } catch {
       // The slice stores the message for the dialog.
+    } finally {
+      requestLock.current = false
+      setPendingAction(null)
+    }
+  }
+
+  const handleGoogleCredential = async (credential: string) => {
+    if (requestLock.current || isSubmitting) return
+    requestLock.current = true
+    setPendingAction("google")
+    try {
+      await dispatch(googleSignInAsync(credential)).unwrap()
+    } catch {
+      // Error is localized and displayed from authSlice.
     } finally {
       requestLock.current = false
       setPendingAction(null)
@@ -287,6 +304,16 @@ export function AuthDialogs() {
                       {t("auth.codeExpires", { time: formatRemaining(remainingMs) })}
                     </Typography>
                   )}
+                </>
+              )}
+
+              {!codeSent && (
+                <>
+                  <Divider>{t("auth.or")}</Divider>
+                  <GoogleSignInButton
+                    onCredential={(credential) => void handleGoogleCredential(credential)}
+                    disabled={isSubmitting}
+                  />
                 </>
               )}
 

@@ -1,6 +1,7 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
+using Google.Apis.Auth;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Resend;
@@ -30,6 +31,7 @@ public sealed class AuthService(
     readonly ILogger<AuthService> _logger = logger;
     readonly string _fromEmail = configuration["Resend:FC_FromEmail"];
     readonly string _fromName = configuration["Resend:FC_FromName"];
+    readonly string _googleClientId = configuration["GoogleAuth:FC_ClientId"];
 
     public async Task<AuthResponseModel> GetUserAsync(string userName)
     {
@@ -53,6 +55,184 @@ public sealed class AuthService(
         }
 
         return await CreateUserModelAsync(user);
+    }
+
+    public async Task<RegistrationOutcome<AuthResponseModel>> GoogleLoginAsync(
+        GoogleAuthModel googleAuth,
+        CT cancellationToken)
+    {
+        var payload = await ValidateGoogleCredentialAsync(googleAuth.Credential);
+
+        if (payload == null)
+        {
+            return GoogleFailure(
+                GoogleAuthErrorCodes.InvalidGoogleToken,
+                "The Google sign-in token is invalid or has expired.");
+        }
+
+        const string provider = "Google";
+
+        var user = await _userManager.FindByLoginAsync(provider, payload.Subject);
+        if (user != null)
+            return RegistrationOutcome<AuthResponseModel>.Success(await CreateUserModelAsync(user));
+
+        var email = payload.Email.Trim();
+        var normalizedEmail = _userManager.NormalizeEmail(email);
+
+        // Identity user, external login, role, and user settings must be atomic.
+        // The email lock is shared with the existing email/password registration.
+        await using var transaction = await _ctx.Database.BeginTransactionAsync(cancellationToken);
+
+        if (!await TryAcquireLockAsync(_ctx, EmailLockResource(normalizedEmail), cancellationToken))
+        {
+            return GoogleFailure(GoogleAuthErrorCodes.TryAgain, "Please try again.");
+        }
+
+        // Recheck inside the lock to handle two concurrent first-time sign-ins.
+        user = await _userManager.FindByLoginAsync(provider, payload.Subject);
+        if (user != null)
+            return RegistrationOutcome<AuthResponseModel>.Success(await CreateUserModelAsync(user));
+
+        // Don't auto-link a legacy account based on email alone.
+        if (await _userManager.FindByEmailAsync(email) != null)
+        {
+            return GoogleFailure(
+                GoogleAuthErrorCodes.EmailAlreadyRegistered,
+                "An account with this email already exists. Sign in with your password and link Google in your account.");
+        }
+
+        user = new IdentityUser
+        {
+            UserName = email,
+            Email = email,
+            EmailConfirmed = true
+        };
+
+        var result = await _userManager.CreateAsync(user);
+        if (!result.Succeeded)
+            return GoogleIdentityFailure(result);
+
+        result = await _userManager.AddLoginAsync(
+            user, new UserLoginInfo(provider, payload.Subject, provider));
+        if (!result.Succeeded)
+            return GoogleIdentityFailure(result);
+
+        result = await _userManager.AddToRoleAsync(user, Constants.UserRole);
+        if (!result.Succeeded)
+            return GoogleIdentityFailure(result);
+
+        await _settingsService.CreateDefaultSettingsAsync(user.UserName, cancellationToken);
+        var response = await CreateUserModelAsync(user);
+        await transaction.CommitAsync(cancellationToken);
+
+        return RegistrationOutcome<AuthResponseModel>.Success(response);
+    }
+
+    public async Task<RegistrationOutcome<AuthResponseModel>> LinkGoogleAsync(
+        string userName,
+        GoogleAuthModel googleAuth,
+        CT cancellationToken)
+    {
+        var payload = await ValidateGoogleCredentialAsync(googleAuth.Credential);
+
+        if (payload == null)
+        {
+            return GoogleFailure(
+                GoogleAuthErrorCodes.InvalidGoogleToken,
+                "The Google sign-in token is invalid or has expired.");
+        }
+
+        var user = await _userManager.FindByNameAsync(userName);
+        if (user == null)
+            return GoogleFailure(GoogleAuthErrorCodes.InvalidGoogleToken, "Invalid session.");
+
+        // The user must control both the current signed-in account and
+        // the verified Google account with the same email.
+        if (_userManager.NormalizeEmail(user.Email) !=
+            _userManager.NormalizeEmail(payload.Email.Trim()))
+        {
+            return GoogleFailure(
+                GoogleAuthErrorCodes.EmailMismatch,
+                "The Google account email must match your Flashcard Trainer email.");
+        }
+
+        var linkedUser = await _userManager.FindByLoginAsync("Google", payload.Subject);
+        if (linkedUser != null)
+        {
+            if (linkedUser.Id == user.Id)
+                return RegistrationOutcome<AuthResponseModel>.Success(await CreateUserModelAsync(user));
+
+            return GoogleFailure(
+                GoogleAuthErrorCodes.GoogleAccountInUse,
+                "This Google account is already linked to another user.");
+        }
+
+        var userLogins = await _userManager.GetLoginsAsync(user);
+        if (userLogins.Any(login => login.LoginProvider == "Google"))
+        {
+            return GoogleFailure(
+                GoogleAuthErrorCodes.AccountAlreadyLinked,
+                "A Google account is already linked to this user.");
+        }
+
+        var result = await _userManager.AddLoginAsync(
+            user,
+            new UserLoginInfo("Google", payload.Subject, "Google"));
+
+        if (!result.Succeeded)
+            return GoogleIdentityFailure(result);
+
+        return RegistrationOutcome<AuthResponseModel>.Success(await CreateUserModelAsync(user));
+    }
+
+    private async Task<GoogleJsonWebSignature.Payload> ValidateGoogleCredentialAsync(string credential)
+    {
+        if (string.IsNullOrWhiteSpace(_googleClientId))
+            throw new InvalidOperationException("GoogleAuth:FC_ClientId is not configured.");
+
+        try
+        {
+            var payload = await GoogleJsonWebSignature.ValidateAsync(
+                credential,
+                new GoogleJsonWebSignature.ValidationSettings
+                {
+                    Audience = [_googleClientId]
+                });
+
+            if (!payload.EmailVerified ||
+                string.IsNullOrWhiteSpace(payload.Subject) ||
+                string.IsNullOrWhiteSpace(payload.Email) ||
+                payload.Email.Length > 256)
+            {
+                return null;
+            }
+
+            return payload;
+        }
+        catch (InvalidJwtException)
+        {
+            return null;
+        }
+    }
+
+    private static RegistrationOutcome<AuthResponseModel> GoogleFailure(
+        string code, string message) =>
+        RegistrationOutcome<AuthResponseModel>.Failure(
+            GoogleAuthErrorCodes.Error(code, message));
+
+    private static RegistrationOutcome<AuthResponseModel> GoogleIdentityFailure(IdentityResult result)
+    {
+        if (result.Errors.Any(error => error.Code is "DuplicateEmail" or "DuplicateUserName"))
+        {
+            return GoogleFailure(
+                GoogleAuthErrorCodes.EmailAlreadyRegistered,
+                "An account with this email already exists.");
+        }
+
+        // Avoid leaking user identifiers or Identity internals in the HTTP response.
+        return GoogleFailure(
+            GoogleAuthErrorCodes.CouldNotCreateAccount,
+            "Could not create or link the Google account.");
     }
 
     public async Task<RegistrationOutcome<SendRegistrationCodeResponse>> SendRegistrationCodeAsync(

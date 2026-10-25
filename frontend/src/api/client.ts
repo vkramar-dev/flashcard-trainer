@@ -68,3 +68,22 @@ export function toErrorMessage(error: unknown, fallback = "errors.generic"): str
   }
   return fallback
 }
+
+/** Google login errors are localized by their stable API code. Never display raw tokens. */
+export function googleAuthError(error: unknown, fallback: string): string {
+  if (axios.isAxiosError(error)) {
+    const data = error.response?.data as { code?: unknown } | undefined
+    const messages: Record<string, string> = {
+      InvalidGoogleToken: "auth.googleInvalidToken",
+      EmailAlreadyRegistered: "auth.googleEmailAlreadyRegistered",
+      AccountAlreadyLinked: "auth.googleAccountAlreadyLinked",
+      GoogleAccountInUse: "auth.googleAccountInUse",
+      EmailMismatch: "auth.googleEmailMismatch",
+      TryAgain: "auth.googleTryAgain",
+      CouldNotCreateAccount: "auth.googleCreateFailed",
+    }
+    if (typeof data?.code === "string" && messages[data.code]) return messages[data.code]
+    if (error.code === "ERR_NETWORK") return "errors.network"
+  }
+  return fallback
+}

@@ -1,10 +1,19 @@
-﻿namespace KramarDev.FlashcardTrainer.WebAPI.Services.Interfaces;
+namespace KramarDev.FlashcardTrainer.WebAPI.Services.Interfaces;
 
 public interface IAuthService
 {
     Task<AuthResponseModel> GetUserAsync(string userName);
 
     Task<AuthResponseModel> LoginAsync(AuthModel login);
+
+    Task<RegistrationOutcome<AuthResponseModel>> GoogleLoginAsync(
+        GoogleAuthModel googleAuth,
+        CT cancellationToken);
+
+    Task<RegistrationOutcome<AuthResponseModel>> LinkGoogleAsync(
+        string userName,
+        GoogleAuthModel googleAuth,
+        CT cancellationToken);
 
     Task<RegistrationOutcome<SendRegistrationCodeResponse>> SendRegistrationCodeAsync(
         string email,

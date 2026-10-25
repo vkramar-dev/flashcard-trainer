@@ -4,7 +4,7 @@ import {
   type PayloadAction,
 } from "@reduxjs/toolkit";
 import { authApi } from "../../api/authApi";
-import { readRegistrationFailure, toErrorMessage } from "../../api/client";
+import { googleAuthError, readRegistrationFailure, toErrorMessage } from "../../api/client";
 import type {
   AuthResponseModel,
   AuthModel,
@@ -79,6 +79,36 @@ export const signInAsync = createAsyncThunk<
     return result;
   } catch (error) {
     return rejectWithValue(toErrorMessage(error, "errors.signIn"));
+  }
+});
+
+/** Same app JWT and auth state as the password-based sign-in path. */
+export const googleSignInAsync = createAsyncThunk<
+  AuthResponseModel,
+  string,
+  { rejectValue: string }
+>("auth/googleSignIn", async (credential, { rejectWithValue }) => {
+  try {
+    const result = await authApi.googleSignIn(credential);
+    AppStorage.setAuthToken(result.token);
+    return result;
+  } catch (error) {
+    return rejectWithValue(googleAuthError(error, "auth.googleSignInFailed"));
+  }
+});
+
+/** Link a Google identity to the currently authenticated Identity user. */
+export const linkGoogleAsync = createAsyncThunk<
+  AuthResponseModel,
+  string,
+  { rejectValue: string }
+>("auth/linkGoogle", async (credential, { rejectWithValue }) => {
+  try {
+    const result = await authApi.linkGoogle(credential);
+    AppStorage.setAuthToken(result.token);
+    return result;
+  } catch (error) {
+    return rejectWithValue(googleAuthError(error, "auth.googleLinkFailed"));
   }
 });
 
@@ -192,6 +222,26 @@ const authSlice = createSlice({
         state.status = "failed";
         state.error = action.payload ?? "errors.authenticationFailed";
         state.registrationFailure = null;
+      })
+      .addCase(googleSignInAsync.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+        state.registrationFailure = null;
+      })
+      .addCase(googleSignInAsync.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.user = action.payload;
+        state.isAuthenticated = true;
+        state.dialog = null;
+        state.registrationFailure = null;
+      })
+      .addCase(googleSignInAsync.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload ?? "auth.googleSignInFailed";
+        state.registrationFailure = null;
+      })
+      .addCase(linkGoogleAsync.fulfilled, (state, action) => {
+        state.user = action.payload;
       })
       .addCase(signUpAsync.pending, (state) => {
         state.status = "loading";

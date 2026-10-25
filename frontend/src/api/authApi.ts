@@ -17,6 +17,16 @@ export const authApi = {
     return data
   },
 
+  async googleSignIn(credential: string): Promise<AuthResponseModel> {
+    const { data } = await apiClient.post<AuthResponseModel>("/auth/google", { credential })
+    return data
+  },
+
+  async linkGoogle(credential: string): Promise<AuthResponseModel> {
+    const { data } = await apiClient.post<AuthResponseModel>("/auth/google/link", { credential })
+    return data
+  },
+
   async currentUser(): Promise<AuthResponseModel> {
     const { data } = await apiClient.get<AuthResponseModel>("/auth/me")
     return data
