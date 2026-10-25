@@ -237,10 +237,23 @@ export function AuthDialogs() {
     <>
       <Dialog open={view !== null} onClose={handleClose} fullWidth maxWidth="xs">
         <form onSubmit={handleSubmit} noValidate>
-          <DialogTitle sx={{ pb: 1 }}>{isSignUp ? t("auth.signUpTitle") : t("auth.signInTitle")}</DialogTitle>
-          <DialogContent>
+          <DialogTitle sx={{ pb: 1.5 }}>
+            {isSignUp ? t("auth.signUpTitle") : t("auth.signInTitle")}
+          </DialogTitle>
+          <Divider sx={{ mx: 3, borderColor: "divider" }} />
+          <DialogContent sx={{ pt: 3 }}>
             <Stack gap={2} sx={{ pt: 0.5 }}>
               {alertMessage && <Alert severity="error">{text(alertMessage)}</Alert>}
+
+              {!codeSent && (
+                <>
+                  <GoogleSignInButton
+                    onCredential={(credential) => void handleGoogleCredential(credential)}
+                    disabled={isSubmitting}
+                  />
+                  <Divider sx={{ my: 0.25 }}>{t("auth.or")}</Divider>
+                </>
+              )}
 
               <TextField
                 label={t("auth.email")}
@@ -252,7 +265,6 @@ export function AuthDialogs() {
                 helperText={fieldText(errors.email)}
                 required
                 fullWidth
-                autoFocus={!codeSent}
                 disabled={codeSent}
                 slotProps={{ htmlInput: { maxLength: ProjectConstants.userNameMaxLength } }}
               />
@@ -304,16 +316,6 @@ export function AuthDialogs() {
                       {t("auth.codeExpires", { time: formatRemaining(remainingMs) })}
                     </Typography>
                   )}
-                </>
-              )}
-
-              {!codeSent && (
-                <>
-                  <Divider>{t("auth.or")}</Divider>
-                  <GoogleSignInButton
-                    onCredential={(credential) => void handleGoogleCredential(credential)}
-                    disabled={isSubmitting}
-                  />
                 </>
               )}
 

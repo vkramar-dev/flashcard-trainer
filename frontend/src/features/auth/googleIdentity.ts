@@ -14,11 +14,12 @@ interface GoogleIdentityApi {
   }): void
   renderButton(element: HTMLElement, options: {
     type: "standard"
-    theme: "outline"
+    theme: "outline" | "filled_black"
     size: "large"
-    shape: "rectangular"
+    shape: "rectangular" | "pill"
     text: "continue_with"
-    width: number
+    logo_alignment?: "left" | "center"
+    width?: number
     locale: string
   }): void
 }
