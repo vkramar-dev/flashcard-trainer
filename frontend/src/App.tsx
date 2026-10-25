@@ -1,22 +1,29 @@
 import { Box } from "@mui/material"
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { AuthDialogs } from "./features/auth/AuthDialogs"
 import { Footer } from "./components/Footer"
 import { Header } from "./components/Header"
 import { AppRoutes } from "./routes/AppRoutes"
 import { useAppDispatch, useAppSelector } from "./store/hooks"
-import { restoreState } from "./features/training/trainingSlice"
-import { useNavigate } from "react-router-dom"
-import { loadAppStateAsync } from "./features/sets/setsSlice"
+import { resetTraining, restoreState } from "./features/training/trainingSlice"
+import { useLocation, useNavigate } from "react-router-dom"
+import { fetchSetsAsync, loadAppStateAsync } from "./features/sets/setsSlice"
 import { restoreSessionAsync } from "./features/auth/authSlice"
 import { AppStorage } from "./utils/AppStorage"
+
+function isTrainingPath(pathname: string) {
+  return /^\/set\/\d+\/train\/?$/.test(pathname)
+}
 
 export default function App() {
   const dispatch = useAppDispatch()
   const { t, i18n } = useTranslation()
   const {isAuthenticated, user} = useAppSelector((state) => state.auth)
   const navigate = useNavigate()
+  const location = useLocation()
+  const trainingMode = useAppSelector((state) => state.training.mode)
+  const pathRef = useRef(location.pathname)
 
   useEffect(() => {
     document.title = t("app.documentTitle")
@@ -39,6 +46,18 @@ export default function App() {
       navigate(`/set/${trainingProgress.setId}/train`)
     }
   }, [dispatch, isAuthenticated])
+
+  // Refresh on the training page still resumes. Opening any other page ends
+  // the session, same as End session, and reloads learnt counts.
+  useEffect(() => {
+    const previous = pathRef.current
+    pathRef.current = location.pathname
+    if (!isTrainingPath(previous) || isTrainingPath(location.pathname)) return
+
+    AppStorage.clearTrainingProgress()
+    if (trainingMode === "repeat") dispatch(resetTraining())
+    if (isAuthenticated) void dispatch(fetchSetsAsync())
+  }, [dispatch, isAuthenticated, location.pathname, trainingMode])
 
   return (
     <Box sx={{ minHeight: "100dvh", display: "flex", flexDirection: "column", bgcolor: "background.default" }}>

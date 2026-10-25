@@ -399,6 +399,7 @@ export default function TrainingPage() {
           }}
           onClick={() => {
             AppStorage.clearTrainingProgress();
+            void dispatch(fetchSetsAsync());
             navigate("/");
             if (mode === "repeat") dispatch(resetTraining());
           }}
