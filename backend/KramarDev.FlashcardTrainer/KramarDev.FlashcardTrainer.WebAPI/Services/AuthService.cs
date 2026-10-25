@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Identity;
 using Google.Apis.Auth;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,13 @@ public sealed class AuthService(
 {
     const int MaxSendsPerWindow = 5;
     const int MaxCodeFailures = 3;
+    // Resend Free: 100/day. Use rolling 24h counts, reserve 10 for provider timing/edge cases.
+    const int MaxRegistrationEmailsPer24Hours = 70;
+    const int MaxResetEmailsPer24Hours = 20;
+    const int MaxAllEmailsPer24Hours = 90;
+    const int MaxResetEmailsPerAddressPer24Hours = 2;
+    const int MaxResetEmailsPerIpPer24Hours = 5;
+    const string MailQuotaLock = "mail-quota";
     const int LockTimeoutMilliseconds = 10000;
 
     readonly FlashcardsDbContext _ctx = dbContext;
@@ -32,6 +40,8 @@ public sealed class AuthService(
     readonly string _fromEmail = configuration["Resend:FC_FromEmail"];
     readonly string _fromName = configuration["Resend:FC_FromName"];
     readonly string _googleClientId = configuration["GoogleAuth:FC_ClientId"];
+    readonly string _siteUrl = configuration["PasswordRecovery:FrontendBaseUrl"]
+        ?? "https://flashcard-trainer.online";
 
     public async Task<AuthResponseModel> GetUserAsync(string userName)
     {
@@ -98,7 +108,7 @@ public sealed class AuthService(
         {
             return GoogleFailure(
                 GoogleAuthErrorCodes.EmailAlreadyRegistered,
-                "An account with this email already exists. Sign in with your password and link Google in your account.");
+                "This email is already registered. Sign in with your password.");
         }
 
         user = new IdentityUser
@@ -235,6 +245,105 @@ public sealed class AuthService(
             "Could not create or link the Google account.");
     }
 
+    // Non-enumerating response: missing accounts, external-only accounts, throttled requests,
+    // and email-send failures all return the same public response.
+    public async Task RequestPasswordResetAsync(string email, string ipAddress, CT cancellationToken)
+    {
+        var recipient = email.Trim();
+        var normalizedEmail = _userManager.NormalizeEmail(recipient);
+        var emailHash = HashEmail(normalizedEmail);
+
+        await using var ctx = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+        await using var transaction = await ctx.Database.BeginTransactionAsync(cancellationToken);
+
+        // Lock order is the same as for registration: IP, email, shared mail quota.
+        if (!await TryAcquireLockAsync(ctx, IpLockResource(ipAddress), cancellationToken) ||
+            !await TryAcquireLockAsync(ctx, EmailLockResource(normalizedEmail), cancellationToken) ||
+            !await TryAcquireLockAsync(ctx, MailQuotaLock, cancellationToken))
+            return;
+
+        var now = DateTime.UtcNow;
+        var dayAgo = now.AddHours(-24);
+        var recent = ctx.PasswordResetEmails.Where(x => x.SentAt >= dayAgo);
+
+        if (await recent.CountAsync(cancellationToken) >= MaxResetEmailsPer24Hours ||
+            await recent.CountAsync(x => x.EmailHash == emailHash, cancellationToken) >= MaxResetEmailsPerAddressPer24Hours ||
+            await recent.CountAsync(x => x.IpAddress == ipAddress, cancellationToken) >= MaxResetEmailsPerIpPer24Hours ||
+            await recent.AnyAsync(x => x.EmailHash == emailHash && x.SentAt >= now.AddMinutes(-15), cancellationToken) ||
+            await ctx.RegisteringUsers.CountAsync(x => x.CreatedAt >= dayAgo, cancellationToken) +
+                await recent.CountAsync(cancellationToken) >= MaxAllEmailsPer24Hours)
+            return;
+
+        var user = await _userManager.FindByEmailAsync(recipient);
+        if (user == null || !await _userManager.HasPasswordAsync(user) || !user.EmailConfirmed)
+            return;
+
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var link = BuildPasswordResetUrl(recipient, token);
+        try
+        {
+            await SendPasswordResetEmailAsync(recipient, link, cancellationToken);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex, "Failed to send a password reset email.");
+            return;
+        }
+
+        ctx.PasswordResetEmails.Add(new PasswordResetEmail
+        {
+            EmailHash = emailHash,
+            IpAddress = ipAddress,
+            SentAt = DateTime.UtcNow
+        });
+        await ctx.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+    }
+
+    public async Task<bool> ResetPasswordAsync(ResetPasswordModel model)
+    {
+        var user = await _userManager.FindByEmailAsync(model.Email.Trim());
+        if (user == null || !await _userManager.HasPasswordAsync(user) || !user.EmailConfirmed)
+            return false;
+
+        var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+        return result.Succeeded;
+    }
+
+    private string BuildPasswordResetUrl(string email, string token)
+    {
+        if (!Uri.TryCreate(_siteUrl, UriKind.Absolute, out var baseUrl) ||
+            (baseUrl.Scheme != Uri.UriSchemeHttps &&
+             !(baseUrl.Scheme == Uri.UriSchemeHttp && baseUrl.IsLoopback)) ||
+            baseUrl.AbsolutePath != "/" ||
+            !string.IsNullOrEmpty(baseUrl.Query) || !string.IsNullOrEmpty(baseUrl.Fragment))
+            throw new InvalidOperationException("PasswordRecovery:FrontendBaseUrl must be an HTTPS origin (HTTP allowed for localhost only).");
+
+        // URL fragment is never sent to the static site host or included in HTTP Referer.
+        return $"{_siteUrl.TrimEnd('/')}/#reset-password?email={Uri.EscapeDataString(email)}&token={Uri.EscapeDataString(token)}";
+    }
+
+    private async Task SendPasswordResetEmailAsync(string recipient, string url, CT cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(_fromEmail) || string.IsNullOrWhiteSpace(_fromName))
+            throw new InvalidOperationException("Resend from-address settings are missing.");
+
+        var escapedUrl = HtmlEncoder.Default.Encode(url);
+        var message = new EmailMessage
+        {
+            From = $"{_fromName} <{_fromEmail}>",
+            Subject = "Reset your Flashcard Trainer password",
+            HtmlBody =
+                $"<p>To set a new password, <a href=\"{escapedUrl}\">click here</a>.</p>" +
+                "<p>This link expires in one hour. If you didn't request this, ignore this email.</p>"
+        };
+        message.To.Add(recipient);
+        await _resend.EmailSendAsync(message, cancellationToken);
+    }
+
+    private static string HashEmail(string normalizedEmail) =>
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(normalizedEmail)));
+
     public async Task<RegistrationOutcome<SendRegistrationCodeResponse>> SendRegistrationCodeAsync(
         string email,
         string ipAddress,
@@ -287,6 +396,23 @@ public sealed class AuthService(
         {
             return RegistrationOutcome<SendRegistrationCodeResponse>.Failure(
                 RegistrationErrorCodes.EmailAlreadyRegisteredError());
+        }
+
+        // Serialize all outgoing mail across registration and password recovery.
+        if (!await TryAcquireLockAsync(ctx, MailQuotaLock, cancellationToken))
+            return RegistrationOutcome<SendRegistrationCodeResponse>.Failure(
+                RegistrationErrorCodes.TryAgainError());
+
+        var dayAgo = now.AddHours(-24);
+        var registrationCount = await ctx.RegisteringUsers.CountAsync(
+            x => x.CreatedAt >= dayAgo, cancellationToken);
+        var resetCount = await ctx.PasswordResetEmails.CountAsync(
+            x => x.SentAt >= dayAgo, cancellationToken);
+        if (registrationCount >= MaxRegistrationEmailsPer24Hours ||
+            registrationCount + resetCount >= MaxAllEmailsPer24Hours)
+        {
+            return RegistrationOutcome<SendRegistrationCodeResponse>.Failure(
+                RegistrationErrorCodes.EmailQuotaReachedError());
         }
 
         var code = GenerateCode();

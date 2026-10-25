@@ -29,7 +29,12 @@ builder.Services.AddIdentityCore<IdentityUser>(opt =>
     opt.Password.RequireDigit = false;
     opt.Password.RequireNonAlphanumeric = false;
 }).AddRoles<IdentityRole>()
-  .AddEntityFrameworkStores<FlashcardsDbContext>();
+  .AddEntityFrameworkStores<FlashcardsDbContext>()
+  .AddDefaultTokenProviders();
+
+// Applies to Identity data-protection tokens, including password resets.
+builder.Services.Configure<Microsoft.AspNetCore.Identity.DataProtectionTokenProviderOptions>(
+    options => options.TokenLifespan = TimeSpan.FromHours(1));
 
 builder.Services.AddCors(options =>
 {

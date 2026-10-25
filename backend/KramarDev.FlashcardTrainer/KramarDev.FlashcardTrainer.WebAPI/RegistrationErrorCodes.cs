@@ -17,6 +17,7 @@ public static class RegistrationErrorCodes
     public const string CodeRequired = "CodeRequired";
 
     public const string EmailSendFailed = "EmailSendFailed";
+    public const string EmailQuotaReached = "EmailQuotaReached";
 
     public const string InvalidRegistration = "InvalidRegistration";
 
@@ -70,6 +71,9 @@ public static class RegistrationErrorCodes
             Code = CodeRequired,
             Message = "Request a new verification code."
         };
+
+    public static RegistrationError EmailQuotaReachedError() =>
+        new() { Code = EmailQuotaReached, Message = "Daily email limit reached. Please try again later." };
 
     public static RegistrationError EmailSendFailedError() =>
         new()

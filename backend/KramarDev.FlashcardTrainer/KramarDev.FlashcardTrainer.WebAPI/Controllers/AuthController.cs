@@ -52,6 +52,30 @@ public sealed class AuthController(IAuthService authService) : BaseController
         return result.Value;
     }
 
+    // Always respond identically for unknown emails, Google-only users, and rate-limited requests.
+    [HttpPost("forgot-password")]
+    [EnableRateLimiting(Constants.RateLimiterName)]
+    [RequestSizeLimit(4 * 1024)]
+    public async Task<IActionResult> ForgotPassword(ForgotPasswordModel model, CT cancellationToken)
+    {
+        var ipAddress = ClientIp.Normalize(HttpContext.Connection.RemoteIpAddress);
+        if (ipAddress != null)
+            await _authService.RequestPasswordResetAsync(model.Email, ipAddress, cancellationToken);
+
+        return Ok();
+    }
+
+    [HttpPost("reset-password")]
+    [EnableRateLimiting(Constants.RateLimiterName)]
+    [RequestSizeLimit(8 * 1024)]
+    public async Task<IActionResult> ResetPassword(ResetPasswordModel model)
+    {
+        if (!await _authService.ResetPasswordAsync(model))
+            return BadRequest(new { Code = "InvalidResetLink", Message = "The password reset link is invalid or expired, or the new password does not meet the requirements." });
+
+        return Ok();
+    }
+
     [HttpPost("register/send-code")]
     [EnableRateLimiting(Constants.RateLimiterName)]
     [RequestSizeLimit(4 * 1024)]
@@ -127,6 +151,7 @@ public sealed class AuthController(IAuthService authService) : BaseController
         var status = error.Code switch
         {
             RegistrationErrorCodes.IpBlocked => StatusCodes.Status429TooManyRequests,
+            RegistrationErrorCodes.EmailQuotaReached => StatusCodes.Status429TooManyRequests,
             RegistrationErrorCodes.EmailSendFailed => StatusCodes.Status503ServiceUnavailable,
             RegistrationErrorCodes.TryAgain => StatusCodes.Status503ServiceUnavailable,
             _ => StatusCodes.Status400BadRequest

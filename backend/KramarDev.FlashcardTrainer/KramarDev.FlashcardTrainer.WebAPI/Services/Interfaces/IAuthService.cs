@@ -4,6 +4,10 @@ public interface IAuthService
 {
     Task<AuthResponseModel> GetUserAsync(string userName);
 
+    Task RequestPasswordResetAsync(string email, string ipAddress, CT cancellationToken);
+
+    Task<bool> ResetPasswordAsync(ResetPasswordModel model);
+
     Task<AuthResponseModel> LoginAsync(AuthModel login);
 
     Task<RegistrationOutcome<AuthResponseModel>> GoogleLoginAsync(

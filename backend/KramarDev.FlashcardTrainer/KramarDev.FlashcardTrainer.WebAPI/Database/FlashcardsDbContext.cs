@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -132,6 +132,17 @@ public class FlashcardsDbContext : IdentityDbContext<IdentityUser>
             entity.HasIndex(e => new { e.IpAddress, e.CreatedAt });
         });
 
+        builder.Entity<PasswordResetEmail>(entity =>
+        {
+            entity.ToTable("PasswordResetEmails");
+            entity.Property(e => e.EmailHash).HasMaxLength(64).IsUnicode(false).IsRequired();
+            entity.Property(e => e.IpAddress).HasMaxLength(45).IsUnicode(false).IsRequired();
+            entity.Property(e => e.SentAt).IsRequired();
+            entity.HasIndex(e => new { e.EmailHash, e.SentAt });
+            entity.HasIndex(e => new { e.IpAddress, e.SentAt });
+            entity.HasIndex(e => e.SentAt);
+        });
+
         builder.Entity<BlockedIpAddress>(entity =>
         {
             entity.ToTable("BlockedIpAddress");
@@ -154,6 +165,8 @@ public class FlashcardsDbContext : IdentityDbContext<IdentityUser>
     public DbSet<Settings> Settings { get; set; }
 
     public DbSet<RegisteringUser> RegisteringUsers { get; set; }
+
+    public DbSet<PasswordResetEmail> PasswordResetEmails { get; set; }
 
     public DbSet<BlockedIpAddress> BlockedIpAddresses { get; set; }
 }
