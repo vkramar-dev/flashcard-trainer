@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Crie flashcards, pratique vocabulário e acompanhe seu progresso. 100% grátis, sem anúncios, sem assinaturas e sem taxas ocultas."
+      content="Crie flashcards para estudar vocabulário, idiomas e muito mais. Pratique no seu ritmo e acompanhe seu progresso. Grátis, sem anúncios nem assinaturas."
     />
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://flashcard-trainer.online/pt/" />
@@ -37,14 +37,14 @@
     />
     <meta
       property="og:description"
-      content="Crie flashcards, pratique vocabulário e acompanhe seu progresso. 100% grátis, sem anúncios, sem assinaturas e sem taxas ocultas."
+      content="Crie flashcards para estudar vocabulário, idiomas e muito mais. Pratique no seu ritmo e acompanhe seu progresso. Grátis, sem anúncios nem assinaturas."
     />
     <meta
       property="og:image"
       content="https://flashcard-trainer.online/social-preview.png"
     />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
+    <meta property="og:image:width" content="1731" />
+    <meta property="og:image:height" content="909" />
     <meta
       property="og:image:alt"
       content="Prévia do Flashcard Trainer com cartões de estudo"
@@ -56,7 +56,7 @@
     />
     <meta
       name="twitter:description"
-      content="Crie flashcards, pratique vocabulário e acompanhe seu progresso. 100% grátis, sem anúncios, sem assinaturas e sem taxas ocultas."
+      content="Crie flashcards para estudar vocabulário, idiomas e muito mais. Pratique no seu ritmo e acompanhe seu progresso. Grátis, sem anúncios nem assinaturas."
     />
     <meta
       name="twitter:image"
@@ -84,7 +84,7 @@
           "url": "https://flashcard-trainer.online/pt/",
           "inLanguage": "pt-BR",
           "name": "Flashcards grátis online – Sem anúncios nem assinatura",
-          "description": "Crie flashcards, pratique vocabulário e acompanhe seu progresso. 100% grátis, sem anúncios, sem assinaturas e sem taxas ocultas.",
+          "description": "Crie flashcards para estudar vocabulário, idiomas e muito mais. Pratique no seu ritmo e acompanhe seu progresso. Grátis, sem anúncios nem assinaturas.",
           "about": {
             "@type": "WebApplication",
             "name": "Flashcard Trainer",
@@ -313,9 +313,10 @@
       h1 {
         max-width: 680px;
         margin: 0;
-        font-size: clamp(52px, 6.8vw, 86px);
-        line-height: 0.98;
-        letter-spacing: -0.065em;
+        font-size: clamp(42px, 5.1vw, 72px);
+        line-height: 1.07;
+        letter-spacing: -0.045em;
+        overflow-wrap: break-word;
       }
       h1 em {
         color: var(--green);
@@ -351,11 +352,33 @@
         background: rgba(255, 255, 255, 0.8);
         transform: translateY(-2px);
       }
-      .trust {
+      .signin-note {
         display: flex;
         align-items: center;
+        gap: 8px;
+        margin-top: 16px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      .signin-note .check {
+        display: inline-grid;
+        flex: 0 0 18px;
+        width: 18px;
+        height: 18px;
+        place-items: center;
+        border-radius: 50%;
+        color: var(--green);
+        background: rgba(41, 109, 73, 0.11);
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .trust {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
         gap: 10px;
-        margin-top: 24px;
+        margin-top: 18px;
         color: var(--muted);
         font-size: 13px;
       }
@@ -867,6 +890,7 @@
         }
         .eyebrow,
         .actions,
+        .signin-note,
         .trust {
           justify-content: center;
         }
@@ -911,7 +935,7 @@
           padding: 56px 0 70px;
         }
         h1 {
-          font-size: clamp(46px, 15vw, 65px);
+          font-size: clamp(36px, 10vw, 52px);
         }
         .trust {
           flex-wrap: wrap;
@@ -1001,7 +1025,7 @@
                 >
               </div>
             </details>
-            <a class="nav-cta" href="https://flashcard-trainer.online"
+            <a class="nav-cta" href="https://flashcard-trainer.online/?lang=pt"
               >Abrir aplicativo</a
             >
           </div>
@@ -1011,13 +1035,12 @@
         <section class="hero shell">
           <div class="hero-copy reveal">
             <div class="eyebrow">Recordação ativa, sem complicação</div>
-            <h1>Memorize o que <em>importa.</em></h1>
+            <h1>Seu <em>treinador de flashcards</em> online e gratuito</h1>
             <p>
-              Crie seus próprios conjuntos de cartões, pratique sem distrações e
-              dedique mais tempo às palavras que ainda não ficaram na memória.
+              Crie flashcards para estudar vocabulário, idiomas e tudo o que quiser memorizar. Pratique no seu ritmo, acompanhe seu progresso e aprenda de graça, sem anúncios nem assinaturas.
             </p>
             <div class="actions">
-              <a class="primary" href="https://flashcard-trainer.online"
+              <a class="primary" href="https://flashcard-trainer.online/?lang=pt"
                 >Ir para o aplicativo
                 <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
                   <path
@@ -1030,8 +1053,14 @@
               ></a>
               <a class="secondary" href="#how">Veja como funciona</a>
             </div>
+            <div class="signin-note">
+              <span class="check" aria-hidden="true">✓</span>
+              <span>Entre rapidamente com Google ou e-mail</span>
+            </div>
             <div class="trust">
-              <span>100% grátis</span><span>Sem anúncios</span><span>Sem assinaturas</span>
+              <span>100% grátis</span>
+              <span>Sem anúncios</span>
+              <span>Multilíngue</span>
             </div>
           </div>
           <div class="stage reveal" aria-label="Prévia do treino com cartões">
@@ -1193,7 +1222,7 @@
             Dedique os próximos dez minutos a algo que vale a pena memorizar.
           </h2>
           <p>Crie um conjunto ou continue um que você já começou.</p>
-          <a class="primary" href="https://flashcard-trainer.online"
+          <a class="primary" href="https://flashcard-trainer.online/?lang=pt"
             >Abrir Flashcard Trainer
             <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path
@@ -1210,7 +1239,7 @@
         <span>© <span id="year"></span> Flashcard Trainer</span
         ><span
           >Criado para uma prática consciente ·
-          <a href="https://flashcard-trainer.online">flashcard-trainer.online</a></span
+          <a href="https://flashcard-trainer.online/?lang=pt">flashcard-trainer.online</a></span
         >
       </footer>
     </div>

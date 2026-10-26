@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Създавайте собствени флашкарти, учете думи и следете напредъка си. Напълно безплатно, без реклами, без абонаменти и без скрити такси."
+      content="Създавайте флашкарти за думи, езици и други теми. Упражнявайте се със свое темпо и следете напредъка си. Безплатно, без реклами и абонаменти."
     />
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://flashcard-trainer.online/bg/" />
@@ -37,14 +37,14 @@
     />
     <meta
       property="og:description"
-      content="Създавайте собствени флашкарти, учете думи и следете напредъка си. Напълно безплатно, без реклами, без абонаменти и без скрити такси."
+      content="Създавайте флашкарти за думи, езици и други теми. Упражнявайте се със свое темпо и следете напредъка си. Безплатно, без реклами и абонаменти."
     />
     <meta
       property="og:image"
       content="https://flashcard-trainer.online/social-preview.png"
     />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
+    <meta property="og:image:width" content="1731" />
+    <meta property="og:image:height" content="909" />
     <meta
       property="og:image:alt"
       content="Преглед на приложението Flashcard Trainer с учебни флашкарти"
@@ -56,7 +56,7 @@
     />
     <meta
       name="twitter:description"
-      content="Създавайте собствени флашкарти, учете думи и следете напредъка си. Напълно безплатно, без реклами, без абонаменти и без скрити такси."
+      content="Създавайте флашкарти за думи, езици и други теми. Упражнявайте се със свое темпо и следете напредъка си. Безплатно, без реклами и абонаменти."
     />
     <meta
       name="twitter:image"
@@ -84,7 +84,7 @@
           "url": "https://flashcard-trainer.online/bg/",
           "inLanguage": "bg",
           "name": "Безплатни флашкарти онлайн — Без реклами и абонаменти",
-          "description": "Създавайте собствени флашкарти, учете думи и следете напредъка си. Напълно безплатно, без реклами, без абонаменти и без скрити такси.",
+          "description": "Създавайте флашкарти за думи, езици и други теми. Упражнявайте се със свое темпо и следете напредъка си. Безплатно, без реклами и абонаменти.",
           "about": {
             "@type": "WebApplication",
             "name": "Flashcard Trainer",
@@ -313,9 +313,10 @@
       h1 {
         max-width: 680px;
         margin: 0;
-        font-size: clamp(52px, 6.8vw, 86px);
-        line-height: 0.98;
-        letter-spacing: -0.065em;
+        font-size: clamp(42px, 5.1vw, 72px);
+        line-height: 1.07;
+        letter-spacing: -0.045em;
+        overflow-wrap: break-word;
       }
       h1 em {
         color: var(--green);
@@ -351,11 +352,33 @@
         background: rgba(255, 255, 255, 0.8);
         transform: translateY(-2px);
       }
-      .trust {
+      .signin-note {
         display: flex;
         align-items: center;
+        gap: 8px;
+        margin-top: 16px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      .signin-note .check {
+        display: inline-grid;
+        flex: 0 0 18px;
+        width: 18px;
+        height: 18px;
+        place-items: center;
+        border-radius: 50%;
+        color: var(--green);
+        background: rgba(41, 109, 73, 0.11);
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .trust {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
         gap: 10px;
-        margin-top: 24px;
+        margin-top: 18px;
         color: var(--muted);
         font-size: 13px;
       }
@@ -867,6 +890,7 @@
         }
         .eyebrow,
         .actions,
+        .signin-note,
         .trust {
           justify-content: center;
         }
@@ -911,7 +935,7 @@
           padding: 56px 0 70px;
         }
         h1 {
-          font-size: clamp(46px, 15vw, 65px);
+          font-size: clamp(36px, 10vw, 52px);
         }
         .trust {
           flex-wrap: wrap;
@@ -1001,7 +1025,7 @@
                 >
               </div>
             </details>
-            <a class="nav-cta" href="https://flashcard-trainer.online"
+            <a class="nav-cta" href="https://flashcard-trainer.online/?lang=bg"
               >Към приложението</a
             >
           </div>
@@ -1011,14 +1035,12 @@
         <section class="hero shell">
           <div class="hero-copy reveal">
             <div class="eyebrow">Активното припомняне, опростено</div>
-            <h1>Запомняйте това, което <em>има значение.</em></h1>
+            <h1>Вашият безплатен онлайн <em>тренажор с флашкарти</em></h1>
             <p>
-              Създавайте собствени комплекти с флашкарти, упражнявайте се без
-              разсейване и отделяйте повече време на думите, които още не сте
-              запомнили.
+              Създавайте флашкарти за думи, езици и всичко друго, което искате да запомните. Упражнявайте се със свое темпо, следете напредъка си и учете безплатно — без реклами и абонаменти.
             </p>
             <div class="actions">
-              <a class="primary" href="https://flashcard-trainer.online"
+              <a class="primary" href="https://flashcard-trainer.online/?lang=bg"
                 >Към приложението
                 <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
                   <path
@@ -1031,8 +1053,14 @@
               ></a>
               <a class="secondary" href="#how">Вижте как работи</a>
             </div>
+            <div class="signin-note">
+              <span class="check" aria-hidden="true">✓</span>
+              <span>Бърз вход с Google или имейл</span>
+            </div>
             <div class="trust">
-              <span>100% безплатно</span><span>Без реклами</span><span>Без абонаменти</span>
+              <span>100% безплатно</span>
+              <span>Без реклами</span>
+              <span>Многоезичен</span>
             </div>
           </div>
           <div
@@ -1196,7 +1224,7 @@
             запомните.
           </h2>
           <p>Създайте комплект или продължете вече започната тренировка.</p>
-          <a class="primary" href="https://flashcard-trainer.online"
+          <a class="primary" href="https://flashcard-trainer.online/?lang=bg"
             >Отворете Flashcard Trainer
             <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path
@@ -1213,7 +1241,7 @@
         <span>© <span id="year"></span> Flashcard Trainer</span
         ><span
           >Създаден за целенасочена практика ·
-          <a href="https://flashcard-trainer.online">flashcard-trainer.online</a></span
+          <a href="https://flashcard-trainer.online/?lang=bg">flashcard-trainer.online</a></span
         >
       </footer>
     </div>

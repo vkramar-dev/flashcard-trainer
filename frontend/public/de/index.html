@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Erstelle eigene Lernkarten, lerne Vokabeln und verfolge deinen Fortschritt. 100 % kostenlos, ohne Werbung, ohne Abos und ohne versteckte Kosten."
+      content="Erstelle Lernkarten für Vokabeln, Sprachen und mehr. Übe in deinem Tempo und verfolge deinen Fortschritt. Kostenlos, ohne Werbung oder Abos."
     />
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://flashcard-trainer.online/de/" />
@@ -37,14 +37,14 @@
     />
     <meta
       property="og:description"
-      content="Erstelle eigene Lernkarten, lerne Vokabeln und verfolge deinen Fortschritt. 100 % kostenlos, ohne Werbung, ohne Abos und ohne versteckte Kosten."
+      content="Erstelle Lernkarten für Vokabeln, Sprachen und mehr. Übe in deinem Tempo und verfolge deinen Fortschritt. Kostenlos, ohne Werbung oder Abos."
     />
     <meta
       property="og:image"
       content="https://flashcard-trainer.online/social-preview.png"
     />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
+    <meta property="og:image:width" content="1731" />
+    <meta property="og:image:height" content="909" />
     <meta
       property="og:image:alt"
       content="Vorschau von Flashcard Trainer mit Lernkarten"
@@ -56,7 +56,7 @@
     />
     <meta
       name="twitter:description"
-      content="Erstelle eigene Lernkarten, lerne Vokabeln und verfolge deinen Fortschritt. 100 % kostenlos, ohne Werbung, ohne Abos und ohne versteckte Kosten."
+      content="Erstelle Lernkarten für Vokabeln, Sprachen und mehr. Übe in deinem Tempo und verfolge deinen Fortschritt. Kostenlos, ohne Werbung oder Abos."
     />
     <meta
       name="twitter:image"
@@ -84,7 +84,7 @@
           "url": "https://flashcard-trainer.online/de/",
           "inLanguage": "de",
           "name": "Kostenlose Online-Lernkarten – Ohne Werbung und Abo",
-          "description": "Erstelle eigene Lernkarten, lerne Vokabeln und verfolge deinen Fortschritt. 100 % kostenlos, ohne Werbung, ohne Abos und ohne versteckte Kosten.",
+          "description": "Erstelle Lernkarten für Vokabeln, Sprachen und mehr. Übe in deinem Tempo und verfolge deinen Fortschritt. Kostenlos, ohne Werbung oder Abos.",
           "about": {
             "@type": "WebApplication",
             "name": "Flashcard Trainer",
@@ -313,9 +313,10 @@
       h1 {
         max-width: 680px;
         margin: 0;
-        font-size: clamp(52px, 6.8vw, 86px);
-        line-height: 0.98;
-        letter-spacing: -0.065em;
+        font-size: clamp(42px, 5.1vw, 72px);
+        line-height: 1.07;
+        letter-spacing: -0.045em;
+        overflow-wrap: break-word;
       }
       h1 em {
         color: var(--green);
@@ -351,11 +352,33 @@
         background: rgba(255, 255, 255, 0.8);
         transform: translateY(-2px);
       }
-      .trust {
+      .signin-note {
         display: flex;
         align-items: center;
+        gap: 8px;
+        margin-top: 16px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      .signin-note .check {
+        display: inline-grid;
+        flex: 0 0 18px;
+        width: 18px;
+        height: 18px;
+        place-items: center;
+        border-radius: 50%;
+        color: var(--green);
+        background: rgba(41, 109, 73, 0.11);
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .trust {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
         gap: 10px;
-        margin-top: 24px;
+        margin-top: 18px;
         color: var(--muted);
         font-size: 13px;
       }
@@ -867,6 +890,7 @@
         }
         .eyebrow,
         .actions,
+        .signin-note,
         .trust {
           justify-content: center;
         }
@@ -911,7 +935,7 @@
           padding: 56px 0 70px;
         }
         h1 {
-          font-size: clamp(46px, 15vw, 65px);
+          font-size: clamp(36px, 10vw, 52px);
         }
         .trust {
           flex-wrap: wrap;
@@ -1001,7 +1025,7 @@
                 >
               </div>
             </details>
-            <a class="nav-cta" href="https://flashcard-trainer.online">App öffnen</a>
+            <a class="nav-cta" href="https://flashcard-trainer.online/?lang=de">App öffnen</a>
           </div>
         </nav>
       </header>
@@ -1009,13 +1033,12 @@
         <section class="hero shell">
           <div class="hero-copy reveal">
             <div class="eyebrow">Aktives Erinnern, ganz einfach</div>
-            <h1>Behalte im Gedächtnis, was <em>zählt.</em></h1>
+            <h1>Dein kostenloser <em>Online-Trainer mit Lernkarten</em></h1>
             <p>
-              Erstelle deine eigenen Lernkartensets, übe ohne Ablenkung und
-              widme den Wörtern mehr Zeit, die noch nicht sitzen.
+              Erstelle Lernkarten für Vokabeln, Sprachen und alles, was du dir merken möchtest. Übe in deinem Tempo, verfolge deinen Fortschritt und lerne kostenlos – ohne Werbung oder Abos.
             </p>
             <div class="actions">
-              <a class="primary" href="https://flashcard-trainer.online"
+              <a class="primary" href="https://flashcard-trainer.online/?lang=de"
                 >Zur App
                 <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
                   <path
@@ -1028,8 +1051,14 @@
               ></a>
               <a class="secondary" href="#how">So funktioniert es</a>
             </div>
+            <div class="signin-note">
+              <span class="check" aria-hidden="true">✓</span>
+              <span>Schnell anmelden mit Google oder E-Mail</span>
+            </div>
             <div class="trust">
-              <span>100 % kostenlos</span><span>Keine Werbung</span><span>Keine Abos</span>
+              <span>100 % kostenlos</span>
+              <span>Keine Werbung</span>
+              <span>Mehrsprachig</span>
             </div>
           </div>
           <div
@@ -1196,7 +1225,7 @@
             werden.
           </h2>
           <p>Erstelle ein Set oder setze ein bereits begonnenes fort.</p>
-          <a class="primary" href="https://flashcard-trainer.online"
+          <a class="primary" href="https://flashcard-trainer.online/?lang=de"
             >Flashcard Trainer öffnen
             <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path
@@ -1213,7 +1242,7 @@
         <span>© <span id="year"></span> Flashcard Trainer</span
         ><span
           >Für bewusstes Üben entwickelt ·
-          <a href="https://flashcard-trainer.online">flashcard-trainer.online</a></span
+          <a href="https://flashcard-trainer.online/?lang=de">flashcard-trainer.online</a></span
         >
       </footer>
     </div>
