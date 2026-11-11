@@ -6,3 +6,4 @@ global using KramarDev.FlashcardTrainer.WebAPI.Types;
 global using KramarDev.FlashcardTrainer.WebAPI.Database.Tables;
 global using CT = System.Threading.CancellationToken;
 global using KramarDev.LogPlatform.Common;
+global using ILogClient = KramarDev.LogPlatform.LogClient.ILogger;

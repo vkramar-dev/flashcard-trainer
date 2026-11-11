@@ -5,9 +5,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KramarDev.FlashcardTrainer.WebAPI.Controllers;
 
-public class AppController(IDbContextFactory<FlashcardsDbContext> factory) : BaseController
+public class AppController(IDbContextFactory<FlashcardsDbContext> factory, ILogClient logger) : BaseController
 {
     readonly IDbContextFactory<FlashcardsDbContext> _factory = factory;
+    readonly ILogClient _logger = logger;
 
     [Authorize]
     [HttpGet("state")]
@@ -45,6 +46,14 @@ public class AppController(IDbContextFactory<FlashcardsDbContext> factory) : Bas
         return Ok(await setsService.GetStorageUsageAsync(UserName, cancellationToken));
     }
 
+    [HttpPost("visit")]
+    public IActionResult Visit()
+    {
+        _ = _logger.LogAspNetInfoAsync(
+            "Visit", Severity.Low, SourceType.Backend);
+
+        return NoContent();
+    }
 
     [HttpGet("ip")]
     public ActionResult<string> Ip()

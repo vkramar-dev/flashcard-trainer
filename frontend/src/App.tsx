@@ -12,6 +12,7 @@ import { useLocation, useNavigate } from "react-router-dom"
 import { fetchSetsAsync, loadAppStateAsync } from "./features/sets/setsSlice"
 import { restoreSessionAsync } from "./features/auth/authSlice"
 import { AppStorage } from "./utils/AppStorage"
+import { appApi } from "./api/appApi"
 
 function isTrainingPath(pathname: string) {
   return /^\/set\/\d+\/train\/?$/.test(pathname)
@@ -31,6 +32,7 @@ export default function App() {
   }, [t, i18n.language])
 
   useEffect(() => {
+    appApi.visit();
     if (!isAuthenticated) {
       dispatch(restoreSessionAsync())
     }

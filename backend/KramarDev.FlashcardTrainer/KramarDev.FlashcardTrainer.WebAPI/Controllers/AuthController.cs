@@ -4,9 +4,10 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace KramarDev.FlashcardTrainer.WebAPI.Controllers;
 
-public sealed class AuthController(IAuthService authService) : BaseController
+public sealed class AuthController(IAuthService authService, ILogClient logger) : BaseController
 {
     readonly IAuthService _authService = authService;
+    readonly ILogClient _logger = logger;
 
     [HttpPost("login")]
     [EnableRateLimiting(Constants.RateLimiterName)]
@@ -106,6 +107,9 @@ public sealed class AuthController(IAuthService authService) : BaseController
         RegisterModel register,
         CT cancellationToken)
     {
+        _ = _logger.LogAspNetInfoAsync(
+            $"Register: {register.Email}", Severity.Low, SourceType.Backend);
+
         var result = await _authService.RegisterAsync(register, cancellationToken);
 
         if (!result.Succeeded)
