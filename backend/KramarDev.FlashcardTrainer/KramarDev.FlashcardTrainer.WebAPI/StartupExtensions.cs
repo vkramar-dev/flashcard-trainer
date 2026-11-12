@@ -161,7 +161,7 @@ public static class StartupExtensions
         var logapiSecret = configuration["LogApi:Secret"]
             ?? throw new InvalidOperationException("LogApi:Secret was not found.");
 
-        services.AddSingleton<LogPlatform.LogClient.ILogger>(sp =>
+        services.AddSingleton<ILogClient>(sp =>
         {
             var env = sp.GetRequiredService<IHostEnvironment>();
 
