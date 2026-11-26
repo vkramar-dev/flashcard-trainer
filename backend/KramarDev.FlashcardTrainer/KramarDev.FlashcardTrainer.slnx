@@ -1,3 +1,4 @@
 <Solution>
+  <Folder Name="/Lib/" />
   <Project Path="KramarDev.FlashcardTrainer.WebAPI/KramarDev.FlashcardTrainer.WebAPI.csproj" />
 </Solution>
